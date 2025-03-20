@@ -43,6 +43,11 @@ opentelemetry_collector_namespace_project_name: "opentelemetry-collector"
 opentelemetry_collector_installation_name: "opentelemetry-collector"
 opentelemetry_collector_chart_version: "0.117.3"
 
+# Clickhouse
+clickhouse_namespace_project_name: "clickhouse"
+clickhouse_installation_name: "clickhouse"
+clickhouse_chart_version: "0.2.0"
+
 # Kubernetes Topology Mapper
 topology_mapper_namespace_project_name: "kube-system"
 topology_mapper_installation_name: "topology-mapper"

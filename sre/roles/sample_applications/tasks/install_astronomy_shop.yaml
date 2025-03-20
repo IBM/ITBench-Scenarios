@@ -13,6 +13,19 @@
     release_namespace: "{{ otel_astronomy_app_namespace_project_name }}"
     update_repo_cache: true
 
+- name: Get Clickhouse Credentials secret
+  kubernetes.core.k8s_info:
+    kind: Secret
+    name: clickhouse-credentials
+    namespace: "{{ clickhouse_namespace_project_name }}"
+    kubeconfig: "{{ kubeconfig }}"
+  register: clickhouse_secrets_info
+
+- name: Get Clickhouse credentials from Kubernetes Secret
+  ansible.builtin.set_fact:
+    clickhouse_user: "{{ clickhouse_secrets_info.resources[0].data.user | b64decode }}"
+    clickhouse_password: "{{ clickhouse_secrets_info.resources[0].data.password | b64decode }}"
+
 - name: Deploy OpenTelemetry's Astronomy Shop Demo
   kubernetes.core.helm:
     name: "{{ otel_astronomy_app_installation_name }}"
@@ -157,10 +170,20 @@
             opensearch:
               http:
                 endpoint: "http://opensearch-cluster-master.{{ opensearch_namespace_project_name }}.svc.cluster.local:9200"
+            clickhouse:
+              endpoint: tcp://clickhouse-{{ clickhouse_installation_name }}.{{ clickhouse_namespace_project_name }}.svc.cluster.local:9000
+              username: "{{ clickhouse_user }}"
+              password: "{{ clickhouse_password }}"
             otlp:
               endpoint: ${env:MY_POD_IP}:4317
             otlphttp/prometheus:
-              endpoint: "http://{{ prometheus_service_name }}.{{ prometheus_namespace_project_name }}:9090/api/v1/otlp"
+              endpoint: http://{{ prometheus_service_name }}.{{ prometheus_namespace_project_name }}.svc.cluster.local:9090/api/v1/otlp
+          service:
+            pipelines:
+              traces:
+                exporters: [clickhouse, debug, spanmetrics]
+              metrics:
+                receivers: [httpcheck/frontendproxy, redis, spanmetrics]
         resources:
           requests:
             cpu: 100m

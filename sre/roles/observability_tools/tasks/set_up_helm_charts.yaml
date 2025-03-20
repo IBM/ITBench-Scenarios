@@ -5,6 +5,12 @@
     kubeconfig_path: "{{ kubeconfig }}"
     repo_url: "https://kubernetes.github.io/ingress-nginx"
 
+- name: Add Helm repo for Altinity's Clickhouse
+  kubernetes.core.helm_repository:
+    name: altinity
+    kubeconfig_path: "{{ kubeconfig }}"
+    repo_url: "https://helm.altinity.com"
+
 - name: Add Helm chart repo for Loki
   kubernetes.core.helm_repository:
     name: grafana
@@ -43,7 +49,7 @@
     kubeconfig_path: "{{ kubeconfig }}"
     repo_url: "https://kubernetes-sigs.github.io/metrics-server/"
   when:
-    - domain == "finops"   
+    - domain == "finops"
 
 - name: Add Helm chart repo for OpenCost
   kubernetes.core.helm_repository:

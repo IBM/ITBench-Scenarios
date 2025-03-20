@@ -114,7 +114,7 @@ endif
 .PHONY: deploy_scenario_application
 ifeq ($(IS_HOTEL_RESERVATION_SCENARIO),true)
 deploy_scenario_application: deploy_hotel_reservation
-else 
+else
 deploy_scenario_application: deploy_astronomy_shop
 endif
 
@@ -194,7 +194,7 @@ fetch_alerts:
 	ansible-playbook -v base.yaml --tags "fetch_alerts" \
 		--extra-vars "incident_number=$(INCIDENT_NUMBER)" \
 		--extra-vars "sample_application=$(SAMPLE_APPLICATION)" \
-		> /tmp/fetch.out 2>&1 & 
+		> /tmp/fetch.out 2>&1 &
 
 .PHONY: e2e_awx_init_stage_one
 e2e_awx_init_stage_one: ## Given an incident number, run_uuid intitialize the scenario run leveraging an AWX node

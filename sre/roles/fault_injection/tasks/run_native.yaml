@@ -23,7 +23,7 @@
     kind: ConfigMap
     namespace: "{{ otel_astronomy_app_namespace_project_name }}"
     kubeconfig: "{{ kubeconfig }}"
-    name: "{{ otel_astronomy_app_installation_name }}-flagd-config"
+    name: "flagd-config"
   register: configmap_output
   when: is_native and is_injection
 

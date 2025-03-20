@@ -40,7 +40,7 @@ sample_application: otel_astronomy_shop
 
 is_install_chaos_mesh: false
 fault_injected:
-  - recommendationServiceCacheFailure
+  - recommendationCacheFailure
 
 docs_incident_1:
   "id": 1

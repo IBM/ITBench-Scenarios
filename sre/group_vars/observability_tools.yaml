@@ -11,11 +11,6 @@ opensearch_installation_name: "opensearch"
 opensearch_chart_version: "2.31.0"
 opensearch_version_number: "2.19.0"
 
-# Elasticsearch configuration
-es_namespace_project_name: "elastic"
-es_installation_name: "elastic"
-es_chart_version: "21.4.5"
-
 # Prometheus - Grafana configuration
 prometheus_namespace_project_name: "prometheus"
 prometheus_installation_name: "prometheus-stack"
@@ -27,12 +22,6 @@ prometheus_alertmanager_service_name: "prometheus-stack-kube-prom-alertmanager"
 grafana_namespace_project_name: "grafana"
 grafana_installation_name: "grafana"
 grafana_chart_version: "8.10.0"
-
-# Jaeger configuration
-jaeger_namespace_project_name: "jaeger"
-jaeger_installation_name: "jaeger"
-jaeger_chart_version: "3.4.0"
-enable_jaeger_query_endpoint: true
 
 # Nginx Ingress
 ingress_installation_name: "ingress-nginx"
@@ -53,6 +42,11 @@ metrics_server_chart_version: "3.12.2"
 opentelemetry_collector_namespace_project_name: "opentelemetry-collector"
 opentelemetry_collector_installation_name: "opentelemetry-collector"
 opentelemetry_collector_chart_version: "0.117.3"
+
+# Clickhouse
+clickhouse_namespace_project_name: "clickhouse"
+clickhouse_installation_name: "clickhouse"
+clickhouse_chart_version: "0.2.0"
 
 # Kubernetes Topology Mapper
 topology_mapper_namespace_project_name: "kube-system"

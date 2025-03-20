@@ -3,7 +3,7 @@ scenario_domain: sre
 sample_application: otel_astronomy_shop
 
 target_namespace_name: "{{ otel_astronomy_app_namespace_project_name }}"
-target_label_name1: "quoteservice"
+target_label_name1: "quote"
 target_label_name2: ""
 
 docs_incident_27:

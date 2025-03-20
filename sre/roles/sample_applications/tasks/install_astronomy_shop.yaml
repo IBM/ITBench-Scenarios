@@ -158,7 +158,7 @@
               http:
                 endpoint: "http://opensearch-cluster-master.{{ opensearch_namespace_project_name }}.svc.cluster.local:9200"
             otlp:
-              endpoint: "{{ jaeger_installation_name }}-collector.{{ jaeger_namespace_project_name }}.svc.cluster.local:4317"
+              endpoint: ${env:MY_POD_IP}:4317
             otlphttp/prometheus:
               endpoint: "http://{{ prometheus_service_name }}.{{ prometheus_namespace_project_name }}:9090/api/v1/otlp"
         resources:

@@ -8,14 +8,12 @@
     src: templates/datasource_{{ item }}.j2
     dest: /tmp/datasource_{{ item }}.yaml
   loop:
-    - jaeger
     - loki
     - opensearch
     - prometheus
 
 - name: Load datasources from files
   ansible.builtin.set_fact:
-    jaeger_datasources: "{{ lookup('ansible.builtin.file', '/tmp/datasource_jaeger.yaml') | from_yaml }}"
     loki_datasources: "{{ lookup('ansible.builtin.file', '/tmp/datasource_loki.yaml') | from_yaml }}"
     opensearch_datasources: "{{ lookup('ansible.builtin.file', '/tmp/datasource_opensearch.yaml') | from_yaml }}"
     prometheus_datasources: "{{ lookup('ansible.builtin.file', '/tmp/datasource_prometheus.yaml') | from_yaml }}"
@@ -23,12 +21,6 @@
 - name: Append Prometheus datasource to list
   ansible.builtin.set_fact:
     datasources: "{{ datasources + prometheus_datasources }}"
-
-- name: Append Jaeger datasource to list
-  ansible.builtin.set_fact:
-    datasources: "{{ datasources + jaeger_datasources }}"
-  when:
-    - enable_jaeger_query_endpoint
 
 - name: Append Loki datasource to list
   ansible.builtin.set_fact:

@@ -1,7 +1,6 @@
 # Makefile to run Ansible playbooks
 
 EXECUTE_CHECKS_IN_BACKGROUND ?= false
-USE_JAEGER_QUERY_ENDPOINT ?= true
 
 INCIDENT_NUMBER ?= 1
 NUMBER_OF_RUNS = 1
@@ -26,15 +25,9 @@ help: ## Display this help.
 
 .PHONY: deploy_observability_stack
 deploy_observability_stack: ## Deploys the observability tools to cluster
-ifeq ($(USE_JAEGER_QUERY_ENDPOINT),false)
 	ansible-playbook -v base.yaml --tags "install_tools" \
-		--extra-vars "domain=sre" \
-		--extra-vars "enable_jaeger_query_endpoint=false"
-else
-	ansible-playbook -v base.yaml --tags "install_tools" \
-		--extra-vars "domain=sre" \
-		--extra-vars "enable_jaeger_query_endpoint=true"
-endif
+		--extra-vars "domain=sre"
+
 
 .PHONY: undeploy_observability_stack
 undeploy_observability_stack: ## Undeploys observability tools to cluster

@@ -17,22 +17,12 @@
     - install_tools
 
 - ansible.builtin.import_tasks: 
-    file: install_elasticsearch.yaml
-  tags:
-    - install_tools
-
-- ansible.builtin.import_tasks: 
     file: install_loki.yaml
   tags:
     - install_tools
 
 - ansible.builtin.import_tasks: 
     file: install_opensearch.yaml
-  tags:
-    - install_tools
-
-- ansible.builtin.import_tasks: 
-    file: install_jaeger.yaml
   tags:
     - install_tools
 
@@ -48,8 +38,6 @@
         namespace: "{{ loki_installation_name }}"
       - name: "{{ opensearch_namespace_project_name }}"
         namespace: "{{ opensearch_installation_name }}"
-      - name: "{{ jaeger_namespace_project_name }}"
-        namespace: "{{ jaeger_installation_name }}"
       - name: "{{ prometheus_namespace_project_name }}"
         namespace: "{{ prometheus_installation_name }}"
 

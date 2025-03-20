@@ -125,7 +125,7 @@
         value_type: raw
       - value: "global.monitoring.centralJaegerAddress={{ jaeger_installation_name }}-collector.{{ jaeger_namespace_project_name }}.svc.cluster.local"
         value_type: raw
-      - value: "global.monitoring.centralPrometheusAddress=http://{{ prometheus_service_name }}.{{ prometheus_namespace_project_name }}:9090/api/v1/otlp"
+      - value: "global.monitoring.centralPrometheusAddress=http://{{ prometheus_service_name }}.{{ prometheus_namespace_project_name }}.svc.cluster.local:80/api/v1/otlp"
         value_type: raw
       - value: "global.nameOverride={{ deathstarbench_hotelreservation_app_installation_name }}"
         value_type: raw
@@ -160,7 +160,7 @@
         value_type: raw
       - value: "global.monitoring.centralJaegerAddress={{ jaeger_installation_name }}-collector.{{ jaeger_namespace_project_name }}.svc.cluster.local"
         value_type: raw
-      - value: "global.monitoring.centralPrometheusAddress=http://{{ prometheus_service_name }}.{{ prometheus_namespace_project_name }}:9090/api/v1/otlp"
+      - value: "global.monitoring.centralPrometheusAddress=http://{{ prometheus_service_name }}.{{ prometheus_namespace_project_name }}.svc.cluster.local:80/api/v1/otlp"
         value_type: raw
       - value: "global.nameOverride={{ deathstarbench_hotelreservation_app_installation_name }}"
         value_type: raw

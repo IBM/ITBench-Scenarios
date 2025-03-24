@@ -1,21 +1,20 @@
 ---
-- name: Apply tags to tasks within included file
-  ansible.builtin.include_tasks:
-    file: leverage_ingress.yaml
+- name: Retrieve endpoint url
+  ansible.builtin.include_role:
+    name: common
     apply:
       tags:
         - post_fault_injection
-  tags:
-    - post_fault_injection
-
-- name: Apply tags to tasks within included file
-  ansible.builtin.include_tasks:
-    file: leverage_port_forwarding.yaml
-    apply:
-      tags:
-        - post_fault_injection
-  tags:
-    - post_fault_injection
+      vars:
+        ingress:
+          name: topology-monitor
+          namespace: "{{ topology_mapper_namespace_project_name }}"
+          path: topology
+        service:
+          name: topology-monitor
+          namespace: "{{ topology_mapper_namespace_project_name }}"
+          port: 8080
+    tasks_from: fetch_endpoint_url.yaml
 
 - name: Call the Topology APIs
   uri:

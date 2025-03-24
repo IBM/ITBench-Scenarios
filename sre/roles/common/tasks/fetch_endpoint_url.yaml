@@ -1,0 +1,83 @@
+- name: Get the Ingress object
+  kubernetes.core.k8s_info:
+    api_version: networking.k8s.io/v1
+    kind: Ingress
+    name: "{{ ingress.name }}"
+    namespace: "{{ ingress.namespace }}"
+    kubeconfig: "{{ kubeconfig }}"
+    wait: true
+  register: ingress_info
+  when:
+    - ingress.name is defined
+    - ingress.namespace is defined
+
+- name: Extract the Ingress hostname information
+  ansible.builtin.set_fact:
+    ingress_hostname: "{{ ingress_info.resources[0].status.loadBalancer.ingress[0].hostname }}"
+  when:
+    - ingress_info.resources | length == 1
+    - ingress_info.resources[0].status.loadBalancer.ingress is defined
+    - ingress_info.resources[0].status.loadBalancer.ingress | length > 0
+    - ingress_info.resources[0].status.loadBalancer.ingress[0].hostname is defined
+
+- name: Set the endpoint URL using Ingress hostname
+  ansible.builtin.set_fact:
+    endpoint_url: "http://{{ ingress_hostname }}/{{ ingress.path }}"
+  when:
+    - ingress_hostname is defined
+
+- name: Ensure required service variables are defined
+  ansible.builtin.assert:
+    that:
+      - service.name is defined
+      - service.namespace is defined
+      - service.port is defined
+    fail_msg: "Service object is undefined."
+    success_msg: "Service object is defined."
+  when:
+    - ingress_hostname is undefined
+
+- name: Check localhost port availability
+  ansible.builtin.shell: |
+    lsof -i :{{ item }} > /dev/null && echo "in_use" || echo "available"
+  register: lsof_check
+  loop: "{{ range(32100, 32125) | list }}"
+  when:
+    - ingress_hostname is undefined
+
+- name: Extract avaialble localhost ports
+  ansible.builtin.set_fact:
+    localhost_ports: "{{ lsof_check.results | selectattr('stdout', '==', 'available') | map(attribute='item') | list }}"
+  when:
+    - ingress_hostname is undefined
+
+- name: Assign a dynamic port if one is available
+  ansible.builtin.set_fact:
+    dynamic_port: "{{ localhost_ports | first }}"
+  when:
+    - ingress_hostname is undefined
+    - localhost_ports | length > 0
+
+- name: Port forward the Kubernetes service
+  ansible.builtin.shell: |
+    KUBECONFIG={{ kubeconfig }} kubectl -n {{ service.namespace }} port-forward "svc/{{ service.name }}" "{{ dynamic_port }}:{{ service.port }}" --request-timeout=15m
+  async: 900
+  poll: 0
+  when:
+    - ingress_hostname is undefined
+    - dynamic_port is defined
+
+- name: Wait for port-forward to be available
+  ansible.builtin.wait_for_connection:
+    delay: 5
+    timeout: 30
+  when:
+    - ingress_hostname is undefined
+    - dynamic_port is defined
+
+- name: Set the Grafana URL using port-forwarding
+  ansible.builtin.set_fact:
+    endpoint_url: "http://127.0.0.1:{{ dynamic_port }}"
+  when:
+    - ingress_hostname is undefined
+    - dynamic_port is defined

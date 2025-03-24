@@ -5,23 +5,22 @@
   tags:
     - book_keeping
 
-- name:  Tasks associated with leveraging ingress
-  ansible.builtin.include_tasks:
-    file: leverage_ingress.yaml
+- name: Retrieve endpoint url
+  ansible.builtin.include_role:
+    name: common
     apply:
       tags:
-        - book_keeping
-  tags:
-    - book_keeping
-
-- name:  Tasks associated with leveraging port forwarding
-  ansible.builtin.include_tasks:
-    file: leverage_port_forwarding.yaml
-    apply:
-      tags:
-        - book_keeping
-  tags:
-    - book_keeping
+        - install_tools
+      vars:
+        ingress:
+          name: prometheus
+          namespace: "{{ prometheus_namespace_project_name }}"
+          path: prometheus
+        service:
+          name: prometheus-server
+          namespace: "{{ prometheus_namespace_project_name }}"
+          port: 80
+    tasks_from: fetch_endpoint_url.yaml
 
 - name: Initialize an empty list for selected user details
   set_fact:
@@ -33,7 +32,7 @@
 
 - name: Call the alerts API
   uri:
-    url: "{{ prometheus_url }}/api/v1/alerts"
+    url: "{{ endpoint_url }}/api/v1/alerts"
     method: GET
     return_content: yes
     body_format: json

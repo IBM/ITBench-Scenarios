@@ -1,0 +1,6 @@
+---
+- name: Uninstall Chaos Mesh
+  ansible.builtin.import_tasks:
+    file: chaos_mesh_uninstall.yaml
+  when:
+    - "{{ tools | intersect(['chaos-mesh']) | length == 1 }}"

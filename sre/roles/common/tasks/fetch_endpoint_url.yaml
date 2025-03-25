@@ -26,17 +26,6 @@
   when:
     - ingress_hostname is defined
 
-- name: Ensure required service variables are defined
-  ansible.builtin.assert:
-    that:
-      - service.name is defined
-      - service.namespace is defined
-      - service.port is defined
-    fail_msg: "Service object is undefined."
-    success_msg: "Service object is defined."
-  when:
-    - ingress_hostname is undefined
-
 - name: Check localhost port availability
   ansible.builtin.shell: |
     lsof -i :{{ item }} > /dev/null && echo "in_use" || echo "available"

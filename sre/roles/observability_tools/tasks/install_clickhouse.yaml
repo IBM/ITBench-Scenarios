@@ -1,0 +1,25 @@
+---
+- name: Set up Clickhouse
+  kubernetes.core.helm:
+    name: "{{ clickhouse_installation_name }}"
+    kubeconfig_path: "{{ kubeconfig }}"
+    chart_ref: altinity/clickhouse
+    chart_version: "{{ clickhouse_chart_version }}"
+    release_namespace: "{{ clickhouse_namespace_project_name }}"
+    release_state: present
+    create_namespace: true
+    wait: true
+    values:
+      clickhouse:
+        defaultUser:
+          allowExternalAccess: true
+    timeout: 10m0s
+
+- name: Wait for Clickhouse to be deployed
+  kubernetes.core.k8s_info:
+    api_version: clickhouse.altinity.com/v1
+    kind: ClickHouseInstallation
+    name: "{{ clickhouse_installation_name }}"
+    namespace: "{{ clickhouse_namespace_project_name }}"
+    kubeconfig: "{{ kubeconfig }}"
+    wait: true

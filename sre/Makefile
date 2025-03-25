@@ -1,7 +1,6 @@
 # Makefile to run Ansible playbooks
 
 EXECUTE_CHECKS_IN_BACKGROUND ?= false
-USE_JAEGER_QUERY_ENDPOINT ?= true
 
 INCIDENT_NUMBER ?= 1
 NUMBER_OF_RUNS = 1
@@ -26,15 +25,9 @@ help: ## Display this help.
 
 .PHONY: deploy_observability_stack
 deploy_observability_stack: ## Deploys the observability tools to cluster
-ifeq ($(USE_JAEGER_QUERY_ENDPOINT),false)
 	ansible-playbook -v base.yaml --tags "install_tools" \
-		--extra-vars "domain=sre" \
-		--extra-vars "enable_jaeger_query_endpoint=false"
-else
-	ansible-playbook -v base.yaml --tags "install_tools" \
-		--extra-vars "domain=sre" \
-		--extra-vars "enable_jaeger_query_endpoint=true"
-endif
+		--extra-vars "domain=sre"
+
 
 .PHONY: undeploy_observability_stack
 undeploy_observability_stack: ## Undeploys observability tools to cluster
@@ -121,7 +114,7 @@ endif
 .PHONY: deploy_scenario_application
 ifeq ($(IS_HOTEL_RESERVATION_SCENARIO),true)
 deploy_scenario_application: deploy_hotel_reservation
-else 
+else
 deploy_scenario_application: deploy_astronomy_shop
 endif
 
@@ -201,7 +194,7 @@ fetch_alerts:
 	ansible-playbook -v base.yaml --tags "fetch_alerts" \
 		--extra-vars "incident_number=$(INCIDENT_NUMBER)" \
 		--extra-vars "sample_application=$(SAMPLE_APPLICATION)" \
-		> /tmp/fetch.out 2>&1 & 
+		> /tmp/fetch.out 2>&1 &
 
 .PHONY: e2e_awx_init_stage_one
 e2e_awx_init_stage_one: ## Given an incident number, run_uuid intitialize the scenario run leveraging an AWX node

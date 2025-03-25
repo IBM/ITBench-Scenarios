@@ -1,72 +1,43 @@
----    
-- name: Record Deployment time
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    definition:
-      kind: ConfigMap
-      apiVersion: v1
-      metadata:
-        name: bundle-alert-timestamps
-        namespace: "{{ otel_astronomy_app_namespace_project_name }}"
-      data:
-        deployment_time: "{{ now(utc=True, fmt='%Y-%m-%dT%H:%M:%SZ') }}"
-  tags:
-    - install_sample_applications
-  when:
-    - sample_application == "otel_astronomy_shop"
+---
+- name: Set deployment time
+  ansible.builtin.set_fact:
+    deployment_timestamp: "{{ now(utc=True, fmt='%Y-%m-%dT%H:%M:%SZ') }}"
+
+- name: Create application namespace map
+  ansible.builtin.set_fact:
+    namespaces:
+      otel_astronomy_shop: "{{ otel_astronomy_app_namespace_project_name }}"
+      dsb_hotel_reservation: "{{ deathstarbench_hotelreservation_app_namespace_project_name }}"
+      elasticsearch: "{{ elasticsearch_app_namespace_project_name }}"
 
 - name: Record Deployment time
   kubernetes.core.k8s:
     kubeconfig: "{{ kubeconfig }}"
-    definition:
-      kind: ConfigMap
-      apiVersion: v1
-      metadata:
-        name: bundle-alert-timestamps
-        namespace: "{{ deathstarbench_hotelreservation_app_namespace_project_name }}"
+    name: bundle-alert-timestamps
+    namespace: "{{ namespaces[ {{ item }} ] }}"
+    kind: ConfigMap
+    apiVersion: v1
+    resource_definition:
       data:
-        deployment_time: "{{ now(utc=True, fmt='%Y-%m-%dT%H:%M:%SZ') }}"
-  tags:
-    - install_sample_applications
-  when:
-    - sample_application == "dsb_hotel_reservation"
-
-- name: Record Deployment time
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    definition:
-      kind: ConfigMap
-      apiVersion: v1
-      metadata:
-        name: bundle-alert-timestamps
-        namespace: "{{ elasticsearch_app_namespace_project_name }}"
-      data:
-        deployment_time: "{{ now(utc=True, fmt='%Y-%m-%dT%H:%M:%SZ') }}"
-  tags:
-    - install_sample_applications
-  when:
-    - sample_application == "elasticsearch_incident"
+        deployment_time: "{{ deployment_timestamp }}"
+  loop: "{{ sample_applications }}"
 
 - name: Create deployment record
-  set_fact:
+  ansible.builtin.set_fact:
     assertion_json:
       status:
         conditions:
           - type: Deployed
             status: True
-            lastTransitionTime: "{{ now(utc=True, fmt='%Y-%m-%dT%H:%M:%SZ') }}"
-  tags:
-    - install_sample_applications
+            lastTransitionTime: "{{ deployment_timestamp }}"
   when:
     - sre_bench_runner
 
 - name: Create a JSON with application deployment details
-  copy:
+  ansible.builtin.copy:
     content: "{{ assertion_json | to_json | indent(2) }}"
     dest: "/tmp/assertion.json"
     mode: "0644"
-  tags:
-    - install_sample_applications
   when:
     - sre_bench_runner
 
@@ -77,8 +48,8 @@
     object: "/{{ sre_agent_name__version_number }}/{{run_uuid}}/{{scenario_number}}/{{run_number}}/assertion.json"
     src: "/tmp/assertion.json"
     mode: put
-  tags:
-    - install_sample_applications
   when:
     - sre_bench_runner
-    - run_uuid is defined and scenario_number is defined and run_number is defined
+    - run_uuid is defined
+    - scenario_number is defined
+    - run_number is defined

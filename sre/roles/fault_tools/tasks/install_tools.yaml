@@ -1,6 +1,6 @@
 ---
 - name: Install Chaos Mesh
   ansible.builtin.import_tasks:
-    file: chaos_mesh_install.yaml
+    file: install_chaos_mesh.yaml
   when:
     - "{{ tools | intersect(['chaos-mesh']) | length == 1 }}"

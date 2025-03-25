@@ -3,10 +3,10 @@
   ansible.builtin.import_tasks:
     file: install_tools.yaml
   tags:
-    - tool_installation
+    - install_tools
 
 - name: Uninstall fault tools
   ansible.builtin.import_tasks:
     file: uninstall_tools.yaml
   tags:
-    - tool_removal
+    - uninstall_tools

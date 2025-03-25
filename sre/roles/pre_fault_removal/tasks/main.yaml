@@ -1,4 +1,13 @@
 ---
-- import_tasks: record_topology_information.yaml
+- name: Record topology information
+  ansible.builtin.include_role:
+    name: common
+    apply:
+      tags:
+        - pre_fault_removal
+      vars:
+        file_prefix: end
+    tasks_from: record_topology_information.yaml
+
 - import_tasks: remove_topology_mapper.yaml
 - import_tasks: pause_for_alert_recording_post_agent_run.yaml

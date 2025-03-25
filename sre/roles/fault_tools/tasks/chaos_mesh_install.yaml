@@ -1,0 +1,30 @@
+---
+- name: Add Helm chart repo for Chaos Mesh
+  kubernetes.core.helm_repository:
+    name: chaos-mesh
+    kubeconfig: "{{ kubeconfig }}"
+    repo_url: "https://charts.chaos-mesh.org"
+
+- name: Update Helm repo
+  kubernetes.core.helm:
+    name: dummy
+    kubeconfig: "{{ kubeconfig }}"
+    state: absent
+    release_namespace: "{{ chaos_mesh_namespace_project_name }}"
+    update_repo_cache: true
+
+- name: Deploy Chaos Mesh
+  kubernetes.core.helm:
+    name: "{{ chaos_mesh_installation_name }}"
+    kubeconfig_path: "{{ kubeconfig }}"
+    chart_ref: chaos-mesh/chaos-mesh
+    chart_version: "{{ chaos_mesh_chart_version }}"
+    release_namespace: "{{ chaos_mesh_namespace_project_name }}"
+    release_state: present
+    create_namespace: true
+    wait: true
+    timeout: 10m0s
+    values:
+      chaosDaemon:
+        runtime: containerd
+        socketPath: /run/containerd/containerd.sock

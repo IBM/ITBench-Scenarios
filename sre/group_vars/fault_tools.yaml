@@ -1,0 +1,4 @@
+---
+chaos_mesh_installation_name: chaos-mesh
+chaos_mesh_namespace_project_name: chaos-mesh
+chaos_mesh_chart_version: 2.7.0

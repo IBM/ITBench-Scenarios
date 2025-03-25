@@ -1,0 +1,10 @@
+---
+main:
+  options:
+    spec:
+      choices:
+        - chaos-mesh
+      description: A list of tool to be installed
+      elements: str
+      required: true
+      type: list

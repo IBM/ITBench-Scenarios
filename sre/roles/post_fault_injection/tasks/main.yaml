@@ -1,5 +1,11 @@
 ---
-- import_tasks: set_up_topology_mapper.yaml
+- name: Install topology mapper
+  ansible.builtin.include_role:
+    name: observability_tools
+    apply:
+      tags:
+        - post_fault_injection
+    tasks_from: install_topology_mapper.yaml
 
 - name: Record topology information
   ansible.builtin.include_role:

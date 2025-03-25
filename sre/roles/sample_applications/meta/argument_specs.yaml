@@ -1,0 +1,12 @@
+---
+main:
+  options:
+    sample_applications:
+      choices:
+        - otel_astronomy_shop
+        - dsb_hotel_reservation
+        - elasticsearch
+      description: A list of applications to be installed
+      elements: str
+      required: true
+      type: list

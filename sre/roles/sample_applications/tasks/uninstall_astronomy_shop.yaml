@@ -1,5 +1,5 @@
 ---
-- name: Uninstall / remove OpenTelemetry's Astronomy Shop Demo
+- name: Uninstall OpenTelemetry's Astronomy Shop Demo
   kubernetes.core.helm:
     name: "{{ otel_astronomy_app_installation_name }}"
     kubeconfig_path: "{{ kubeconfig }}"

@@ -1,7 +1,7 @@
 ---
 main:
   options:
-    spec:
+    tools:
       choices:
         - chaos-mesh
       description: A list of tool to be installed

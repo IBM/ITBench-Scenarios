@@ -9,5 +9,18 @@
         file_prefix: end
     tasks_from: record_topology_information.yaml
 
-- import_tasks: remove_topology_mapper.yaml
-- import_tasks: pause_for_alert_recording_post_agent_run.yaml
+- name: Uninstall topology mapper
+  ansible.builtin.include_role:
+    name: observability_tools
+    apply:
+      tags:
+        - pre_fault_removal
+    tasks_from: uninstall_topology_mapper.yaml
+
+- name: Pause for 600 seconds pre-fault removal for alert recording
+  ansible.builtin.pause:
+    seconds: 600
+  tags:
+    - pre_fault_removal
+  when:
+    - not sre_bench_runner

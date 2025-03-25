@@ -1,4 +1,5 @@
-- name: Deploy Saurabh's Kubernetes topology mapper
+---
+- name: Deploy Kubernetes Topology Mapper
   kubernetes.core.helm:
     name: "{{ topology_mapper_installation_name }}"
     kubeconfig_path: "{{ kubeconfig }}"
@@ -7,11 +8,4 @@
     release_namespace: "{{ topology_mapper_namespace_project_name }}"
     state: present
     wait: true
-  tags:
-    - post_fault_injection
-
-- name: Pause for 5 minutes for the topology to be available
-  ansible.builtin.pause:
-    minutes: 5
-  tags:
-    - post_fault_injection
+    timeout: 10m0s

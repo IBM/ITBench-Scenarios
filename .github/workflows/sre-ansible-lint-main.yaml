@@ -1,0 +1,47 @@
+name: Lint SRE main playbooks
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - sre/cron_jobs/*
+      - sre/roles/*
+      - sre/base.yaml
+
+jobs:
+  lint-main:
+    name: Lint main playbook and roles
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run ansible-lint
+        uses: ansible/ansible-lint@v25
+        with:
+          args:
+            - base.yaml
+            - roles/book_keeping
+            - roles/bundle_info
+            - roles/bundle_status
+            - roles/documentation
+            - roles/e2e
+            - roles/evaluation
+            - roles/observability_tools
+            - roles/sample_applications
+          working_directory: sre
+          requirements_file: requirements.yaml
+  lint-cron-jobs:
+    name: Lint cron job playbooks
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run ansible-lint
+        uses: ansible/ansible-lint@v25
+        with:
+          args:
+            - cron_jobs/alert_recorder_deinit.yaml
+            - cron_jobs/alert_recorder_init.yaml
+            - cron_jobs/alert_recorder.yaml
+            - cron_jobs/trace_recorder.yaml
+          working_directory: sre
+          requirements_file: requirements.yaml

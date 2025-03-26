@@ -21,3 +21,7 @@ repos:
     - pre-push
   repo: https://github.com/commitizen-tools/commitizen
   rev: v4.6.0
+# - hooks:
+#   - id: ansible-lint
+#   repo: https://github.com/ansible/ansible-lint
+#   rev: v25.2.1

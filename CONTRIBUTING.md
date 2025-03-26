@@ -38,3 +38,5 @@ In order to sign and commit code using commitizen, please run the following comm
 ```shell
 cz commit -- --signoff
 ```
+
+[Ansible Lint](https://github.com/ansible/ansible-lint) is also provided through the Python dependencies.

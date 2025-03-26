@@ -9,7 +9,7 @@
       datasourceUid: prometheus
       model:
         editorMode: code
-        expr: avg by (container, namespace) (container_namespace_node:container_cpu_usage_seconds_per_requests:ratio_irate5m{container!="loadgenerator", namespace="otel-demo"}) * 100
+        expr: avg by (container, namespace) (container_namespace_node:container_cpu_usage_seconds_per_requests:ratio_irate5m{container!="load-generator", namespace="otel-demo"}) * 100
         instant: true
         intervalMs: 1000
         legendFormat: __auto
@@ -93,7 +93,7 @@
       datasourceUid: prometheus
       model:
         editorMode: code
-        expr: avg by (container, namespace) (container_namespace_node:container_memory_working_set_bytes_per_requests_bytes:ratio_avg5m{container!="loadgenerator", namespace="otel-demo"}) * 100
+        expr: avg by (container, namespace) (container_namespace_node:container_memory_working_set_bytes_per_requests_bytes:ratio_avg5m{container!="load-generator", namespace="otel-demo"}) * 100
         instant: true
         intervalMs: 1000
         legendFormat: __auto

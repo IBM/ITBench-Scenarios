@@ -1,0 +1,66 @@
+---
+incident:
+  metadata:
+    id: 27
+    author: "@divyapathak24"
+    name: Abort HTTP request fault
+    description: Aborts http requests to quoteservice using chaos mesh fault
+    complexity: Medium
+    platform: kubernetes
+    technologies:
+      - Go
+      - PHP
+      - Rust
+      - Tonic
+  deployments:
+    observability_tools: sre
+    sample_applications:
+      - otel_astronomy_shop
+  faults:
+    - source: chaos-mesh
+      spec:
+        chaos:
+          resource_definition.yaml: |-
+            apiVersion: chaos-mesh.org/v1alpha1
+            kind: HTTPChaos
+            metadata:
+              name: "{{ otel_astronomy_app_installation_name }}-quoteservice"
+            spec:
+              mode: all
+              selector:
+                namespaces:
+                  - "{{ otel_astronomy_app_namespace_project_name }}"
+                labelSelectors:
+                  "app.kubernetes.io/component": quoteservice
+              target: Request
+              port: 8080
+              method: POST
+              path: '*'
+              abort: true
+  alerts:
+    firing:
+      - id: Error_Rate_is_Above_Threshold_frontend
+      - id: Error_Rate_is_Above_Threshold_checkout
+      - id: Error_Rate_is_Above_Threshold_shipping
+  solution:
+    propagations:
+      - source: http-abort-otel-demo-quoteservice-1
+        target: quote-service-1
+        condition: http-abort-otel-demo-quoteservice httpchaos Aborts all POST request to quoteservice /getquote
+        effect: quote service Error Rate is Above Threshold
+      - source: quote-service-1
+        target: checkout-service-1
+        condition: quote service Error Rate is Above Threshold
+        effect: checkout service Error Rate is Above Threshold
+      - source: checkout-service-1
+        target: shipping-service-1
+        condition: checkout service Error Rate is Above Threshold
+        effect: shipping service Error Rate is Above Threshold
+      - source: shipping-service-1
+        target: frontend-service-1
+        condition: shipping service Error Rate is Above Threshold
+        effect: frontend service Error Rate is Above Threshold
+    recommendations:
+      - id: Delete_the_resource_httpchaos_on_quoteservice
+        actions:
+          - Delete the resource httpchaos on quoteservice

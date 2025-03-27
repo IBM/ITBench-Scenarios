@@ -3,13 +3,13 @@
   ansible.builtin.import_tasks:
     file: install_applications.yaml
   tags:
-    - install_sample_applications
+    - install_applications
 
 - name: Register application deployment time
   ansible.builtin.import_tasks:
     file: register_deployment_time.yaml
   tags:
-    - install_sample_applications
+    - install_applications
 
 - name: Record failed deployment
   ansible.builtin.import_tasks:
@@ -23,4 +23,4 @@
   ansible.builtin.import_tasks:
     file: uninstall_applications.yaml
   tags:
-    - uninstall_sample_applications
+    - uninstall_applications

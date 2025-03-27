@@ -1,0 +1,66 @@
+---
+- name: Install Observability Tools
+  ansible.builtin.include_role:
+    name: observability_tools
+    apply:
+      vars:
+        domain: "{{ observability_tools }}"
+  tags:
+    - install_observability_tools
+
+- name: Install Application
+  ansible.builtin.include_role:
+    name: sample_applications
+    apply:
+      vars:
+        sample_applications: "{{ sample_applications }}"
+  tags:
+    - install_sample_applications
+
+- name: Install Fault Tools
+  ansible.builtin.include_role:
+    name: fault_tools
+    apply:
+      vars:
+        tools: "{{ fault_tools }}"
+  tags:
+    - fault_injection
+
+# - name: Execute Pre Fault Injection Tasks
+#   tags:
+#     - fault_injection
+
+- name: Inject Fault
+  ansible.builtin.include_role:
+    name: faults
+    apply:
+      tags:
+        - fault_injection
+      vars:
+        source: "{{ item.source }}"
+        spec: "{{ item.spec }}"
+  loop: "{{ faults }}"
+  tags:
+    - fault_injection
+
+- name: Install Topology Manager
+  ansible.builtin.include_role:
+    name: observability_tools
+    apply:
+      tags:
+        - install_tools
+    tasks_from: install_topology_mapper.yaml
+  tags:
+    - fault_injection
+
+- name: Record topology information
+  ansible.builtin.include_role:
+    name: common
+    apply:
+      tags:
+        - fault_injection
+      vars:
+        file_prefix: start
+    tasks_from: record_topology_information.yaml
+  tags:
+    - fault_injection

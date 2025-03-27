@@ -3,16 +3,16 @@
   ansible.builtin.import_tasks:
     file: install_astronomy_shop.yaml
   when:
-    - "{{ sample_applications | intersect(['otel_astronomy_shop']) | length == 1 }}"
+    - sample_applications | intersect(['otel_astronomy_shop']) | length == 1
 
 - name: Install Hotel Reservation
   ansible.builtin.import_tasks:
     file: install_deathstarbench_hotel_reservation.yaml
   when:
-    - "{{ sample_applications | intersect(['dsb_hotel_reservation']) | length == 1 }}"
+    - sample_applications | intersect(['dsb_hotel_reservation']) | length == 1
 
 - name: Install Elasticsearch
   ansible.builtin.import_tasks:
     file: install_elasticsearch.yaml
   when:
-    - "{{ sample_applications | intersect(['elasticsearch']) | length == 1 }}"
+    - sample_applications | intersect(['elasticsearch']) | length == 1

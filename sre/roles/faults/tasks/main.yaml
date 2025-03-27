@@ -1,0 +1,21 @@
+---
+- name: Executing Chaos Mesh fault tasks
+  ansible.builtin.include_tasks:
+    file: chaos_mesh_fault.yaml
+    apply:
+      vars:
+        k8s_resource_definition: "{{ spec.chaos['resource_definition.yaml'] }}"
+  when:
+    - source == "chaos-mesh"
+    - spec.chaos is defined
+
+- name: Executing Custom Unsupported Image tasks
+  ansible.builtin.include_tasks:
+    file: custom_unsupport_image.yaml
+    apply:
+      vars:
+        deployment: "{{ spec.custom.target.deployment }}"
+  when:
+    - source == "custom"
+    - spec.custom is defined
+    - spec.custom.name == "unsupported-image"

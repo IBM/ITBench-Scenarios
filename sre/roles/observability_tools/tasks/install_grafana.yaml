@@ -3,34 +3,51 @@
   ansible.builtin.set_fact:
     datasources: "{{ lookup('ansible.builtin.template', 'templates/grafana_datasources.j2') | from_yaml }}"
 
-- name: Create dashboard processing variables
+- name: Create Astronomy Shop dashboard map
   ansible.builtin.set_fact:
-    dashboard_file_names:
-      - demo-dashboard
-      - opentelemetry-collector
-      - opentelemetry-collector-data-flow
-      - spanmetrics-dashboard
-    dashboard_uid_replacements:
-      - replace: webstore-metrics
-        with: prometheus
-      - replace: webstore-traces
-        with: jaeger
-      - replace: P9744FCCEAAFBD98F
-        with: opensearch
+    astronomy_shop_dashboards: {}
 
-- name: Download OpenTelemtry Demo dashboards
-  ansible.builtin.get_url:
-    url: https://raw.githubusercontent.com/open-telemetry/opentelemetry-helm-charts/refs/tags/opentelemetry-demo-{{ otel_astronomy_app_chart_version }}/charts/opentelemetry-demo/grafana-dashboards/{{ item }}.json
-    dest: /tmp/{{ item }}.json
-    mode: '0600'
-  loop: "{{ dashboard_file_names }}"
+- name: Remove OpenTelemetry Astronomy Shop tar file
+  ansible.builtin.file:
+    path: /tmp/opentelemetry-demo-{{ otel_astronomy_app_chart_version }}.tgz
+    state: absent
 
-- name: Replace dashboards' datasource uid
-  ansible.builtin.replace:
-    path:  /tmp/{{ item[0] }}.json
-    regexp: "{{ item[1].replace }}"
-    replace: "{{ item[1].with }}"
-  loop: "{{ dashboard_file_names | product(dashboard_uid_replacements) | list }}"
+- name: Remove OpenTelemetry Astronomy Shop files
+  ansible.builtin.file:
+    path: /tmp/opentelemetry-demo
+    state: absent
+
+- name: Retrieve OpenTelemetry Astronomy Shop dashboards
+  kubernetes.core.helm_pull:
+    chart_ref: opentelemetry-demo
+    chart_version: "{{ otel_astronomy_app_chart_version }}"
+    repo_url: https://open-telemetry.github.io/opentelemetry-helm-charts
+    untar_chart: yes
+    destination: /tmp
+
+- name: Find all Grafana dashboard files
+  ansible.builtin.find:
+    path: /tmp/opentelemetry-demo/grafana-dashboards
+    patterns: "*.json"
+  register: grafana_dashboards
+
+- name: Update Astronomy Shop dashboard map with modified Grafana dashboards
+  ansible.builtin.set_fact:
+    astronomy_shop_dashboards: |
+      {{
+          astronomy_shop_dashboards |
+          combine({
+              item | basename | replace("-", "_") | splitext | first: {
+                "json": lookup('ansible.builtin.file', item) |
+                        replace("webstore-metrics", "prometheus") |
+                        replace("webstore-traces", "jaeger") |
+                        replace("P9744FCCEAAFBD98F", "opensearch") |
+                        from_json |
+                        to_json
+              }
+          })
+      }}
+  loop: "{{ grafana_dashboards | community.general.json_query('files[*].path') }}"
 
 - name: Create alert rules processing variables
   ansible.builtin.set_fact:
@@ -137,15 +154,7 @@
                 path: /var/lib/grafana/dashboards/astronomy-shop
                 foldersFromFilesStructure: false
       dashboards:
-        astronomy-shop:
-          demo:
-            json: "{{ lookup('ansible.builtin.file','/tmp/demo-dashboard.json') | from_json | to_json }}"
-          opentelemetry_collector:
-            json: "{{ lookup('ansible.builtin.file','/tmp/opentelemetry-collector.json') | from_json | to_json }}"
-          opentelemetry_collector_data_flow:
-            json: "{{ lookup('ansible.builtin.file','/tmp/opentelemetry-collector-data-flow.json') | from_json | to_json }}"
-          spanmetrics:
-            json: "{{ lookup('ansible.builtin.file','/tmp/spanmetrics-dashboard.json') | from_json | to_json }}"
+        astronomy-shop: "{{ astronomy_shop_dashboards }}"
       datasources:
         datasources.yaml:
           apiVersion: 1

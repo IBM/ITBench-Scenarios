@@ -1,0 +1,26 @@
+---
+- name: Injecting Unsupported Image Fault
+  kubernetes.core.k8s_json_patch:
+    api_version: apps/v1
+    kind: Deployment
+    kubeconfig: "{{ kubeconfig }}"
+    name: "{{ deployment.name }}"
+    namespace: "{{ deployment.namespace }}"
+    patch:
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: quay.io/felix_george/checkout_service:latest
+    wait: true
+  tags:
+    - fault_injection
+
+- name: Removing Unsupported Image Fault
+  kubernetes.core.k8s_rollback:
+    api_version: apps/v1
+    kind: Deployment
+    kubeconfig: "{{ kubeconfig }}"
+    name: "{{ deployment.name }}"
+    namespace: "{{ deployment.namespace }}"
+    wait: true
+  tags:
+    - fault_removal

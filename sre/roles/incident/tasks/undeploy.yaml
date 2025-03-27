@@ -1,0 +1,66 @@
+---
+- name: Record topology information
+  ansible.builtin.include_role:
+    name: common
+    apply:
+      tags:
+        - fault_removal
+      vars:
+        file_prefix: end
+    tasks_from: record_topology_information.yaml
+  tags:
+    - fault_removal
+
+- name: Uninstall Topology Manager
+  ansible.builtin.include_role:
+    name: observability_tools
+    apply:
+      tags:
+        - unintall_tools
+    tasks_from: uninstall_topology_mapper.yaml
+  tags:
+    - fault_removal
+
+# - name: Execute Pre Fault Removal Tasks
+#   tags:
+#     - fault_removal
+
+- name: Remove Fault
+  ansible.builtin.include_role:
+    name: faults
+    apply:
+      tags:
+        - fault_removal
+      vars:
+        source: "{{ item.source }}"
+        spec: "{{ item.spec }}"
+  loop: "{{ faults }}"
+  tags:
+    - fault_removal
+
+- name: Uninstall Fault Tools
+  ansible.builtin.include_role:
+    name: fault_tools
+    apply:
+      vars:
+        tools: "{{ fault_tools }}"
+  tags:
+    - fault_removal
+
+- name: Uninstall Application
+  ansible.builtin.include_role:
+    name: sample_applications
+    apply:
+      vars:
+        sample_applications: "{{ sample_applications }}"
+  tags:
+    - uninstall_sample_applications
+
+- name: Uninstall Observability Tools
+  ansible.builtin.include_role:
+    name: observability_tools
+    apply:
+      vars:
+        domain: "{{ observability_tools }}"
+  tags:
+    - uninstall_observability_tools

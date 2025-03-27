@@ -1,0 +1,7 @@
+---
+main:
+  options:
+    incident_number:
+      description: The int representing the identification number of an incident
+      type: int
+      required: true

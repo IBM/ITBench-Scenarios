@@ -2,16 +2,16 @@
   ansible.builtin.import_tasks:
     file: uninstall_astronomy_shop.yaml
   when:
-    - "{{ sample_applications | intersect(['otel_astronomy_shop']) | length == 1 }}"
+    - sample_applications | intersect(['otel_astronomy_shop']) | length == 1
 
 - name: Uninstall Hotel Reservation
   ansible.builtin.import_tasks:
     file: uninstall_deathstarbench_hotel_reservation.yaml
   when:
-    - "{{ sample_applications | intersect(['dsb_hotel_reservation']) | length == 1 }}"
+    - sample_applications | intersect(['dsb_hotel_reservation']) | length == 1
 
 - name: Uninstall Elasticsearch
   ansible.builtin.import_tasks:
     file: uninstall_elasticsearch.yaml
   when:
-    - "{{ sample_applications | intersect(['elasticsearch']) | length == 1 }}"
+    - sample_applications | intersect(['elasticsearch']) | length == 1

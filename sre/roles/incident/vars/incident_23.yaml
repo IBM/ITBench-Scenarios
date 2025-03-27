@@ -1,0 +1,40 @@
+---
+incident:
+  metadata:
+    id: 23
+    author: "@fali007"
+    name: checkoutservice Corrupt Image
+    description: modify the checkoutservice image to unsupported image (arm64) instead of amd64 image
+    complexity: Low
+    platform: kubernetes
+    technologies:
+      - Node.js
+  deployments:
+    observability_tools: sre
+    sample_applications:
+      - otel_astronomy_shop
+  faults:
+    - source: custom
+      custom:
+        name: unsupported-image
+        target:
+          deployment:
+            name: "{{ otel_astronomy_app_installation_name }}-checkoutservice"
+            namespace: "{{ otel_astronomy_app_namespace_name }}"
+  alerts:
+    firing:
+      - id: Error_Rate_is_Above_Threshold_frontend
+  solution:
+    propagations:
+      - source: checkout-pod-1
+        target: checkout-service-1
+        condition: checkout pod is in ImagePullBackOff error
+        effect: checkoutservice Error Rate is Above Threshold
+      - source: checkout-service-1
+        target: frontend-service-1
+        condition: checkoutservice Error Rate is Above Threshold
+        effect: frontend service Error Rate is Above Threshold
+    recommendations:
+      - id: change_the_image_of_checkout_to_correct_image_for_amd64_system
+        actions:
+          - change the image of checkout to correct image for amd64 system

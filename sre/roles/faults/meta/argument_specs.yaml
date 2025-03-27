@@ -1,0 +1,59 @@
+---
+main:
+  options:
+    source:
+      choices:
+        - chaos-mesh
+        - custom
+      type: str
+    spec:
+      required: true
+      type: dict
+      options:
+        chaos:
+          required: false
+          type: dict
+          options:
+            resource_definition.yaml:
+              required: true
+              type: str
+        custom:
+          required: false
+          type: dict
+          options:
+            name:
+              choices:
+                - unsupported-image
+              required: true
+              type: str
+            target:
+              required: true
+              type: dict
+              options:
+                deployment:
+                  required: false
+                  type: dict
+                  options:
+                    name:
+                      required: true
+                      type: str
+                    namespace:
+                      required: true
+                      type: str
+chaos_mesh_fault:
+  options:
+    k8s_resource_definition:
+      required: true
+      type: str
+unsupported_image:
+  options:
+    deployment:
+      required: true
+      type: dict
+      options:
+        name:
+          required: true
+          type: str
+        namespace:
+          required: true
+          type: str

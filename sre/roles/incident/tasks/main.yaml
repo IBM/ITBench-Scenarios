@@ -1,0 +1,30 @@
+---
+- name: Load incident variables
+  ansible.builtin.include_vars:
+    file: incident_{{ incident_number }}.yaml
+    name: incident_spec
+  tags:
+    - always
+  when:
+    - incident_number is defined
+    - incident_spec is undefined
+
+- name: Generate variables from incident spec
+  ansible.builtin.set_fact:
+    faults: "{{ incident_spec.incident.faults }}"
+    fault_tools: "{{ incident_spec.incident | community.general.json_query('faults[*].source') | unique }}"
+    observability_tools: "{{ incident_spec.incident.deployments.observability_tools }}"
+    # observability_tools: "{{ incident_spec.incident.deployments.observability_tools | unique }}"
+    sample_applications: "{{ incident_spec.incident.deployments.sample_applications | unique }}"
+  tags:
+    - always
+  when:
+    - incident_spec is defined
+
+- name: Deploy incident
+  ansible.builtin.import_tasks:
+    file: deploy.yaml
+
+- name: Undeploy incident
+  ansible.builtin.import_tasks:
+    file: undeploy.yaml

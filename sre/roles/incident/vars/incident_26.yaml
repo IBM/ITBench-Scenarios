@@ -1,0 +1,66 @@
+---
+incident:
+  metadata:
+    id: 26
+    author: "@fali007"
+    name: HTTP request tamper fault
+    description: Modify HTTP POST request from checkoutservice to emailservice
+    complexity: Medium
+    platform: kubernetes
+    technologies:
+      - Go
+      - Ruby
+  deployments:
+    observability_tools: sre
+    sample_applications:
+      - otel_astronomy_shop
+  faults:
+    - source: chaos-mesh
+      spec:
+        chaos:
+          resource_definition.yaml: |-
+            apiVersion: chaos-mesh.org/v1alpha1
+            kind: HTTPChaos
+            metadata:
+              name: "{{ otel_astronomy_app_installation_name }}-emailservice"
+            spec:
+              mode: all
+              target: Request
+              port: 8080
+              method: POST
+              path: '*'
+              selector:
+                namespaces:
+                  - "{{ otel_astronomy_app_namespace_project_name }}"
+                labelSelectors:
+                  "app.kubernetes.io/name": "{{ otel_astronomy_app_installation_name }}-emailservice"
+              patch:
+                body:
+                  type: JSON
+                  value: '{"email": "12345", "order": "error body"}'
+  alerts:
+    firing:
+      - id: Error_Rate_is_Above_Threshold_checkout
+      - id: Error_Rate_is_Above_Threshold_email
+  solution:
+    propagations:
+      - source: tamper-body-otel-demo-emailservice-1
+        target: send_order_confirmation-endpoint-1
+        condition: tamper-body-otel-demo-emailservice httpchaos tamper body of /api/send_order_confirmation
+          emailservice set http-request-failure on emailservice
+        effect: send_order_confirmation endpoint payload of /api/send_order_confirmation
+          POST request is corrupted
+      - source: send_order_confirmation-endpoint-1
+        target: email-service-1
+        condition: send_order_confirmation endpoint payload of /api/send_order_confirmation
+          POST request is corrupted
+        effect: email service Error Rate is Above Threshold
+      - source: email-service-1
+        target: checkout-service-1
+        condition: send_order_confirmation endpoint payload of /api/send_order_confirmation
+          POST request is corrupted
+        effect: checkoutservice Error Rate is Above Threshold
+    recommendations:
+      - id: Delete_the_resource_httpchaos_tamper-body-otel-demo-26-emailservice
+        actions:
+          - Delete the resource httpchaos tamper-body-otel-demo-26-emailservice

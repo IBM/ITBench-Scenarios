@@ -3,4 +3,4 @@
   ansible.builtin.import_tasks:
     file: install_chaos_mesh.yaml
   when:
-    - "{{ tools | intersect(['chaos-mesh']) | length == 1 }}"
+    - tools | intersect(['chaos-mesh']) | length == 1

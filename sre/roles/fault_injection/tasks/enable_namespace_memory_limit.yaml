@@ -1,5 +1,6 @@
+---
 - name: Document this fault injection
-  set_fact:
+  ansible.builtin.set_fact:
     injection_docs: "{{ injection_docs | default([]) + [curr_docs] }}"
   vars:
     curr_docs:
@@ -24,23 +25,23 @@
     namespace: "{{ target_namespace_name }}"
     kubeconfig: "{{ kubeconfig }}"
   register: resource_quotas
-  tags: 
+  tags:
     - incident_102
   when:
     - is_namespace_memory_limit
     - is_fault_removal or is_fault_removal
 
 - name: Debug resource quotas
-  debug:
+  ansible.builtin.debug:
     msg: "Resource quotas found: {{ resource_quotas.resources }}"
-  tags: 
+  tags:
     - incident_102
   when:
     - is_namespace_memory_limit
     - is_fault_removal or is_fault_removal
 
 - name: Print target namespace name
-  debug:
+  ansible.builtin.debug:
     msg: "Target Namespace: {{ target_namespace_name }} Deployment: {{ target_deployment_name }}"
   tags: incident_102
   when:
@@ -82,9 +83,9 @@
     - is_namespace_memory_limit
     - item.spec.hard.memory is defined
     - is_fault_removal
-  tags: 
+  tags:
     - incident_102
- 
+
 - name: Fetch all ReplicaSets in the target namespace
   kubernetes.core.k8s_info:
     kind: ReplicaSet
@@ -97,7 +98,7 @@
     - is_fault_injection or is_fault_removal
 
 - name: Filter ReplicaSet matching the target deployment name
-  set_fact:
+  ansible.builtin.set_fact:
     rs_list: >-
       {{ (replicaset_list.resources | default([])) |
          selectattr('metadata.ownerReferences', 'defined') |
@@ -111,7 +112,7 @@
     - is_fault_injection or is_fault_removal
 
 - name: Debug filtered rs_list
-  debug:
+  ansible.builtin.debug:
     msg: "Filtered RS List (matching deployment '{{ target_deployment_name }}'): {{ rs_list | default([]) }}"
   tags: incident_102
   when:
@@ -119,7 +120,7 @@
     - is_fault_injection or is_fault_removal
 
 - name: Fail if no ReplicaSet matches the target deployment name
-  fail:
+  ansible.builtin.fail:
     msg: "No ReplicaSet found in namespace '{{ target_namespace_name }}' matching deployment '{{ target_deployment_name }}'."
   when:
     - (rs_list | default([])) | length == 0
@@ -129,7 +130,7 @@
     - incident_102
 
 - name: Set ReplicaSet name for the matched deployment
-  set_fact:
+  ansible.builtin.set_fact:
     rs_name: "{{ (rs_list[0]).metadata.name }}"
   tags: incident_102
   when:
@@ -138,7 +139,7 @@
     - rs_list | length > 0
 
 - name: Debug selected ReplicaSet
-  debug:
+  ansible.builtin.debug:
     msg: "ReplicaSet selected for deletion: {{ rs_name }}"
   tags: incident_102
   when:
@@ -163,7 +164,7 @@
     - rs_name is defined
 
 - name: Log deletion details
-  debug:
+  ansible.builtin.debug:
     msg: "Deleted ReplicaSet: {{ rs_name }} and its associated pods."
   tags: incident_102
   when:

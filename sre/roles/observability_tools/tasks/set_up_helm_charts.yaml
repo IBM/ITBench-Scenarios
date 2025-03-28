@@ -55,7 +55,7 @@
     kubeconfig_path: "{{ kubeconfig }}"
     repo_url: "https://kubernetes-sigs.github.io/metrics-server/"
   when:
-    - domain == "finops"   
+    - domain == "finops"
 
 - name: Add Helm chart repo for OpenCost
   kubernetes.core.helm_repository:

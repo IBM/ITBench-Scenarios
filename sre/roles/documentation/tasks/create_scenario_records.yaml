@@ -1,6 +1,6 @@
 ---
 - name: Create scenario list
-  set_fact:
+  ansible.builtin.set_fact:
     scenario_list: "{{ scenario_list | default([]) + [curr_scenario] }}"
   loop: "{{ all_incidents }}"
   loop_control:
@@ -47,20 +47,20 @@
     - documentation
 
 - name: Get category list
-  set_fact:
+  ansible.builtin.set_fact:
     scenario_categories: "{{ scenario_list | map(attribute='scenario.category') | unique | sort | list }}"
   tags:
     - documentation
 
 - name: Write scenarios to JSON file
-  copy:
+  ansible.builtin.copy:
     dest: "scenarios.json"
     content: "{{ scenario_list | to_nice_json }}"
   tags:
     - documentation
 
 - name: Show categories
-  debug:
+  ansible.builtin.debug:
     var: scenario_categories
   tags:
     - documentation

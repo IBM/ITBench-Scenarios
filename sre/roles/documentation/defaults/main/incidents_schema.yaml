@@ -1,3 +1,4 @@
+---
 valid_documentation_schema:
   type: array
   items:
@@ -9,18 +10,18 @@ valid_documentation_schema:
         type: string
       "platform": # Mandatory
         type: string
-        enum: ['kubernetes']
+        enum: ["kubernetes"]
       "dsl_format": # Mandatory
         type: string
-        enum: ['groups']
+        enum: ["groups"]
       "description": # Mandatory
         type: string
       "application": # Mandatory
         type: string
-        enum: ['otel_astronomy_shop', 'deathstarbench_hotel_reservations', 'Other']
+        enum: ["otel_astronomy_shop", "deathstarbench_hotel_reservations", "Other"]
       "complexity": # Mandatory
         type: string
-        enum: [ "Low", "Medium", "High" ]
+        enum: ["Low", "Medium", "High"]
       "inject_fault_unused": # Mandatory
         type: boolean
       "agent_operation_timeout_sec": # Mandatory
@@ -29,17 +30,17 @@ valid_documentation_schema:
         type: integer
       "golden_signal_cause": # Optional
         type: string
-        enum: [ "saturation", "resource unavailability", "traffic" ]
+        enum: ["saturation", "resource unavailability", "traffic"]
       "golden_signal_effect": # Optional
         type: string
-        enum: [ "error", "latency, error" ]
+        enum: ["error", "latency, error"]
       "incidentPattern": # Optional
         type: string
       "technologies": # Optional
         type: array
         items:
           type: string
-          enum: [ "Go", "Java", "Node.js", "PHP", "Python", "Ruby", "Rust", "Tonic" ]
+          enum: ["Go", "Java", "Node.js", "PHP", "Python", "Ruby", "Rust", "Tonic"]
       "fault":
         type: array
         items:
@@ -52,8 +53,8 @@ valid_documentation_schema:
                   type: string
                 "kind": # Mandatory
                   type: string
-                  enum: [ "User", "Pod", "Service", "Deployment", "HorizontalPodAutoscaler", "Node", "ConfigMap", "Endpoint", "Process", "Other" ]
-                "group_id":  # Optional: Use this if the entity is listed in the "groups" block ("kind" must match)
+                  enum: ["User", "Pod", "Service", "Deployment", "HorizontalPodAutoscaler", "Node", "ConfigMap", "Endpoint", "Process", "Other"]
+                "group_id": # Optional: Use this if the entity is listed in the "groups" block ("kind" must match)
                   type: string
                 "changed": # Optional
                   type: object
@@ -68,17 +69,16 @@ valid_documentation_schema:
                   additionalProperties: false
                 "comment":
                   type: string
-              required: [ "name", "kind" ]
+              required: ["name", "kind"]
               additionalProperties: false
             "condition":
               type: string
             "category":
               type: string
-              enum: [ "Resource Saturation", "Resource Unavailable", "Configuration Setting", "Latency", "Change",
-                      "Other" ]
+              enum: ["Resource Saturation", "Resource Unavailable", "Configuration Setting", "Latency", "Change", "Other"]
             "fault_mechanism":
               type: string
-          required: [ "entity", "condition", "category", "fault_mechanism" ]
+          required: ["entity", "condition", "category", "fault_mechanism"]
           additionalProperties: false
       "alerts":
         type: array
@@ -91,7 +91,7 @@ valid_documentation_schema:
               type: string
             "group_id":
               type: string
-          required: [ "id", "text", "group_id" ]
+          required: ["id", "text", "group_id"]
           additionalProperties: false
       "groups":
         type: array
@@ -102,21 +102,65 @@ valid_documentation_schema:
               type: string
             "kind": # Mandatory
               type: string
-              enum: [ # Normal Kubernetes Kinds
-                      "APIService", "Alertmanager", "CSIDriver", "CSINode", "CiliumEndpoint", "CiliumIdentity",
-                      "CiliumNode", "ClusterRole", "ClusterRoleBinding", "ConfigMap", "ControllerRevision",
-                      "CustomResourceDefinition", "DaemonSet", "Deployment", "EndpointSlice", "Endpoints",
-                      "FlowSchema", "HorizontalPodAutoscaler", "Ingress", "IngressClass", "Job", "K8Cluster", "Lease",
-                      "MutatingWebhookConfiguration", "Namespace", "NetworkPolicy", "Node", "PersistentVolume",
-                      "PersistentVolumeClaim", "Pod", "PodDisruptionBudget", "Port", "PriorityClass",
-                      "PriorityLevelConfiguration", "Prometheus", "PrometheusRule", "ReplicaSet", "Role",
-                      "RoleBinding", "Secret", "Service", "ServiceAccount", "ServiceMonitor", "ServiceOperation",
-                      "StatefulSet", "StorageClass", "ValidatingWebhookConfiguration", "VolumeAttachment",
-                      # Connected to chaos monkey
-                      "NetworkChaos", "StressChaos", "HttpChaos", "JVMChaos", "PodChaos",
-                      # External Options
-                      "User", "Other"
-                      ]
+              enum:
+                # Normal Kubernetes Kinds
+                - "APIService"
+                - "Alertmanager"
+                - "CSIDriver"
+                - "CSINode"
+                - "CiliumEndpoint"
+                - "CiliumIdentity"
+                - "CiliumNode"
+                - "ClusterRole"
+                - "ClusterRoleBinding"
+                - "ConfigMap"
+                - "ControllerRevision"
+                - "CustomResourceDefinition"
+                - "DaemonSet"
+                - "Deployment"
+                - "EndpointSlice"
+                - "Endpoints"
+                - "FlowSchema"
+                - "HorizontalPodAutoscaler"
+                - "Ingress"
+                - "IngressClass"
+                - "Job"
+                - "K8Cluster"
+                - "Lease"
+                - "MutatingWebhookConfiguration"
+                - "Namespace"
+                - "NetworkPolicy"
+                - "Node"
+                - "PersistentVolume"
+                - "PersistentVolumeClaim"
+                - "Pod"
+                - "PodDisruptionBudget"
+                - "Port"
+                - "PriorityClass"
+                - "PriorityLevelConfiguration"
+                - "Prometheus"
+                - "PrometheusRule"
+                - "ReplicaSet"
+                - "Role"
+                - "RoleBinding"
+                - "Secret"
+                - "Service"
+                - "ServiceAccount"
+                - "ServiceMonitor"
+                - "ServiceOperation"
+                - "StatefulSet"
+                - "StorageClass"
+                - "ValidatingWebhookConfiguration"
+                - "VolumeAttachment"
+                # Connected to chaos monkey
+                - "NetworkChaos"
+                - "StressChaos"
+                - "HttpChaos"
+                - "JVMChaos"
+                - "PodChaos"
+                # External Options
+                - "User"
+                - "Other"
             "namespace": # Mandatory
               type: string
             "name": # Either "name" or "filter" is required
@@ -127,7 +171,7 @@ valid_documentation_schema:
                 type: string
             "root_cause":
               type: boolean
-          required: [ "id", "kind", "namespace" ]
+          required: ["id", "kind", "namespace"]
           additionalProperties: false
       "propagations":
         type: array
@@ -137,7 +181,7 @@ valid_documentation_schema:
             "source":
               "type": string
             "target":
-              "type": [ "string", "null" ]
+              "type": ["string", "null"]
             "condition":
               "type": string
             "effect":
@@ -153,7 +197,7 @@ valid_documentation_schema:
               type: string
             "value":
               type: string
-          required: [ "type", "value"]
+          required: ["type", "value"]
           additionalProperties: false
       "recommended_actions":
         type: array
@@ -180,5 +224,16 @@ valid_documentation_schema:
           items:
             type: string
     additionalProperties: false
-    required: ["id", "name", "platform", "dsl_format", "description", "application", "complexity",
-               "inject_fault_unused", "agent_operation_timeout_sec", "bundle_ready_timeout_sec", "fault", "alerts"]
+    required:
+      - "id"
+      - "name"
+      - "platform"
+      - "dsl_format"
+      - "description"
+      - "application"
+      - "complexity"
+      - "inject_fault_unused"
+      - "agent_operation_timeout_sec"
+      - "bundle_ready_timeout_sec"
+      - "fault"
+      - "alerts"

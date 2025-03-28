@@ -1,6 +1,6 @@
 ---
 - name: Document this fault injection
-  set_fact:
+  ansible.builtin.set_fact:
     injection_docs: "{{ injection_docs | default([]) + [curr_docs] }}"
   vars:
     curr_docs:
@@ -18,7 +18,6 @@
   tags:
     - injection_docs
 
-
 - name: Get current deployment
   kubernetes.core.k8s:
     api_version: apps/v1
@@ -31,13 +30,13 @@
   when: is_jvm_return_chaos and is_fault_injection
 
 - name: Get environment variables
-  set_fact:
+  ansible.builtin.set_fact:
     current_env_vars: "{{ deployment_info.result.spec.template.spec.containers[0].env }}"
   tags: incident_29
   when: is_jvm_return_chaos and is_fault_injection
 
 - name: Update JAVA_TOOL_OPTIONS value
-  set_fact:
+  ansible.builtin.set_fact:
     updated_env_vars: >-
       {{
         current_env_vars
@@ -62,11 +61,10 @@
         template:
           spec:
             containers:
-              - name: "{{ deployment_info.result.spec.template.spec.containers[0].name }}" 
+              - name: "{{ deployment_info.result.spec.template.spec.containers[0].name }}"
                 env: "{{ updated_env_vars }}"
   tags: incident_29
   when: is_jvm_return_chaos and is_fault_injection
-
 
 - name: Inject JVM return chaos leveraging the Chaos framework
   kubernetes.core.k8s:
@@ -113,5 +111,3 @@
   register: fault_injection_status
   tags: chaos_mesh
   when: is_jvm_return_chaos and is_fault_removal
-
-

@@ -1,6 +1,6 @@
 ---
 - name: Document this fault injection
-  set_fact:
+  ansible.builtin.set_fact:
     injection_docs: "{{ injection_docs | default([]) + [curr_docs] }}"
   vars:
     curr_docs:
@@ -16,7 +16,7 @@
   tags:
     - injection_docs
 - name: Fetch the current deployment
-  k8s_info:
+  kubernetes.core.k8s_info:
     api_version: apps/v1
     kind: Deployment
     namespace: "{{ otel_astronomy_app_namespace_project_name }}"
@@ -27,7 +27,7 @@
   when: is_image_unsupported and is_injection
 
 - name: Print current deployment details (for debugging)
-  debug:
+  ansible.builtin.debug:
     var: deployment_info
   tags: incident_23
   when: is_image_unsupported and is_injection
@@ -45,8 +45,8 @@
         template:
           spec:
             containers:
-              - name: "{{ deployment_info.resources[0].spec.template.spec.containers[0].name }}"  # Specify the container to update
-                image: "quay.io/felix_george/checkout_service:latest"  # Use the new env variables
+              - name: "{{ deployment_info.resources[0].spec.template.spec.containers[0].name }}" # Specify the container to update
+                image: "quay.io/felix_george/checkout_service:latest" # Use the new env variables
   register: deployment_update_result
   tags: incident_23
   when: is_image_unsupported and is_injection

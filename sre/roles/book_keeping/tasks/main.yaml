@@ -1,11 +1,11 @@
 ---
 - name: Print prometheus namespace and application namespace
-  debug:
+  ansible.builtin.debug:
     msg: "Prometheus namespace : {{ prometheus_namespace_project_name }}, Application namespace : {{ otel_astronomy_app_namespace_project_name }}"
   tags:
     - book_keeping
 
-- name:  Tasks associated with leveraging ingress
+- name: Tasks associated with leveraging ingress
   ansible.builtin.include_tasks:
     file: leverage_ingress.yaml
     apply:
@@ -14,7 +14,7 @@
   tags:
     - book_keeping
 
-- name:  Tasks associated with leveraging port forwarding
+- name: Tasks associated with leveraging port forwarding
   ansible.builtin.include_tasks:
     file: leverage_port_forwarding.yaml
     apply:
@@ -24,7 +24,7 @@
     - book_keeping
 
 - name: Initialize an empty list for selected user details
-  set_fact:
+  ansible.builtin.set_fact:
     filtered_alerts: []
   when:
     - is_book_keeping
@@ -32,10 +32,10 @@
     - book_keeping
 
 - name: Call the alerts API
-  uri:
+  ansible.builtin.uri:
     url: "{{ grafana_url }}/api/prometheus/grafana/api/v1/alerts"
     method: GET
-    return_content: yes
+    return_content: true
     body_format: json
     headers:
       Content-Type: "application/json"
@@ -47,7 +47,7 @@
     - book_keeping
 
 - name: Parse JSON response and filter for alerts in state alerting
-  set_fact:
+  ansible.builtin.set_fact:
     json_data: "{{ api_response.json.data.alerts | selectattr('state', '==', 'Alerting') | list }}"
   tags:
     - book_keeping
@@ -61,7 +61,7 @@
     - book_keeping
 
 - name: Debug json_data
-  debug:
+  ansible.builtin.debug:
     var: json_data
   tags:
     - book_keeping
@@ -77,7 +77,8 @@
   amazon.aws.s3_object:
     endpoint_url: "{{ s3_endpoint_url }}"
     bucket: "{{ s3_bucket_name_for_results }}"
-    object: "/{{ sre_agent_name__version_number }}/{{run_uuid}}/{{scenario_number}}/{{run_number}}/alerts_in_alerting_state_{{now(utc=true,fmt='%Y-%m-%dT%H:%M:%S.%f')}}.txt"
+    object: "/{{ sre_agent_name__version_number }}/{{ run_uuid }}/{{ scenario_number }}/{{ run_number }}/alerts_in_alerting_state_{{ now(utc=true, fmt='%Y-%m-%dT%H:%M:%S.%f')
+      }}.txt"
     src: "{{ tempfile_for_alerts_in_alerting_state.path }}"
     mode: put
   tags:
@@ -85,8 +86,9 @@
   when: run_uuid is defined and scenario_number is defined and run_number is defined
 
 - name: Parse alerts to config
-  set_fact:
-    filtered_alerts: "{{ filtered_alerts + [{'service_name':item.labels.service_name if item.labels.service_name is defined else 'No service name', 'alert_name':item.labels.alertname, 'alert_active_time':item.activeAt, 'alert_status':item.state}] }}"
+  ansible.builtin.set_fact:
+    filtered_alerts: "{{ filtered_alerts + [{'service_name': item.labels.service_name if item.labels.service_name is defined else 'No service name', 'alert_name':
+      item.labels.alertname, 'alert_active_time': item.activeAt, 'alert_status': item.state}] }}"
   with_items: "{{ json_data }}"
   when:
     - is_book_keeping
@@ -109,7 +111,7 @@
 - name: Record alert manifestation time in ConfigMap
   vars:
     configmap_data:
-      current_alerts : "{{ filtered_alerts }}"
+      current_alerts: "{{ filtered_alerts }}"
   kubernetes.core.k8s:
     kubeconfig: "{{ kubeconfig }}"
     definition:
@@ -144,7 +146,7 @@
 - name: Record alert manifestation time in ConfigMap
   vars:
     configmap_data:
-      current_alerts : "{{ filtered_alerts }}"
+      current_alerts: "{{ filtered_alerts }}"
   kubernetes.core.k8s:
     kubeconfig: "{{ kubeconfig }}"
     definition:
@@ -179,7 +181,7 @@
 - name: Record alert manifestation time in ConfigMap
   vars:
     configmap_data:
-      current_alerts : "{{ filtered_alerts }}"
+      current_alerts: "{{ filtered_alerts }}"
   kubernetes.core.k8s:
     kubeconfig: "{{ kubeconfig }}"
     definition:

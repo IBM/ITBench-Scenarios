@@ -1,12 +1,12 @@
 ---
 - name: Get the Ingress URL of Grafana
-  ansible.builtin.shell: "KUBECONFIG={{ kubeconfig }} kubectl get ingress grafana -n {{ grafana_namespace_project_name }} -o json"
+  ansible.builtin.command: "KUBECONFIG={{ kubeconfig }} kubectl get ingress grafana -n {{ grafana_namespace_project_name }} -o json"
   register: grafana_ingress
   tags:
     - get_bundle_info
 
 - name: Construct the alerts API URI
-  set_fact:
+  ansible.builtin.set_fact:
     alerts_api_url: "http://{{ grafana_ingress.stdout | from_json | json_query('status.loadBalancer.ingress[0].hostname') }}/{{ grafana_namespace_project_name }}"
   tags:
     - get_bundle_info
@@ -15,13 +15,13 @@
   amazon.aws.s3_object:
     endpoint_url: "{{ s3_endpoint_url }}"
     bucket: "{{ s3_bucket_name_for_results }}"
-    object: "/{{ sre_agent_name__version_number }}/{{run_uuid}}/{{scenario_number}}/{{run_number}}/kubeconfig.j2"
+    object: "/{{ sre_agent_name__version_number }}/{{ run_uuid }}/{{ scenario_number }}/{{ run_number }}/kubeconfig.j2"
     dest: "/tmp/kubeconfig.j2"
     mode: get
   register: s3_get_result
-  retries: 3  # Number of retries
-  delay: 60   # Delay between retries in seconds (60 seconds = 1 minute)
-  until: s3_get_result is success  # Continue retrying until the task is successful
+  retries: 3 # Number of retries
+  delay: 60 # Delay between retries in seconds (60 seconds = 1 minute)
+  until: s3_get_result is success # Continue retrying until the task is successful
   tags:
     - get_bundle_info
   when:
@@ -29,14 +29,14 @@
     - run_uuid is defined and scenario_number is defined and run_number is defined
 
 - name: Store kubeconfig
-  command: cat /tmp/kubeconfig.j2
+  ansible.builtin.command: cat /tmp/kubeconfig.j2
   register: kubeconfig_output
   tags:
     - get_bundle_info
-    
+
 - name: Return grafana url
-  debug:
-    msg: > 
+  ansible.builtin.debug:
+    msg: >
       {{ {
           'grafana_url': (alerts_api_url),
           'kubeconfig': (kubeconfig_output.stdout)

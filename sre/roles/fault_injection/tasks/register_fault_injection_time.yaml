@@ -22,7 +22,7 @@
         namespace: "{{ otel_astronomy_app_namespace_project_name }}"
       data:
         deployment_time: "{{ existing_configmap_info.resources[0].data.deployment_time }}"
-        fault_injection_time : "{{ now(utc=True, fmt='%Y-%m-%dT%H:%M:%SZ') }}"
+        fault_injection_time: "{{ now(utc=True, fmt='%Y-%m-%dT%H:%M:%SZ') }}"
   when:
     - is_fault_injection
     - sample_application == "otel_astronomy_shop"
@@ -50,7 +50,7 @@
         namespace: "{{ deathstarbench_hotelreservation_app_namespace_project_name }}"
       data:
         deployment_time: "{{ existing_configmap_info.resources[0].data.deployment_time }}"
-        fault_injection_time : "{{ now(utc=True, fmt='%Y-%m-%dT%H:%M:%SZ') }}"
+        fault_injection_time: "{{ now(utc=True, fmt='%Y-%m-%dT%H:%M:%SZ') }}"
   when:
     - is_fault_injection
     - sample_application == "dsb_hotel_reservation"
@@ -79,7 +79,7 @@
         namespace: "{{ elasticsearch_app_namespace_project_name }}"
       data:
         deployment_time: "{{ existing_configmap_info.resources[0].data.deployment_time }}"
-        fault_injection_time : "{{ now(utc=True, fmt='%Y-%m-%dT%H:%M:%SZ') }}"
+        fault_injection_time: "{{ now(utc=True, fmt='%Y-%m-%dT%H:%M:%SZ') }}"
   when:
     - is_fault_injection
     - sample_application == "elasticsearch"

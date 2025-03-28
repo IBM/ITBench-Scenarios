@@ -1,6 +1,6 @@
 ---
 - name: Document this fault injection
-  set_fact:
+  ansible.builtin.set_fact:
     injection_docs: "{{ injection_docs | default([]) + [curr_docs] }}"
   vars:
     curr_docs:
@@ -20,7 +20,7 @@
     - injection_docs
 
 - name: Include tasks to uninstall DeathStarBench
-  include_tasks: "../../sample_applications/tasks/uninstall_deathstarbench_hotel_reservations.yaml"
+  ansible.builtin.include_tasks: "../../sample_applications/tasks/uninstall_deathstarbench_hotel_reservations.yaml"
   when: is_fault_injection and is_missing_storage_class
 
 - name: Check if DeathStarBench directory exists
@@ -33,9 +33,9 @@
   ansible.builtin.git:
     repo: https://github.com/saurabhjha1/DeathStarBench.git
     dest: roles/sample_applications/DeathStarBench
-    single_branch: yes
+    single_branch: true
     version: master
-  when: 
+  when:
     - dsb_dir_status is defined and dsb_dir_status.stat is defined and not (dsb_dir_status.stat.exists)
     - is_fault_injection or is_fault_removal
     - is_missing_storage_class
@@ -50,7 +50,7 @@
   ansible.builtin.copy:
     src: roles/sample_applications/DeathStarBench/hotelReservation/helm-chart/hotelreservation/values.yaml
     dest: roles/sample_applications/DeathStarBench/hotelReservation/helm-chart/hotelreservation/values.yaml.bak
-  when: 
+  when:
     - bak_file_status is defined and bak_file_status.stat is defined and not bak_file_status.stat.exists
     - is_fault_injection
     - is_missing_storage_class
@@ -96,7 +96,7 @@
           environments:
             MEMCACHED_CACHE_SIZE: "128"
             MEMCACHED_THREADS: "2"
-      
+
         mongodb:
           persistentVolume:               # use hostPath or pvprovisioner
             enabled: true
@@ -109,7 +109,7 @@
               storageClassName: ceph-fs   # an non-existent storageclass
   when: is_fault_injection and is_missing_storage_class
 
-- name: Deploy Deathstar Hotel Reservations 
+- name: Deploy Deathstar Hotel Reservations
   kubernetes.core.helm:
     name: "{{ deathstarbench_hotelreservation_app_installation_name }}"
     kubeconfig_path: "{{ kubeconfig }}"
@@ -119,7 +119,8 @@
     create_namespace: true
     wait_timeout: "5m"
     set_values:
-      - value: "global.monitoring.otelAddress=otel-collector-{{ deathstarbench_hotelreservation_app_installation_name }}.{{ deathstarbench_hotelreservation_app_namespace_project_name }}.svc.cluster.local"
+      - value: "global.monitoring.otelAddress=otel-collector-{{ deathstarbench_hotelreservation_app_installation_name }}.{{ deathstarbench_hotelreservation_app_namespace_project_name
+          }}.svc.cluster.local"
         value_type: raw
       - value: "global.monitoring.defaultJaegerEnabled=false"
         value_type: raw
@@ -132,19 +133,19 @@
   when: is_fault_injection and is_missing_storage_class
 
 - name: Include tasks to uninstall DeathStarBench
-  include_tasks: "../../sample_applications/tasks/uninstall_deathstarbench_hotel_reservations.yaml"
+  ansible.builtin.include_tasks: "../../sample_applications/tasks/uninstall_deathstarbench_hotel_reservations.yaml"
   when: is_fault_removal and is_missing_storage_class
 
 - name: Restore the original values.yaml file
   ansible.builtin.copy:
     src: roles/sample_applications/DeathStarBench/hotelReservation/helm-chart/hotelreservation/values.yaml.bak
     dest: roles/sample_applications/DeathStarBench/hotelReservation/helm-chart/hotelreservation/values.yaml
-  when: 
+  when:
     - bak_file_status is defined and bak_file_status.stat is defined and not bak_file_status.stat.exists
-    - is_fault_removal 
+    - is_fault_removal
     - is_missing_storage_class
 
-- name: Deploy Deathstar Hotel Reservations 
+- name: Deploy Deathstar Hotel Reservations
   kubernetes.core.helm:
     name: "{{ deathstarbench_hotelreservation_app_installation_name }}"
     kubeconfig_path: "{{ kubeconfig }}"
@@ -154,7 +155,8 @@
     create_namespace: true
     wait_timeout: "5m"
     set_values:
-      - value: "global.monitoring.otelAddress=otel-collector-{{ deathstarbench_hotelreservation_app_installation_name }}.{{ deathstarbench_hotelreservation_app_namespace_project_name }}.svc.cluster.local"
+      - value: "global.monitoring.otelAddress=otel-collector-{{ deathstarbench_hotelreservation_app_installation_name }}.{{ deathstarbench_hotelreservation_app_namespace_project_name
+          }}.svc.cluster.local"
         value_type: raw
       - value: "global.monitoring.defaultJaegerEnabled=false"
         value_type: raw

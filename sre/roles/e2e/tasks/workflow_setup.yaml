@@ -13,9 +13,14 @@
     controller_host: "{{ controller_host }}"
     controller_username: "{{ controller_username }}"
     controller_password: "{{ controller_password }}" # pragma: allowlist secret
-    name: "Scenario-{{scenario_number}}-One-Mode-Deployment"
+    name: "Scenario-{{ scenario_number }}-One-Mode-Deployment"
     inventory: Demo Inventory
-    extra_vars: {'run_uuid': 'run_uuid', 'scenario_number': -1, 'run_number': -1, 'sre_agent_name__version_number': 'sre_agent_name__version_number', 's3_endpoint_url': 's3_endpoint_url'}
+    extra_vars:
+      "run_uuid": "run_uuid"
+      "scenario_number": -1
+      "run_number": -1
+      "sre_agent_name__version_number": "sre_agent_name__version_number"
+      "s3_endpoint_url": "s3_endpoint_url"
     ask_variables_on_launch: true
     state: "{{ state }}"
     workflow_nodes:

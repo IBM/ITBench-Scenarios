@@ -1,6 +1,6 @@
 ---
 - name: Document this fault injection
-  set_fact:
+  ansible.builtin.set_fact:
     injection_docs: "{{ injection_docs | default([]) + [curr_docs] }}"
   vars:
     curr_docs:
@@ -77,7 +77,8 @@
 
 - name: Remove network partition chaos inside target namespace
   ansible.builtin.shell: >
-    for i in $(KUBECONFIG={{ kubeconfig }} kubectl get podnetworkchaos -n "{{ target_namespace_name }}" | awk '{print $1}'); do KUBECONFIG={{ kubeconfig }} kubectl delete podnetworkchaos $i -n "{{ target_namespace_name }}"; done
+    for i in $(KUBECONFIG={{ kubeconfig }} kubectl get podnetworkchaos -n "{{ target_namespace_name }}" | awk '{print $1}'); do KUBECONFIG={{ kubeconfig }} kubectl
+    delete podnetworkchaos $i -n "{{ target_namespace_name }}"; done
   register: fault_removal_extra_status
   tags: chaos_mesh
   when: is_network_partition_chaos and is_fault_removal

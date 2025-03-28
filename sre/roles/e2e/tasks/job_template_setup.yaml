@@ -10,13 +10,13 @@
     - awx_scenario_setup
 
 - name: Set `controller_host` value for the Ansible tower
-  set_fact:
+  ansible.builtin.set_fact:
     controller_host: "http://{{ awx_service_information.resources[0].status.loadBalancer.ingress[0].hostname }}"
   tags:
     - awx_scenario_setup
 
 - name: Set `controller_username` value for the Ansible tower
-  set_fact:
+  ansible.builtin.set_fact:
     controller_username: "admin"
   tags:
     - awx_scenario_setup
@@ -32,7 +32,7 @@
     - awx_scenario_setup
 
 - name: Set `controller_password` value for the Ansible tower
-  set_fact:
+  ansible.builtin.set_fact:
     controller_password: "{{ awx_secret_information.resources[0].data.password | b64decode }}" # pragma: allowlist secret
 
   tags:
@@ -43,8 +43,8 @@
     controller_host: "{{ controller_host }}"
     controller_username: "{{ controller_username }}"
     controller_password: "{{ controller_password }}" # pragma: allowlist secret
-    name: "Credential-Kubeconfig-Scenario-{{scenario_number}}"
-    description: "Credential-Kubeconfig-Scenario-{{scenario_number}}"
+    name: "Credential-Kubeconfig-Scenario-{{ scenario_number }}"
+    description: "Credential-Kubeconfig-Scenario-{{ scenario_number }}"
     organization: Default
     credential_type: Kubeconfig
     inputs:
@@ -67,7 +67,7 @@
     execution_environment: "AWX-EE-Custom"
     state: "{{ state }}"
     credentials:
-      - "Credential-Kubeconfig-Scenario-{{scenario_number}}"
+      - "Credential-Kubeconfig-Scenario-{{ scenario_number }}"
       - Credential-AWS
     extra_vars:
       domain: "{{ domain }}"
@@ -90,7 +90,7 @@
     state: "{{ state }}"
     timeout: 1800
     credentials:
-      - "Credential-Kubeconfig-Scenario-{{scenario_number}}"
+      - "Credential-Kubeconfig-Scenario-{{ scenario_number }}"
       - Credential-AWS
     extra_vars:
       sample_application: "{{ sample_application }}"
@@ -113,7 +113,7 @@
     state: "{{ state }}"
     timeout: 1800
     credentials:
-      - "Credential-Kubeconfig-Scenario-{{scenario_number}}"
+      - "Credential-Kubeconfig-Scenario-{{ scenario_number }}"
       - Credential-AWS
     extra_vars:
       sample_application: "{{ sample_application }}"
@@ -136,7 +136,7 @@
     state: "{{ state }}"
     timeout: 1800
     credentials:
-      - "Credential-Kubeconfig-Scenario-{{scenario_number}}"
+      - "Credential-Kubeconfig-Scenario-{{ scenario_number }}"
       - Credential-AWS
   tags:
     - awx_scenario_setup
@@ -156,13 +156,13 @@
     state: "{{ state }}"
     timeout: 1800
     credentials:
-      - "Credential-Kubeconfig-Scenario-{{scenario_number}}"
+      - "Credential-Kubeconfig-Scenario-{{ scenario_number }}"
       - Credential-AWS
     extra_vars:
       sample_application: "{{ sample_application }}"
       is_fault_injection: true
-      incident_number: "{{scenario_number}}"
-    job_tags: "incident_{{scenario_number}}"
+      incident_number: "{{ scenario_number }}"
+    job_tags: "incident_{{ scenario_number }}"
   tags:
     - awx_scenario_setup
 
@@ -181,7 +181,7 @@
     state: "{{ state }}"
     timeout: 1800
     credentials:
-      - "Credential-Kubeconfig-Scenario-{{scenario_number}}"
+      - "Credential-Kubeconfig-Scenario-{{ scenario_number }}"
       - Credential-AWS
     job_tags: "post_fault_injection"
   tags:
@@ -202,7 +202,7 @@
     state: "{{ state }}"
     timeout: 2700
     credentials:
-      - "Credential-Kubeconfig-Scenario-{{scenario_number}}"
+      - "Credential-Kubeconfig-Scenario-{{ scenario_number }}"
       - Credential-AWS
     extra_vars:
       sre_agent_directory: /runner/project
@@ -260,7 +260,7 @@
     state: "{{ state }}"
     timeout: 1800
     credentials:
-      - "Credential-Kubeconfig-Scenario-{{scenario_number}}"
+      - "Credential-Kubeconfig-Scenario-{{ scenario_number }}"
       - Credential-AWS
     job_tags: "capture_failed_deployment_state"
   tags:
@@ -281,7 +281,7 @@
     state: "{{ state }}"
     timeout: 1800
     credentials:
-      - "Credential-Kubeconfig-Scenario-{{scenario_number}}"
+      - "Credential-Kubeconfig-Scenario-{{ scenario_number }}"
       - Credential-AWS
     job_tags: "capture_failed_fault_injection_state"
   tags:
@@ -302,7 +302,7 @@
     state: "{{ state }}"
     timeout: 1800
     credentials:
-      - "Credential-Kubeconfig-Scenario-{{scenario_number}}"
+      - "Credential-Kubeconfig-Scenario-{{ scenario_number }}"
       - Credential-AWS
     job_tags: "capture_failed_deployment_state"
   tags:
@@ -323,7 +323,7 @@
     state: "{{ state }}"
     timeout: 1800
     credentials:
-      - "Credential-Kubeconfig-Scenario-{{scenario_number}}"
+      - "Credential-Kubeconfig-Scenario-{{ scenario_number }}"
       - Credential-AWS
     job_tags: "capture_failed_fault_injection_state"
   tags:
@@ -364,7 +364,7 @@
     extra_vars:
       sample_application: "{{ sample_application }}"
     credentials:
-      - "Credential-Kubeconfig-Scenario-{{scenario_number}}"
+      - "Credential-Kubeconfig-Scenario-{{ scenario_number }}"
       - Credential-AWS
     job_tags: "handover_to_agent"
   tags:
@@ -385,7 +385,7 @@
     state: "{{ state }}"
     timeout: 1800
     credentials:
-      - "Credential-Kubeconfig-Scenario-{{scenario_number}}"
+      - "Credential-Kubeconfig-Scenario-{{ scenario_number }}"
       - Credential-AWS
     job_tags: "handover_from_agent"
   tags:
@@ -406,7 +406,7 @@
     state: "{{ state }}"
     timeout: 1800
     credentials:
-      - "Credential-Kubeconfig-Scenario-{{scenario_number}}"
+      - "Credential-Kubeconfig-Scenario-{{ scenario_number }}"
       - Credential-AWS
     job_tags: "evaluation"
   tags:
@@ -427,7 +427,7 @@
     state: "{{ state }}"
     timeout: 1800
     credentials:
-      - "Credential-Kubeconfig-Scenario-{{scenario_number}}"
+      - "Credential-Kubeconfig-Scenario-{{ scenario_number }}"
       - Credential-AWS
     job_tags: "pre_fault_removal"
   tags:
@@ -448,12 +448,12 @@
     state: "{{ state }}"
     timeout: 1800
     credentials:
-      - "Credential-Kubeconfig-Scenario-{{scenario_number}}"
+      - "Credential-Kubeconfig-Scenario-{{ scenario_number }}"
     extra_vars:
       sample_application: "{{ sample_application }}"
       is_fault_removal: true
-      incident_number: "{{scenario_number}}"
-    job_tags: "incident_{{scenario_number}}"
+      incident_number: "{{ scenario_number }}"
+    job_tags: "incident_{{ scenario_number }}"
   tags:
     - awx_scenario_setup
 
@@ -472,7 +472,7 @@
     state: "{{ state }}"
     timeout: 1800
     credentials:
-      - "Credential-Kubeconfig-Scenario-{{scenario_number}}"
+      - "Credential-Kubeconfig-Scenario-{{ scenario_number }}"
     job_tags: "uninstall_sre_agent"
   tags:
     - awx_scenario_setup
@@ -492,7 +492,7 @@
     state: "{{ state }}"
     timeout: 1800
     credentials:
-      - "Credential-Kubeconfig-Scenario-{{scenario_number}}"
+      - "Credential-Kubeconfig-Scenario-{{ scenario_number }}"
       - Credential-AWS
     extra_vars:
       sample_application: "{{ sample_application }}"
@@ -516,7 +516,7 @@
     state: "{{ state }}"
     timeout: 1800
     credentials:
-      - "Credential-Kubeconfig-Scenario-{{scenario_number}}"
+      - "Credential-Kubeconfig-Scenario-{{ scenario_number }}"
       - Credential-AWX
     extra_vars:
       controller_host: "{{ controller_host }}"
@@ -539,7 +539,7 @@
     state: "{{ state }}"
     timeout: 1800
     credentials:
-      - "Credential-Kubeconfig-Scenario-{{scenario_number}}"
+      - "Credential-Kubeconfig-Scenario-{{ scenario_number }}"
       - Credential-AWX
     extra_vars:
       controller_host: "{{ controller_host }}"
@@ -556,9 +556,8 @@
     state: absent
     timeout: 1800
     unified_job_template: "Scenario-{{ scenario_number }}--Setup-Alert-Recorder"
-  ignore_errors: yes
-  when:
-    state == "absent"
+  ignore_errors: true
+  when: state == "absent"
   tags:
     - awx_scenario_setup
 
@@ -574,8 +573,7 @@
     organization: "Default"
     state: absent
     timeout: 1800
-  when:
-    state == "absent"
+  when: state == "absent"
   tags:
     - awx_scenario_setup
 
@@ -594,7 +592,7 @@
     state: "{{ state }}"
     timeout: 1800
     credentials:
-      - "Credential-Kubeconfig-Scenario-{{scenario_number}}"
+      - "Credential-Kubeconfig-Scenario-{{ scenario_number }}"
       - Credential-AWS
     extra_vars:
       sample_application: "{{ sample_application }}"
@@ -617,7 +615,7 @@
     state: "{{ state }}"
     timeout: 1800
     credentials:
-      - "Credential-Kubeconfig-Scenario-{{scenario_number}}"
+      - "Credential-Kubeconfig-Scenario-{{ scenario_number }}"
       - Credential-AWS
     extra_vars:
       domain: "{{ domain }}"

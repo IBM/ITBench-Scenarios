@@ -3,13 +3,13 @@
   amazon.aws.s3_object:
     endpoint_url: "{{ s3_endpoint_url }}"
     bucket: "{{ s3_bucket_name_for_results }}"
-    object: "/{{ sre_agent_name__version_number }}/{{run_uuid}}/{{scenario_number}}/{{run_number}}/assertion.json"
+    object: "/{{ sre_agent_name__version_number }}/{{ run_uuid }}/{{ scenario_number }}/{{ run_number }}/assertion.json"
     dest: "/tmp/assertion.json"
     mode: get
   register: s3_get_result
-  retries: 3  # Number of retries
-  delay: 60   # Delay between retries in seconds (60 seconds = 1 minute)
-  until: s3_get_result is success  # Continue retrying until the task is successful
+  retries: 3 # Number of retries
+  delay: 60 # Delay between retries in seconds (60 seconds = 1 minute)
+  until: s3_get_result is success # Continue retrying until the task is successful
   tags:
     - bundle_status
   when:
@@ -89,7 +89,6 @@
   tags:
     - bundle_status
 
-
 - name: Get Destroyed condition
   ansible.builtin.set_fact:
     destroyed_condition: "{{ json_data.status.conditions | selectattr('type', 'equalto', 'Destroyed') | list | first | default({}) }}"
@@ -111,7 +110,7 @@
             else "DestroyFailed" if destroyed_condition.status | default("") == false
             else "DestroyInProgress" if fault_injected_condition.status | default("") == true
             else "FaultInjectionFailed" if fault_injected_condition.status | default("") == false
-            else "FaultInjectionNotReady" 
+            else "FaultInjectionNotReady"
           ),
           "lastTransitionTime": destroyed_condition.lastTransitionTime | default(fault_injection_status.lastTransitionTime)
         }
@@ -154,7 +153,7 @@
     - bundle_status
 
 - name: Write the combined status to a new JSON file
-  copy:
+  ansible.builtin.copy:
     content: "{{ combined_status | to_nice_json }}"
     dest: "{{ bundle_status_file }}"
   when: sre_bench_runner
@@ -162,7 +161,7 @@
     - bundle_status
 
 - name: Display the combined status
-  debug:
+  ansible.builtin.debug:
     var: "{{ combined_status | to_nice_json }}"
   when: sre_bench_runner
   tags:
@@ -172,7 +171,7 @@
   amazon.aws.s3_object:
     endpoint_url: "{{ s3_endpoint_url }}"
     bucket: "{{ s3_bucket_name_for_results }}"
-    object: "/{{ sre_agent_name__version_number }}/{{run_uuid}}/{{scenario_number}}/{{run_number}}/bundle_status.json"
+    object: "/{{ sre_agent_name__version_number }}/{{ run_uuid }}/{{ scenario_number }}/{{ run_number }}/bundle_status.json"
     src: "{{ bundle_status_file }}"
     mode: put
   tags:

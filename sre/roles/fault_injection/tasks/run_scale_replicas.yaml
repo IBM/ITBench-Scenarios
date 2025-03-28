@@ -1,5 +1,6 @@
+---
 - name: Document this fault injection
-  set_fact:
+  ansible.builtin.set_fact:
     injection_docs: "{{ injection_docs | default([]) + [curr_docs] }}"
   vars:
     curr_docs:
@@ -28,8 +29,8 @@
   loop: "{{ target_deployments }}"
   register: result
   when: is_custom and is_scale_deployments
-  
+
 - name: Print scale down result (for debugging)
-  debug:
+  ansible.builtin.debug:
     var: result
   when: is_custom and is_scale_deployments

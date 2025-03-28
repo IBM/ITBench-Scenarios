@@ -25,13 +25,13 @@
             tls:
               insecure: true
         receivers:
-          jaeger: null
-          prometheus: null
-          zipkin: null
+          jaeger:
+          prometheus:
+          zipkin:
         service:
           pipelines:
             logs:
-              exporters: 
+              exporters:
                 - debug
                 - otlphttp/logs
             metrics:

@@ -11,7 +11,6 @@ incident:
       - Node.js
   deployments:
     observability_tools:
-      - elasticsearch
       - grafana
       - ingress
       - jaeger

@@ -9,11 +9,11 @@
   when:
     - tools | intersect(['ingress']) | length == 1
 
-- name: Install Elasticsearch
+- name: Install Jaeger
   ansible.builtin.import_tasks:
-    file: install_elasticsearch.yaml
+    file: install_jaeger.yaml
   when:
-    - tools | intersect(['elasticsearch', 'jaeger']) | length > 0
+    - tools | intersect(['jaeger']) | length == 1
 
 - name: Install Grafana Loki
   ansible.builtin.import_tasks:
@@ -26,12 +26,6 @@
     file: install_opensearch.yaml
   when:
     - tools | intersect(['opensearch']) | length == 1
-
-- name: Install Jaeger
-  ansible.builtin.import_tasks:
-    file: install_jaeger.yaml
-  when:
-    - tools | intersect(['jaeger']) | length == 1
 
 - name: Install Prometheus
   ansible.builtin.import_tasks:
@@ -46,8 +40,6 @@
         namespace: "{{ loki_installation_name }}"
       - name: "{{ opensearch_namespace_project_name }}"
         namespace: "{{ opensearch_installation_name }}"
-      - name: "{{ jaeger_namespace_project_name }}"
-        namespace: "{{ jaeger_installation_name }}"
       - name: "{{ prometheus_namespace_project_name }}"
         namespace: "{{ prometheus_installation_name }}"
 

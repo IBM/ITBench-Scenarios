@@ -14,7 +14,6 @@ incident:
       - Tonic
   deployments:
     observability_tools:
-      - elasticsearch
       - grafana
       - ingress
       - jaeger

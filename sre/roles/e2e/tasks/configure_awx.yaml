@@ -10,13 +10,13 @@
     - awx_configuration
 
 - name: Set `controller_host` value for the Ansible tower
-  set_fact:
+  ansible.builtin.set_fact:
     controller_host: "http://{{ awx_service_information.resources[0].status.loadBalancer.ingress[0].hostname }}"
   tags:
     - awx_configuration
 
 - name: Set `controller_username` value for the Ansible tower
-  set_fact:
+  ansible.builtin.set_fact:
     controller_username: "admin"
   tags:
     - awx_configuration
@@ -32,7 +32,7 @@
     - awx_configuration
 
 - name: Set `controller_password` value for the Ansible tower
-  set_fact:
+  ansible.builtin.set_fact:
     controller_password: "{{ awx_secret_information.resources[0].data.password | b64decode }}" # pragma: allowlist secret
   tags:
     - awx_configuration
@@ -131,7 +131,7 @@
 
 - name: Add/Remove Execution Envrionment
   awx.awx.execution_environment:
-   # (Hack): As the value set using set_fact controller_host is not picked up
+    # (Hack): As the value set using set_fact controller_host is not picked up
     controller_host: "{{ controller_host }}"
     controller_username: "{{ controller_username }}"
     controller_password: "{{ controller_password }}" # pragma: allowlist secret

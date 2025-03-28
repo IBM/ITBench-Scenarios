@@ -1,6 +1,6 @@
 ---
 - name: Document this fault injection
-  set_fact:
+  ansible.builtin.set_fact:
     injection_docs: "{{ injection_docs | default([]) + [curr_docs] }}"
   vars:
     curr_docs:
@@ -33,7 +33,7 @@
     - is_non_existent_node
 
 - name: Modify the nodeSelector to assign to a non-existent node
-  set_fact:
+  ansible.builtin.set_fact:
     modified_node_selector: >-
       {{
         {"spec": {
@@ -84,7 +84,7 @@
     - is_non_existent_node
 
 - name: Print patch apply result (for debugging)
-  debug:
+  ansible.builtin.debug:
     var: non_existent_node_apply_result
   when:
     - is_custom
@@ -92,7 +92,7 @@
     - is_non_existent_node
 
 - name: Print patch removal result (for debugging)
-  debug:
+  ansible.builtin.debug:
     var: non_existent_node_removal_result
   when:
     - is_custom

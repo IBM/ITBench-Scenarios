@@ -42,7 +42,7 @@
 
 - name: Create dashboard processing variables
   ansible.builtin.set_fact:
-    dashboard_file_names: 
+    dashboard_file_names:
       - demo-dashboard
       - opentelemetry-collector
       - opentelemetry-collector-data-flow
@@ -57,14 +57,15 @@
 
 - name: Download OpenTelemtry Demo dashboards
   ansible.builtin.get_url:
-    url: https://raw.githubusercontent.com/open-telemetry/opentelemetry-helm-charts/refs/tags/opentelemetry-demo-{{ otel_astronomy_app_chart_version }}/charts/opentelemetry-demo/grafana-dashboards/{{ item }}.json
+    url: https://raw.githubusercontent.com/open-telemetry/opentelemetry-helm-charts/refs/tags/opentelemetry-demo-{{ otel_astronomy_app_chart_version }}/charts/opentelemetry-demo/grafana-dashboards/{{
+      item }}.json
     dest: /tmp/{{ item }}.json
-    mode: '0600'
+    mode: "0600"
   loop: "{{ dashboard_file_names }}"
 
 - name: Replace dashboards' datasource uid
   ansible.builtin.replace:
-    path:  /tmp/{{ item[0] }}.json
+    path: /tmp/{{ item[0] }}.json
     regexp: "{{ item[1].replace }}"
     replace: "{{ item[1].with }}"
   loop: "{{ dashboard_file_names | product(dashboard_uid_replacements) | list }}"
@@ -176,13 +177,13 @@
       dashboards:
         astronomy-shop:
           demo:
-            json: "{{ lookup('ansible.builtin.file','/tmp/demo-dashboard.json') | from_json | to_json }}"
+            json: "{{ lookup('ansible.builtin.file', '/tmp/demo-dashboard.json') | from_json | to_json }}"
           opentelemetry_collector:
-            json: "{{ lookup('ansible.builtin.file','/tmp/opentelemetry-collector.json') | from_json | to_json }}"
+            json: "{{ lookup('ansible.builtin.file', '/tmp/opentelemetry-collector.json') | from_json | to_json }}"
           opentelemetry_collector_data_flow:
-            json: "{{ lookup('ansible.builtin.file','/tmp/opentelemetry-collector-data-flow.json') | from_json | to_json }}"
+            json: "{{ lookup('ansible.builtin.file', '/tmp/opentelemetry-collector-data-flow.json') | from_json | to_json }}"
           spanmetrics:
-            json: "{{ lookup('ansible.builtin.file','/tmp/spanmetrics-dashboard.json') | from_json | to_json }}"
+            json: "{{ lookup('ansible.builtin.file', '/tmp/spanmetrics-dashboard.json') | from_json | to_json }}"
       datasources:
         datasources.yaml:
           apiVersion: 1

@@ -1,3 +1,4 @@
+---
 fault_injection_documentation_schema:
   type: array
   items:
@@ -13,10 +14,10 @@ fault_injection_documentation_schema:
         type: string
       "application":
         type: string
-        enum: ['otel_astronomy_shop', 'deathstarbench_hotel_reservations', 'Other', 'All']
+        enum: ["otel_astronomy_shop", "deathstarbench_hotel_reservations", "Other", "All"]
       "fault_type":
         type: string
-        enum: ['FlagD', 'ChaosMesh', 'Custom']
+        enum: ["FlagD", "ChaosMesh", "Custom"]
       "required_fields":
         type: array
         items:

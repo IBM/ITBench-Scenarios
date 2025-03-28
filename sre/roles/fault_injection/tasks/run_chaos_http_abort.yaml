@@ -1,5 +1,6 @@
+---
 - name: Document this fault injection
-  set_fact:
+  ansible.builtin.set_fact:
     injection_docs: "{{ injection_docs | default([]) + [curr_docs] }}"
   vars:
     curr_docs:
@@ -34,7 +35,7 @@
         target: Request
         port: 8080
         method: POST
-        path: '*'
+        path: "*"
         abort: true
   register: fault_injection_status
   tags: chaos_mesh
@@ -60,10 +61,8 @@
         target: Request
         port: 8080
         method: POST
-        path: '*'
+        path: "*"
         abort: true
   register: fault_removal_status
   tags: chaos_mesh
   when: is_http_abort_chaos and is_fault_removal
-
-

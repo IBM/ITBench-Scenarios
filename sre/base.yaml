@@ -15,13 +15,13 @@
 
   pre_tasks:
     - name: Check for helm
-      ansible.builtin.shell: which helm
+      ansible.builtin.command: which helm
       register: system_helm_path
       tags:
         - always
 
     - name: Get helm version
-      ansible.builtin.shell: "{{ system_helm_path.stdout_lines[0] }} version --short"
+      ansible.builtin.command: "{{ system_helm_path.stdout_lines[0] }} version --short"
       register: raw_helm_version_out
       tags:
         - always
@@ -64,6 +64,6 @@
     - role: e2e
 
   tasks:
-    - name: Include incident role 
+    - name: Include incident role
       ansible.builtin.import_role:
         name: "incident_{{ incident_number }}"

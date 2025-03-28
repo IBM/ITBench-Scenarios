@@ -7,8 +7,8 @@ on:
       - sre/*
 
 jobs:
-  build:
-    name: Link sre/base.yaml
+  lint:
+    name: Lint sre/base.yaml
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4

@@ -132,7 +132,7 @@
               memory: 100Mi
         shippingService:
           resources:
-            requests: 
+            requests:
               cpu: 10m
               memory: 10Mi
         valkey:
@@ -181,12 +181,12 @@
         name: "otel-collector-metrics-to-prometheus"
         namespace: "{{ otel_astronomy_app_namespace_project_name }}"
         labels:
-            "for_instance_in_namespace": "{{ prometheus_namespace_project_name }}"
+          "for_instance_in_namespace": "{{ prometheus_namespace_project_name }}"
       spec:
         endpoints:
-        - interval: 10s
-          path: /metrics
-          port: metrics
+          - interval: 10s
+            path: /metrics
+            port: metrics
         selector:
           matchLabels:
             "component": "standalone-collector"

@@ -5,7 +5,7 @@
     patterns: "*.json"
   register: json_files
   tags:
-   - delete_files
+    - delete_files
 
 - name: Delete all JSON files in the specified directory
   ansible.builtin.file:

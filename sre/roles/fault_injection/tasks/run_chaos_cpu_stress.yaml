@@ -1,6 +1,6 @@
 ---
 - name: Document this fault injection
-  set_fact:
+  ansible.builtin.set_fact:
     injection_docs: "{{ injection_docs | default([]) + [curr_docs] }}"
   vars:
     curr_docs:
@@ -29,7 +29,7 @@
   when: is_cpu_stress_chaos
 
 - name: Create a new variable with the name to get the service first name
-  debug:
+  ansible.builtin.debug:
     var: deployment_info
   when: is_cpu_stress_chaos
 
@@ -71,7 +71,7 @@
           namespaces:
             - "{{ otel_astronomy_app_namespace_project_name }}"
           labelSelectors:
-            "app.kubernetes.io/component": "{{target_label_name1}}"
+            "app.kubernetes.io/component": "{{ target_label_name1 }}"
         stressors:
           cpu:
             workers: 30

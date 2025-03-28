@@ -12,31 +12,31 @@
       - "app=mongodb-{{ target_service }}-{{ deathstarbench_hotelreservation_app_namespace_project_name }}"
   register: mongodb_pods_results
   when: is_storage_user_unregistered
-  tags: 
+  tags:
     - incident_103
     - incident_104
 
 - name: Verify MongoDB pods were found
-  fail:
+  ansible.builtin.fail:
     msg: "No MongoDB pods found for faulty service '{{ target_service }}' in namespace '{{ deathstarbench_hotelreservation_app_namespace_project_name }}'."
   when:
     - is_storage_user_unregistered
     - mongodb_pods_results is defined
     - mongodb_pods_results.resources is defined
     - mongodb_pods_results.resources | length == 0
-  tags: 
+  tags:
     - incident_103
     - incident_104
 
 - name: Set target MongoDB pods fact
-  set_fact:
+  ansible.builtin.set_fact:
     target_mongo_pods: "{{ mongodb_pods_results.resources | map(attribute='metadata.name') | list }}"
   when:
     - is_storage_user_unregistered
     - mongodb_pods_results is defined
     - mongodb_pods_results.resources is defined
     - mongodb_pods_results.resources | length == 0
-  tags: 
+  tags:
     - incident_103
     - incident_104
 
@@ -48,15 +48,15 @@
   loop: "{{ target_mongo_pods }}"
   register: container_names
   when: is_storage_user_unregistered
-  tags: 
+  tags:
     - incident_103
     - incident_104
 
 - name: Set pod-to-container mapping fact
-  set_fact:
+  ansible.builtin.set_fact:
     pod_container_mapping: "{{ dict(target_mongo_pods | zip(container_names.results | map(attribute='stdout'))) }}"
   when: is_storage_user_unregistered
-  tags: 
+  tags:
     - incident_103
     - incident_104
 
@@ -73,7 +73,7 @@
   delay: 5
   changed_when: grant_role_results.rc == 0
   when: is_fault_removal and is_storage_user_unregistered
-  tags: 
+  tags:
     - incident_103
     - incident_104
 
@@ -90,7 +90,7 @@
   delay: 5
   changed_when: downgrade_privileges_results.rc == 0
   when: is_fault_injection and is_storage_user_unregistered
-  tags: 
+  tags:
     - incident_103
     - incident_104
 
@@ -107,15 +107,15 @@
       - "app={{ target_service }}-{{ deathstarbench_hotelreservation_app_namespace_project_name }}"
   register: service_pods_results
   when: is_storage_user_unregistered
-  tags: 
+  tags:
     - incident_103
     - incident_104
 
 - name: Set target service pods fact
-  set_fact:
+  ansible.builtin.set_fact:
     target_service_pods: "{{ service_pods_results.resources | map(attribute='metadata.name') | list }}"
   when: is_storage_user_unregistered
-  tags: 
+  tags:
     - incident_103
     - incident_104
 
@@ -131,6 +131,6 @@
     - is_storage_user_unregistered
     - target_service_pods is defined
     - target_service_pods | length > 0
-  tags: 
+  tags:
     - incident_103
     - incident_104

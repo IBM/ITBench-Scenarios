@@ -1,6 +1,6 @@
 ---
 - name: Document this fault injection
-  set_fact:
+  ansible.builtin.set_fact:
     injection_docs: "{{ injection_docs | default([]) + [curr_docs] }}"
   vars:
     curr_docs:
@@ -26,7 +26,7 @@
     - is_valkey_auth_disruption
 
 - name: Print valkey pod name (for debugging)
-  debug:
+  ansible.builtin.debug:
     var: valkey_pod_name.stdout
   when:
     - is_custom
@@ -55,7 +55,7 @@
   ansible.builtin.shell: |
     KUBECONFIG={{ kubeconfig }} kubectl exec -n {{ target_namespace_name }} {{ valkey_pod_name.stdout }} -- valkey-cli CONFIG GET requirepass
   register: verify_pass_addition_result
-  ignore_errors: yes
+  ignore_errors: true
   when:
     - is_custom
     - is_fault_injection
@@ -71,7 +71,7 @@
     - is_valkey_auth_disruption
 
 - name: Print addition verification result
-  debug:
+  ansible.builtin.debug:
     var: verify_pass_addition_result.stdout
   when:
     - is_custom
@@ -79,7 +79,7 @@
     - is_valkey_auth_disruption
 
 - name: Print removal verification result
-  debug:
+  ansible.builtin.debug:
     var: verify_pass_removal_result.stdout
   when:
     - is_custom
@@ -90,14 +90,14 @@
   ansible.builtin.shell: |
     KUBECONFIG={{ kubeconfig }} kubectl delete pod -l app.kubernetes.io/name={{ target_service }} -n {{ target_namespace_name }}
   register: service_restart
-  ignore_errors: yes
+  ignore_errors: true
   when:
     - is_custom
     - is_fault_injection or is_fault_removal
     - is_valkey_auth_disruption
 
 - name: Print service restart result
-  debug:
+  ansible.builtin.debug:
     var: service_restart
   when:
     - is_custom

@@ -1,6 +1,6 @@
 ---
 - name: Display the collected documentation
-  debug:
+  ansible.builtin.debug:
     var: "injection_docs"
   tags:
     - injection_docs
@@ -16,18 +16,18 @@
     - injection_docs
 
 - name: Show validation results
-  debug:
+  ansible.builtin.debug:
     msg: "Validated fault injection documentation schema for {{ injection_docs | map(attribute='id') | sort | join(', ') }}: {{ validation_result['msg'] }}"
   failed_when: "'errors' in validation_result"
   tags:
     - injection_docs
 
 - name: Ensure IDs are unique
-  assert:
+  ansible.builtin.assert:
     that: injection_ids == unique_injection_ids
     fail_msg: "Duplicate fault injection method ID in {{ injection_ids | sort }}"
     msg: "All fault injection method IDs are unique."
-    quiet: yes
+    quiet: true
   vars:
     injection_ids: "{{ injection_docs | map(attribute='id') | sort | list }}"
     unique_injection_ids: "{{ injection_ids | unique | sort | list }}"
@@ -35,11 +35,11 @@
     - injection_docs
 
 - name: Ensure fault injection names are unique
-  assert:
+  ansible.builtin.assert:
     that: injection_names == unique_injection_names
     fail_msg: "Duplicate fault injection method name in {{ injection_names | sort }}"
     msg: "All fault injection method names are unique."
-    quiet: yes
+    quiet: true
   vars:
     injection_names: "{{ injection_docs | map(attribute='name') | sort | list }}"
     unique_injection_names: "{{ injection_names | unique | sort | list }}"
@@ -47,7 +47,7 @@
     - injection_docs
 
 - name: Write injection documentation to injection_docs.json
-  copy:
+  ansible.builtin.copy:
     dest: "injection_docs.json"
     content: "{{ injection_docs | to_nice_json }}"
   tags:

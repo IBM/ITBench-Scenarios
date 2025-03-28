@@ -15,7 +15,7 @@
     - workflow_launch_stage_three
 
 - name: Set `controller_password` value for the Ansible tower
-  set_fact:
+  ansible.builtin.set_fact:
     controller_password: "{{ awx_secret_information.resources[0].data.password | b64decode }}" # pragma: allowlist secret
   tags:
     - workflow_launch
@@ -25,7 +25,7 @@
     controller_host: "{{ controller_host }}"
     controller_username: "{{ controller_username }}"
     controller_password: "{{ controller_password }}" # pragma: allowlist secret
-    workflow_template: "Scenario-{{scenario_number}}-One-Mode-Deployment"
+    workflow_template: "Scenario-{{ scenario_number }}-One-Mode-Deployment"
     extra_vars:
       run_uuid: "{{ run_uuid }}"
       scenario_number: "{{ scenario_number }}"
@@ -34,7 +34,7 @@
       s3_bucket_name_for_results: "{{ s3_bucket_name_for_results }}"
       s3_endpoint_url: "{{ s3_endpoint_url }}"
       sre_bench_runner: "{{ sre_bench_runner | bool }}"
-    wait: False
+    wait: false
   loop: "{{ range(1,(number_of_runs |int)+1) | list }}"
   tags:
     - workflow_launch
@@ -44,7 +44,7 @@
     controller_host: "{{ controller_host }}"
     controller_username: "{{ controller_username }}"
     controller_password: "{{ controller_password }}"
-    workflow_template: "Scenario-{{scenario_number}}-One-Mode-Deployment-Stage-One"
+    workflow_template: "Scenario-{{ scenario_number }}-One-Mode-Deployment-Stage-One"
     extra_vars:
       run_uuid: "{{ run_uuid }}"
       scenario_number: "{{ scenario_number }}"
@@ -53,7 +53,7 @@
       s3_bucket_name_for_results: "{{ s3_bucket_name_for_results }}"
       s3_endpoint_url: "{{ s3_endpoint_url }}"
       sre_bench_runner: "{{ sre_bench_runner | bool }}"
-    wait: False
+    wait: false
   loop: "{{ range(1,(number_of_runs |int)+1) | list }}"
   tags:
     - workflow_launch_stage_one
@@ -63,7 +63,7 @@
     controller_host: "{{ controller_host }}"
     controller_username: "{{ controller_username }}"
     controller_password: "{{ controller_password }}"
-    workflow_template: "Scenario-{{scenario_number}}-One-Mode-Deployment-Stage-Two"
+    workflow_template: "Scenario-{{ scenario_number }}-One-Mode-Deployment-Stage-Two"
     extra_vars:
       run_uuid: "{{ run_uuid }}"
       scenario_number: "{{ scenario_number }}"
@@ -72,7 +72,7 @@
       s3_bucket_name_for_results: "{{ s3_bucket_name_for_results }}"
       s3_endpoint_url: "{{ s3_endpoint_url }}"
       sre_bench_runner: "{{ sre_bench_runner | bool }}"
-    wait: False
+    wait: false
   loop: "{{ range(1,(number_of_runs |int)+1) | list }}"
   tags:
     - workflow_launch_stage_two
@@ -82,7 +82,7 @@
     controller_host: "{{ controller_host }}"
     controller_username: "{{ controller_username }}"
     controller_password: "{{ controller_password }}"
-    workflow_template: "Scenario-{{scenario_number}}-One-Mode-Deployment-Stage-Three"
+    workflow_template: "Scenario-{{ scenario_number }}-One-Mode-Deployment-Stage-Three"
     extra_vars:
       run_uuid: "{{ run_uuid }}"
       scenario_number: "{{ scenario_number }}"
@@ -91,7 +91,7 @@
       s3_bucket_name_for_results: "{{ s3_bucket_name_for_results }}"
       s3_endpoint_url: "{{ s3_endpoint_url }}"
       sre_bench_runner: "{{ sre_bench_runner | bool }}"
-    wait: False
+    wait: false
   loop: "{{ range(1,(number_of_runs |int)+1) | list }}"
   tags:
     - workflow_launch_stage_three

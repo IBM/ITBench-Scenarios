@@ -3,9 +3,9 @@
   ansible.builtin.git:
     repo: https://github.com/it-bench/DeathStarBench.git
     dest: roles/sample_applications/DeathStarBench
-    single_branch: yes
+    single_branch: true
     version: master
-    force: yes
+    force: true
 
 - name: Deploy DeathStarBench's Hotel Reservation
   kubernetes.core.helm:

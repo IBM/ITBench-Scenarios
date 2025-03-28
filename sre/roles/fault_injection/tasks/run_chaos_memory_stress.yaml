@@ -1,6 +1,6 @@
 ---
 - name: Document this fault injection
-  set_fact:
+  ansible.builtin.set_fact:
     injection_docs: "{{ injection_docs | default([]) + [curr_docs] }}"
   vars:
     curr_docs:
@@ -32,7 +32,7 @@
   when: is_memory_stress_chaos and is_fault_injection
 
 - name: Create a new variable with the name to get the service first name
-  set_fact:
+  ansible.builtin.set_fact:
     new_service_name: "{{ target_label_name1 | replace('service', '') | upper }}"
   tags: incident_22
   when: is_memory_stress_chaos
@@ -64,9 +64,9 @@
                 image: "{{ deployment_info.result.spec.template.spec.containers[0].image }}"
                 imagePullPolicy: IfNotPresent
                 ports:
-                  - containerPort: 8080  # valkey change to 6379
-                    name: "{{ target_label_name1 }}" 
-                    protocol: TCP 
+                  - containerPort: 8080 # valkey change to 6379
+                    name: "{{ target_label_name1 }}"
+                    protocol: TCP
                 env:
                   - name: OTEL_SERVICE_NAME
                     valueFrom:
@@ -77,7 +77,7 @@
                     value: "{{ otel_astronomy_app_namespace_project_name }}-otelcol"
                   - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
                     value: cumulative
-                  - name: '{{new_service_name}}_SERVICE_PORT'
+                  - name: "{{ new_service_name }}_SERVICE_PORT"
                     value: "8080" # valkey change to 6379
                   - name: FLAGD_HOST
                     value: "{{ otel_astronomy_app_namespace_project_name }}-flagd"
@@ -89,8 +89,8 @@
                     value: otlp
                   - name: OTEL_RESOURCE_ATTRIBUTES
                     value: service.name=$(OTEL_SERVICE_NAME),service.namespace=opentelemetry-demo,service.version=1.11.1
-                resources: 
-                  limits: 
+                resources:
+                  limits:
                     memory: "{{ deployment_info.result.spec.template.spec.containers[0].resources.limits.memory }}"
                 securityContext:
                   runAsGroup: 1000
@@ -105,7 +105,7 @@
   kubernetes.core.k8s:
     kubeconfig: "{{ kubeconfig }}"
     kind: Service
-    name: "{{ target_deployment_name }}"          
+    name: "{{ target_deployment_name }}"
     namespace: "{{ otel_astronomy_app_namespace_project_name }}"
   register: svc_info
   tags: incident_22
@@ -127,19 +127,19 @@
       apiVersion: v1
       kind: Service
       metadata:
-        name: "{{ target_deployment_name }}" 
+        name: "{{ target_deployment_name }}"
         namespace: "{{ otel_astronomy_app_namespace_project_name }}"
-        labels: 
-            app.kubernetes.io/component: "{{ target_label_name1 }}"
-            app.kubernetes.io/instance: "{{ otel_astronomy_app_namespace_project_name }}"
-            app.kubernetes.io/name: "{{ target_label_name1 }}"
+        labels:
+          app.kubernetes.io/component: "{{ target_label_name1 }}"
+          app.kubernetes.io/instance: "{{ otel_astronomy_app_namespace_project_name }}"
+          app.kubernetes.io/name: "{{ target_label_name1 }}"
       spec:
         clusterIP: "{{ svc_info.result.spec.clusterIP }}"
         selector:
           app.kubernetes.io/name: "{{ target_label_name1 }}"
         ports:
-        - port: 8080  # valkey change to 6379
-          targetPort: 8080 # valkey change to 6379
+          - port: 8080 # valkey change to 6379
+            targetPort: 8080 # valkey change to 6379
   tags: incident_22
   when: is_memory_stress_chaos and is_fault_injection
 
@@ -151,7 +151,7 @@
       apiVersion: chaos-mesh.org/v1alpha1
       kind: StressChaos
       metadata:
-        name: "{{ target_namespace_name }}-{{ target_deployment_name}}"
+        name: "{{ target_namespace_name }}-{{ target_deployment_name }}"
         namespace: "{{ chaos_mesh_namespace_project_name }}"
       spec:
         mode: one
@@ -176,7 +176,7 @@
       apiVersion: chaos-mesh.org/v1alpha1
       kind: StressChaos
       metadata:
-        name: "{{ target_namespace_name }}-{{ target_deployment_name}}"
+        name: "{{ target_namespace_name }}-{{ target_deployment_name }}"
         namespace: "{{ chaos_mesh_namespace_project_name }}"
       spec:
         mode: one
@@ -218,6 +218,6 @@
 
 - name: Remove temporary deployment files
   ansible.builtin.shell: |
-    rm -f '/tmp/deployment_{{ kubeconfig.split('/')[2] }}.yaml' 
+    rm -f '/tmp/deployment_{{ kubeconfig.split('/')[2] }}.yaml'
   tags: incident_22
   when: is_memory_stress_chaos and is_fault_removal

@@ -51,4 +51,3 @@
     - fault_injection
     - chaos_mesh_installation
   when: is_install_chaos_mesh | bool
-

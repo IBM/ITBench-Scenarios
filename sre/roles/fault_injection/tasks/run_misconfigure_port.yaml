@@ -1,6 +1,6 @@
 ---
 - name: Document this fault injection
-  set_fact:
+  ansible.builtin.set_fact:
     injection_docs: "{{ injection_docs | default([]) + [curr_docs] }}"
   vars:
     curr_docs:
@@ -31,7 +31,7 @@
     - is_misconfigure_port
 
 - name: Modify the target port in service configuration (set to target_port)
-  set_fact:
+  ansible.builtin.set_fact:
     modified_service_config: >-
       {{
         service_info.resources[0].spec.ports | map('combine', {'targetPort': 9999})
@@ -42,7 +42,7 @@
     - is_misconfigure_port
 
 - name: Modify the target port in service configuration (set to target_port)
-  set_fact:
+  ansible.builtin.set_fact:
     modified_service_config: >-
       {{
         service_info.resources[0].spec.ports | map('combine', {'targetPort': 8080})

@@ -10,4 +10,4 @@
     create_namespace: true
     wait: true
     timeout: 20m0s
-  ignore_errors: yes
+  ignore_errors: true

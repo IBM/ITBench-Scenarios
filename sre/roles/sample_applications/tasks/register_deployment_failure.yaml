@@ -1,18 +1,18 @@
 ---
 - name: Create deployment record
-  set_fact:
+  ansible.builtin.set_fact:
     assertion_json:
       status:
         conditions:
           - type: Deployed
-            status: False
+            status: false
             lastTransitionTime: "{{ now(utc=True, fmt='%Y-%m-%dT%H:%M:%SZ') }}"
   when: sre_bench_runner
   tags:
     - capture_failed_deployment_state
 
 - name: Create a JSON with application deployment details
-  copy:
+  ansible.builtin.copy:
     content: "{{ assertion_json | to_json | indent(2) }}"
     dest: "/tmp/assertion.json"
     mode: "0644"
@@ -24,7 +24,7 @@
   amazon.aws.s3_object:
     endpoint_url: "{{ s3_endpoint_url }}"
     bucket: "{{ s3_bucket_name_for_results }}"
-    object: "/{{ sre_agent_name__version_number }}/{{run_uuid}}/{{scenario_number}}/{{run_number}}/assertion.json"
+    object: "/{{ sre_agent_name__version_number }}/{{ run_uuid }}/{{ scenario_number }}/{{ run_number }}/assertion.json"
     src: "/tmp/assertion.json"
     mode: put
   when:

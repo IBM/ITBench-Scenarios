@@ -11,7 +11,15 @@ incident:
       - Go
       - Ruby
   deployments:
-    observability_tools: sre
+    observability_tools:
+      - elasticsearch
+      - grafana
+      - ingress
+      - jaeger
+      - kubernetes-event-exporter
+      - loki
+      - opensearch
+      - prometheus
     sample_applications:
       - otel_astronomy_shop
   faults:

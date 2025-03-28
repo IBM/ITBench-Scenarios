@@ -1,0 +1,17 @@
+---
+- name: Uninstall OpenSearch
+  kubernetes.core.helm:
+    name: "{{ opensearch_installation_name }}"
+    kubeconfig_path: "{{ kubeconfig }}"
+    release_namespace: "{{ opensearch_namespace_project_name }}"
+    state: absent
+    wait: true
+
+- name: Remove the namespace associated with OpenSearch
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    name: "{{ opensearch_namespace_project_name }}"
+    api_version: v1
+    kind: Namespace
+    state: absent
+    wait: true

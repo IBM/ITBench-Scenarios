@@ -15,9 +15,11 @@
   ansible.builtin.include_role:
     name: observability_tools
     apply:
+      vars:
+        tools:
+          - kubernetes-topology-mapper
       tags:
         - unintall_tools
-    tasks_from: uninstall_topology_mapper.yaml
   tags:
     - fault_removal
 
@@ -61,6 +63,6 @@
     name: observability_tools
     apply:
       vars:
-        domain: "{{ observability_tools }}"
+        tools: "{{ observability_tools }}"
   tags:
     - uninstall_observability_tools

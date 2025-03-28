@@ -1,205 +1,60 @@
 ---
-- name: Remove operator managed resources
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    delete_all: true
-    api_version: "{{ item.api_version }}"
-    namespace: "{{ item.namespace }}"
-    kind: "{{ item.kind }}"
-    state: absent
-    wait: true
-  loop:
-    - api_version: clickhouse-keeper.altinity.com/v1
-      kind: ClickHouseKeeperInstallation
-      namespace: "{{ clickhouse_namespace_project_name }}"
-    - api_version: clickhouse.altinity.com/v1
-      kind: ClickHouseInstallation
-      namespace: "{{ clickhouse_namespace_project_name }}"
-    - api_version: clickhouse.altinity.com/v1
-      kind: ClickHouseInstallationTemplate
-      namespace: "{{ clickhouse_namespace_project_name }}"
-    - api_version: clickhouse.altinity.com/v1
-      kind: ClickHouseOperatorConfiguration
-      namespace: "{{ clickhouse_namespace_project_name }}"
-    - api_version: opentelemetry.io/v1beta1
-      kind: OpenTelemetryCollector
-      namespace: "{{ opentelemetry_operator_collectors_namespace }}"
+- name: Uninstall Ingress NGINX Controller
+  ansible.builtin.import_tasks:
+    file: uninstall_ingress.yaml
+  when:
+    - tools | intersect(['ingress']) | length == 1
 
-- name: Remove the Custom Resource Definitions (CRDs)
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    delete_all: true
-    api_version: apiextensions.k8s.io/v1
-    kind: CustomResourceDefinition
-    name: "{{ item }}"
-    state: absent
-    wait: true
-  loop:
-    - clickhouseinstallations.clickhouse.altinity.com
-    - clickhouseinstallationtemplates.clickhouse.altinity.com
-    - clickhousekeeperinstallations.clickhouse-keeper.altinity.com
-    - clickhouseoperatorconfigurations.clickhouse.altinity.com
-    - opentelemetrycollectors.opentelemetry.io
-    - opampbridges.opentelemetry.io
-    - instrumentations.opentelemetry.io
-    - targetallocators.opentelemetry.io
+- name: Uninstall Elasticsearch
+  ansible.builtin.import_tasks:
+    file: uninstall_elasticsearch.yaml
+  when:
+    - tools | intersect(['elasticsearch']) | length > 0
 
-- name: Remove non-namespaced resources
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    api_version: "{{ item.api_version }}"
-    name: "{{ item.name }}"
-    kind: "{{ item.kind }}"
-    state: absent
-    wait: true
-  loop:
-    - api_version: rbac.authorization.k8s.io/v1
-      kind: ClusterRoleBinding
-      name: "{{ opentelemetry_operator_collector_kubernetes_events_name }}-collector"
-    - api_version: rbac.authorization.k8s.io/v1
-      kind: ClusterRole
-      name: "{{ opentelemetry_operator_collector_kubernetes_events_name }}-collector"
-
-- name: Uninstall OpenTelemetry Operator
-  kubernetes.core.helm:
-    name: "{{ opentelemetry_operator_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ opentelemetry_operator_namespace_project_name }}"
-    state: absent
-    wait: true
+- name: Uninstall Grafana Loki
+  ansible.builtin.import_tasks:
+    file: uninstall_loki.yaml
+  when:
+    - tools | intersect(['loki']) | length > 0
 
 - name: Uninstall OpenSearch
-  kubernetes.core.helm:
-    name: "{{ opensearch_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ opensearch_namespace_project_name }}"
-    state: absent
-    wait: true
+  ansible.builtin.import_tasks:
+    file: uninstall_opensearch.yaml
+  when:
+    - tools | intersect(['opensearch']) | length == 1
 
-- name: Uninstall Clickhouse
-  kubernetes.core.helm:
-    name: "{{ clickhouse_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ clickhouse_namespace_project_name }}"
-    state: absent
-    wait: true
+- name: Uninstall Jaeger
+  ansible.builtin.import_tasks:
+    file: uninstall_jaeger.yaml
+  when:
+    - tools | intersect(['jaeger']) | length == 1
+
+- name: Uninstall Prometheus
+  ansible.builtin.import_tasks:
+    file: uninstall_prometheus.yaml
+  when:
+    - tools | intersect(['prometheus']) | length == 1
+
+- name: Uninstall Kubernetes Event Exporter (OpenTelemetry)
+  ansible.builtin.import_tasks:
+    file: uninstall_opentelemetry_collector.yaml
+  when:
+    - tools | intersect(['kubernetes-event-exporter']) | length == 1
 
 - name: Uninstall Grafana
-  kubernetes.core.helm:
-    name: "{{ grafana_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ grafana_namespace_project_name }}"
-    state: absent
-    wait: true
+  ansible.builtin.import_tasks:
+    file: uninstall_grafana.yaml
+  when:
+    - tools | intersect(['grafana']) | length == 1
 
-- name: Uninstall the Prometheus stack
-  kubernetes.core.helm:
-    name: "{{ prometheus_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ prometheus_namespace_project_name }}"
-    state: absent
-    wait: true
+- name: Uninstall Kubernetes Metric Server
+  ansible.builtin.import_tasks:
+    file: uninstall_metrics_server.yaml
+  when:
+    - tools | intersect(['kubernetes-metric-server']) | length == 1
 
-- name: Uninstall the Kubernetes Metrics Server
-  kubernetes.core.helm:
-    name: "{{ metrics_server_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ metrics_server_namespace_project_name }}"
-    state: absent
-    wait: true
-
-- name: Uninstall the Kubernetes topology mapper
-  kubernetes.core.helm:
-    name: "{{ topology_mapper_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ topology_mapper_namespace_project_name }}"
-    state: absent
-    wait: true
-
-- name: Uninstall OpenCost
-  kubernetes.core.helm:
-    name: "{{ opencost_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ opencost_namespace_project_name }}"
-    state: absent
-    wait: true
-
-- name: Uninstall Ingress
-  kubernetes.core.helm:
-    name: "{{ ingress_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ ingress_namespace_project_name }}"
-    state: absent
-    wait: true
-
-- name: Remove the namespace associated with OpenSearch
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    name: "{{ opensearch_namespace_project_name }}"
-    api_version: v1
-    kind: Namespace
-    state: absent
-    wait: true
-
-- name: Remove the namespace associated with Clickhouse
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    name: "{{ clickhouse_namespace_project_name }}"
-    api_version: v1
-    kind: Namespace
-    state: absent
-    wait: true
-
-- name: Remove the namespace associated with Grafana
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    name: "{{ grafana_namespace_project_name }}"
-    api_version: v1
-    kind: Namespace
-    state: absent
-    wait: true
-
-- name: Remove the namespace associated with Prometheus
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    name: "{{ prometheus_namespace_project_name }}"
-    api_version: v1
-    kind: Namespace
-    state: absent
-    wait: true
-
-- name: Remove the namespace associated with OpenTelemetry Collectors
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    name: "{{ opentelemetry_operator_collectors_namespace }}"
-    api_version: v1
-    kind: Namespace
-    state: absent
-    wait: true
-
-- name: Remove the namespace associated with Kubernetes Metric Server
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    name: "{{ metrics_server_namespace_project_name }}"
-    api_version: v1
-    kind: Namespace
-    state: absent
-    wait: true
-
-- name: Remove the namespace associated with OpenCost
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    name: "{{ opencost_namespace_project_name }}"
-    api_version: v1
-    kind: Namespace
-    state: absent
-    wait: true
-
-- name: Remove the namespace associated with Ingress
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    name: "{{ ingress_namespace_project_name }}"
-    api_version: v1
-    kind: Namespace
-    state: absent
-    wait: true
+- name: Uninstall Opencost
+  ansible.builtin.import_tasks:
+    file: uninstall_opencost.yaml
+  when:
+    - tools | intersect(['opencost']) | length == 1

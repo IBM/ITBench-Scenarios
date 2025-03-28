@@ -1,107 +1,46 @@
 ---
-- ansible.builtin.import_tasks:
+- name: Initialize bench runner assertion json
+  ansible.builtin.import_tasks:
     file: initialize_assertion_json.yaml
   tags:
     - install_tools
   when:
     - sre_bench_runner
+    - tools | intersect(['kubernetes-topology-mapper']) | length == 0
 
-- ansible.builtin.import_tasks:
-    file: set_up_helm_charts.yaml
+- name: Install Observability Tools
+  ansible.builtin.import_tasks:
+    file: install_observability_stack.yaml
   tags:
     - install_tools
 
-- ansible.builtin.import_tasks:
-    file: install_ingress.yaml
-  tags:
-    - install_tools
-
-- ansible.builtin.import_tasks:
-    file: install_clickhouse.yaml
-  tags:
-    - install_tools
-
-- ansible.builtin.import_tasks:
-    file: install_opensearch.yaml
-  tags:
-    - install_tools
-
-- ansible.builtin.import_tasks:
-    file: install_prometheus.yaml
-  tags:
-    - install_tools
-
-- name: List of common (SRE+FinOps) Helm installations
-  ansible.builtin.set_fact:
-    common_helm_installations:
-      - name: "{{ opensearch_installation_name }}"
-        namespace: "{{ opensearch_namespace_project_name }}"
-      - name: "{{ prometheus_namespace_project_name }}"
-        namespace: "{{ prometheus_installation_name }}"
-
-- name: Wait for common (SRE + FinOps) installations to complete
-  ansible.builtin.command: "helm status {{ item.name }} -n {{ item.namespace }}"
-  register: helm_status
-  until: "helm_status.rc == 0 and helm_status.stdout.find('STATUS: deployed') != -1"
-  retries: 10
-  delay: 60
-  loop: "{{ common_helm_installations }}"
-
-- ansible.builtin.import_tasks:
-    file: install_opentelemetry.yaml
-  tags:
-    - install_tools
-
-- ansible.builtin.import_tasks:
-    file: install_grafana.yaml
-  tags:
-    - install_tools
-
-- ansible.builtin.import_tasks:
-    file: install_metrics_server.yaml
+- name: Install Kubernetes Topology Mapper
+  ansible.builtin.import_tasks:
+    file: install_topology_mapper.yaml
   tags:
     - install_tools
   when:
-    - domain == "finops"
+    - tools | intersect(['kubernetes-topology-mapper']) | length == 1
 
-- ansible.builtin.import_tasks:
-    file: install_opencost.yaml
+- name: Uninstall Kubernetes Topology Mapper
+  ansible.builtin.import_tasks:
+    file: uninstall_topology_mapper.yaml
   tags:
-    - install_tools
+    - uninstall_tools
   when:
-    - domain == "finops"
+    - tools | intersect(['kubernetes-topology-mapper']) | length == 1
 
-- name: List of common FinOps Helm installations
-  ansible.builtin.set_fact:
-    finops_related_helm_installations:
-      - name: "{{ opencost_installation_name }}"
-        namespace:  "{{ opencost_namespace_project_name }}"
-      - name: "{{ metrics_server_installation_name }}"
-        namespace: "{{ metrics_server_namespace_project_name }}"
-
-- name: Wait for common FinOps installations to complete
-  ansible.builtin.command: "helm status {{ item.name }} -n {{ item.namespace }}"
-  register: helm_status
-  until: "helm_status.rc == 0 and helm_status.stdout.find('STATUS: deployed') != -1"
-  retries: 10
-  delay: 60
-  loop: "{{ finops_related_helm_installations }}"
-  when:
-    - domain == "finops"
-
-- ansible.builtin.import_tasks:
-    file: check_grafana_status.yaml
-  tags:
-    - install_tools
-
-- ansible.builtin.import_tasks:
+- name: Uninstall Observability Tools
+  ansible.builtin.import_tasks:
     file: uninstall_observability_stack.yaml
   tags:
     - uninstall_tools
 
-- ansible.builtin.import_tasks:
+- name: Finalize bench runner assertion json
+  ansible.builtin.import_tasks:
     file: finalize_assertion_json.yaml
   tags:
     - uninstall_tools
   when:
     - sre_bench_runner
+    - tools | intersect(['kubernetes-topology-mapper']) | length == 0

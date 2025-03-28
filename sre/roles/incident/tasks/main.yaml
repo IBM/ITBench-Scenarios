@@ -13,8 +13,7 @@
   ansible.builtin.set_fact:
     faults: "{{ incident_spec.incident.faults }}"
     fault_tools: "{{ incident_spec.incident | community.general.json_query('faults[*].source') | unique }}"
-    observability_tools: "{{ incident_spec.incident.deployments.observability_tools }}"
-    # observability_tools: "{{ incident_spec.incident.deployments.observability_tools | unique }}"
+    observability_tools: "{{ incident_spec.incident.deployments.observability_tools | unique }}"
     sample_applications: "{{ incident_spec.incident.deployments.sample_applications | unique }}"
   tags:
     - always

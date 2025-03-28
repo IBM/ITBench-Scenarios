@@ -4,7 +4,7 @@
     name: observability_tools
     apply:
       vars:
-        domain: "{{ observability_tools }}"
+        tools: "{{ observability_tools }}"
   tags:
     - install_observability_tools
 
@@ -47,9 +47,11 @@
   ansible.builtin.include_role:
     name: observability_tools
     apply:
+      vars:
+        tools:
+          - kubernetes-topology-mapper
       tags:
         - install_tools
-    tasks_from: install_topology_mapper.yaml
   tags:
     - fault_injection
 

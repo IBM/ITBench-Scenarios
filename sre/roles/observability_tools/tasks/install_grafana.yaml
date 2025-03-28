@@ -23,12 +23,14 @@
 - name: Append Prometheus datasource to list
   ansible.builtin.set_fact:
     datasources: "{{ datasources + prometheus_datasources }}"
+  when:
+    - tools | intersect(['prometheus']) | length == 1
 
 - name: Append Jaeger datasource to list
   ansible.builtin.set_fact:
     datasources: "{{ datasources + jaeger_datasources }}"
   when:
-    - enable_jaeger_query_endpoint
+    - tools | intersect(['jaeger']) | length == 1
 
 - name: Append Clickhouse datasource to list
   ansible.builtin.set_fact:
@@ -37,6 +39,8 @@
 - name: Append Opensearch datasource to list
   ansible.builtin.set_fact:
     datasources: "{{ datasources + opensearch_datasources }}"
+  when:
+    - tools | intersect(['opensearch']) | length == 1
 
 - name: Create dashboard processing variables
   ansible.builtin.set_fact:
@@ -134,13 +138,13 @@
         interval: 60s
         rules: "{{ lookup('ansible.builtin.file', '/tmp/efficiency_alert_rules.yaml') | from_yaml }}"
   when:
-    - domain == "finops"
+    - tools | intersect(['opencost']) | length == 1
 
 - name: Append finops alert groups to list
   ansible.builtin.set_fact:
     alert_groups: "{{ alert_groups + finops_alert_groups }}"
   when:
-    - domain == "finops"
+    - tools | intersect(['opencost']) | length == 1
 
 - name: Deploy Grafana
   kubernetes.core.helm:

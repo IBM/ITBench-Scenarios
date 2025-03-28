@@ -144,7 +144,7 @@ kubectl -n kube-system port-forward svc/topology-monitor 8081:8080
 
 8. (Optional) You only need to do this if you plan to leverage our [SRE-Agent](https://github.com/IBM/itbench-sre-agent). Leverage the values below for the `.env.tmpl`
 ```
-GRAFANA_URL=http://localhost:8080/prometheus
+GRAFANA_URL=http://localhost:8080/grafana
 TOPOLOGY_URL=http://localhost:8081
 ```
 

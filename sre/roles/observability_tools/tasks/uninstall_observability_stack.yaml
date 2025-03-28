@@ -5,12 +5,6 @@
   when:
     - tools | intersect(['ingress']) | length == 1
 
-- name: Uninstall Elasticsearch
-  ansible.builtin.import_tasks:
-    file: uninstall_elasticsearch.yaml
-  when:
-    - tools | intersect(['elasticsearch']) | length > 0
-
 - name: Uninstall Grafana Loki
   ansible.builtin.import_tasks:
     file: uninstall_loki.yaml

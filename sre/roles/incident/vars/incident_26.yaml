@@ -12,7 +12,6 @@ incident:
       - Ruby
   deployments:
     observability_tools:
-      - elasticsearch
       - grafana
       - ingress
       - jaeger

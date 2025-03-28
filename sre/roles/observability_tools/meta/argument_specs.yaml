@@ -3,7 +3,6 @@ main:
   options:
     tools:
       choices:
-        - elasticsearch
         - grafana
         - ingress
         - jaeger

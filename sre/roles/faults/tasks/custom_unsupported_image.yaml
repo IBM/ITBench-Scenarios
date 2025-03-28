@@ -4,8 +4,8 @@
     api_version: apps/v1
     kind: Deployment
     kubeconfig: "{{ kubeconfig }}"
-    name: "{{ deployment.name }}"
-    namespace: "{{ deployment.namespace }}"
+    name: "{{ spec.custom.target.deployment.name }}"
+    namespace: "{{ spec.custom.target.deployment.namespace }}"
     patch:
       - op: replace
         path: /spec/template/spec/containers/0/image
@@ -19,8 +19,8 @@
     api_version: apps/v1
     kind: Deployment
     kubeconfig: "{{ kubeconfig }}"
-    name: "{{ deployment.name }}"
-    namespace: "{{ deployment.namespace }}"
+    name: "{{ spec.custom.target.deployment.name }}"
+    namespace: "{{ spec.custom.target.deployment.namespace }}"
     wait: true
   tags:
     - fault_removal

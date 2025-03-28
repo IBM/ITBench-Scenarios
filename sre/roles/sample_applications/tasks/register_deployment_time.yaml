@@ -3,24 +3,39 @@
   ansible.builtin.set_fact:
     deployment_timestamp: "{{ now(utc=True, fmt='%Y-%m-%dT%H:%M:%SZ') }}"
 
-- name: Create application namespace map
+- name: Create namespaces variable
   ansible.builtin.set_fact:
-    namespaces:
-      otel_astronomy_shop: "{{ otel_astronomy_app_namespace_project_name }}"
-      dsb_hotel_reservation: "{{ deathstarbench_hotelreservation_app_namespace_project_name }}"
-      elasticsearch: "{{ elasticsearch_app_namespace_project_name }}"
+    namespaces: []
+
+- name: Add Astronomy Shop namespace to list
+  ansible.builtin.set_fact:
+    namespaces: "{{ namespaces + [otel_astronomy_app_namespace_project_name] }}"
+  when:
+    - sample_applications | intersect(['otel_astronomy_shop']) | length == 1
+
+- name: Add Hotel Reservation namespace to list
+  ansible.builtin.set_fact:
+    namespaces: "{{ namespaces + [deathstarbench_hotelreservation_app_namespace_project_name] }}"
+  when:
+    - sample_applications | intersect(['dsb_hotel_reservation']) | length == 1
+
+- name: Add Elasticsearch namespace to list
+  ansible.builtin.set_fact:
+    namespaces: "{{ namespaces + [elasticsearch_app_namespace_project_name] }}"
+  when:
+    - sample_applications | intersect(['elasticsearch']) | length == 1
 
 - name: Record Deployment time
   kubernetes.core.k8s:
     kubeconfig: "{{ kubeconfig }}"
     name: bundle-alert-timestamps
-    namespace: "{{ namespaces[ {{ item }} ] }}"
+    namespace: "{{ item }}"
     kind: ConfigMap
-    apiVersion: v1
+    api_version: v1
     resource_definition:
       data:
         deployment_time: "{{ deployment_timestamp }}"
-  loop: "{{ sample_applications }}"
+  loop: "{{ namespaces }}"
 
 - name: Create deployment record
   ansible.builtin.set_fact:

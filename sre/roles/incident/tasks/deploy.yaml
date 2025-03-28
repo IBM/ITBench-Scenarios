@@ -34,8 +34,6 @@
   ansible.builtin.include_role:
     name: faults
     apply:
-      tags:
-        - fault_injection
       vars:
         source: "{{ item.source }}"
         spec: "{{ item.spec }}"
@@ -50,8 +48,6 @@
       vars:
         tools:
           - kubernetes-topology-mapper
-      tags:
-        - install_tools
   tags:
     - fault_injection
 

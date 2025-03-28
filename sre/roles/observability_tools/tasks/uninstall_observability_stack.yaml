@@ -1,170 +1,54 @@
 ---
-- name: Uninstall OpenTelemetry Collector (Kubernetes)
-  kubernetes.core.helm:
-    name: "{{ opentelemetry_collector_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ opentelemetry_collector_namespace_project_name }}"
-    state: absent
-    wait: true
+- name: Uninstall Ingress NGINX Controller
+  ansible.builtin.import_tasks:
+    file: uninstall_ingress.yaml
+  when:
+    - tools | intersect(['ingress']) | length == 1
+
+- name: Uninstall Grafana Loki
+  ansible.builtin.import_tasks:
+    file: uninstall_loki.yaml
+  when:
+    - tools | intersect(['loki']) | length > 0
 
 - name: Uninstall OpenSearch
-  kubernetes.core.helm:
-    name: "{{ opensearch_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ opensearch_namespace_project_name }}"
-    state: absent
-    wait: true
+  ansible.builtin.import_tasks:
+    file: uninstall_opensearch.yaml
+  when:
+    - tools | intersect(['opensearch']) | length == 1
 
 - name: Uninstall Jaeger
-  kubernetes.core.helm:
-    name: "{{ jaeger_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ jaeger_namespace_project_name }}"
-    state: absent
-    wait: true
+  ansible.builtin.import_tasks:
+    file: uninstall_jaeger.yaml
+  when:
+    - tools | intersect(['jaeger']) | length == 1
+
+- name: Uninstall Prometheus
+  ansible.builtin.import_tasks:
+    file: uninstall_prometheus.yaml
+  when:
+    - tools | intersect(['prometheus']) | length == 1
+
+- name: Uninstall Kubernetes Event Exporter (OpenTelemetry)
+  ansible.builtin.import_tasks:
+    file: uninstall_opentelemetry_collector.yaml
+  when:
+    - tools | intersect(['kubernetes-event-exporter']) | length == 1
 
 - name: Uninstall Grafana
-  kubernetes.core.helm:
-    name: "{{ grafana_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ grafana_namespace_project_name }}"
-    state: absent
-    wait: true
+  ansible.builtin.import_tasks:
+    file: uninstall_grafana.yaml
+  when:
+    - tools | intersect(['grafana']) | length == 1
 
-- name: Uninstall the Prometheus stack
-  kubernetes.core.helm:
-    name: "{{ prometheus_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ prometheus_namespace_project_name }}"
-    state: absent
-    wait: true
+- name: Uninstall Kubernetes Metric Server
+  ansible.builtin.import_tasks:
+    file: uninstall_metrics_server.yaml
+  when:
+    - tools | intersect(['kubernetes-metric-server']) | length == 1
 
-- name: Uninstall the Kubernetes Metrics Server
-  kubernetes.core.helm:
-    name: "{{ metrics_server_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ metrics_server_namespace_project_name }}"
-    state: absent
-    wait: true
-
-- name: Uninstall Loki
-  kubernetes.core.helm:
-    name: "{{ loki_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ loki_namespace_project_name }}"
-    state: absent
-    wait: true
-
-- name: Uninstall Elasticsearch
-  kubernetes.core.helm:
-    name: "{{ es_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ es_namespace_project_name }}"
-    state: absent
-    wait: true
-
-- name: Uninstall OpenCost
-  kubernetes.core.helm:
-    name: "{{ opencost_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ opencost_namespace_project_name }}"
-    state: absent
-    wait: true
-
-- name: Uninstall Ingress
-  kubernetes.core.helm:
-    name: "{{ ingress_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ ingress_namespace_project_name }}"
-    state: absent
-    wait: true
-
-- name: Remove the namespace associated with OpenSearch
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    name: "{{ opensearch_namespace_project_name }}"
-    api_version: v1
-    kind: Namespace
-    state: absent
-    wait: true
-
-- name: Remove the namespace associated with Jaeger
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    name: "{{ jaeger_namespace_project_name }}"
-    api_version: v1
-    kind: Namespace
-    state: absent
-    wait: true
-
-- name: Remove the namespace associated with Grafana
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    name: "{{ grafana_namespace_project_name }}"
-    api_version: v1
-    kind: Namespace
-    state: absent
-    wait: true
-
-- name: Remove the namespace associated with Prometheus
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    name: "{{ prometheus_namespace_project_name }}"
-    api_version: v1
-    kind: Namespace
-    state: absent
-    wait: true
-
-- name: Remove the namespace associated with OpenTelemetry Collector (Kubernetes)
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    name: "{{ opentelemetry_collector_namespace_project_name }}"
-    api_version: v1
-    kind: Namespace
-    state: absent
-    wait: true
-
-- name: Remove the namespace associated with Kubernetes Metric Server
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    name: "{{ metrics_server_namespace_project_name }}"
-    api_version: v1
-    kind: Namespace
-    state: absent
-    wait: true
-
-- name: Remove the namespace associated with Loki
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    name: "{{ loki_namespace_project_name }}"
-    api_version: v1
-    kind: Namespace
-    state: absent
-    wait: true
-
-- name: Remove the namespace associated with Elasticsearch
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    name: "{{ es_namespace_project_name }}"
-    api_version: v1
-    kind: Namespace
-    state: absent
-    wait: true
-
-- name: Remove the namespace associated with OpenCost
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    name: "{{ opencost_namespace_project_name }}"
-    api_version: v1
-    kind: Namespace
-    state: absent
-    wait: true
-
-- name: Remove the namespace associated with Ingress
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    name: "{{ ingress_namespace_project_name }}"
-    api_version: v1
-    kind: Namespace
-    state: absent
-    wait: true
+- name: Uninstall Opencost
+  ansible.builtin.import_tasks:
+    file: uninstall_opencost.yaml
+  when:
+    - tools | intersect(['opencost']) | length == 1

@@ -7,19 +7,19 @@
   set_fact:
     opencost_recording_rules: "{{ lookup('ansible.builtin.file', 'files/recording_rules_opencost.yaml')| from_yaml }}"
   when:
-    - domain == "finops"
+    - tools | intersect(['opencost']) | length == 1
 
 - name: Add OpenCost rules to Prometheus rules list
   set_fact:
     prometheus_rules: "{{ prometheus_rules + opencost_recording_rules }}"
   when:
-    - domain == "finops"
+    - tools | intersect(['opencost']) | length == 1
 
 - name: Deploy the Prometheus stack
   kubernetes.core.helm:
     name: "{{ prometheus_installation_name }}"
     kubeconfig_path: "{{ kubeconfig }}"
-    chart_ref: prometheus-community/kube-prometheus-stack 
+    chart_ref: prometheus-community/kube-prometheus-stack
     chart_version: "{{ prometheus_chart_version }}"
     release_namespace: "{{ prometheus_namespace_project_name }}"
     release_state: present

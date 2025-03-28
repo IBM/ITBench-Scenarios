@@ -1,0 +1,17 @@
+---
+- name: Uninstall Loki
+  kubernetes.core.helm:
+    name: "{{ loki_installation_name }}"
+    kubeconfig_path: "{{ kubeconfig }}"
+    release_namespace: "{{ loki_namespace_project_name }}"
+    state: absent
+    wait: true
+
+- name: Remove the namespace associated with Loki
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    name: "{{ loki_namespace_project_name }}"
+    api_version: v1
+    kind: Namespace
+    state: absent
+    wait: true

@@ -1,24 +1,9 @@
 # Makefile to run Ansible playbooks
 
 EXECUTE_CHECKS_IN_BACKGROUND ?= false
-USE_JAEGER_QUERY_ENDPOINT ?= true
 
 INCIDENT_NUMBER ?= 1
 NUMBER_OF_RUNS = 1
-# TODO: Re-think the end to end experience
-
-FINOPS_SCENARIOS := 37
-HOTEL_RESERVATION_SCENARIOS := 102
-
-IS_DEBUG_SCENARIO ?= true
-IS_FINOPS_SCENARIO := $(shell echo "$(FINOPS_SCENARIOS)" | grep -w "$(INCIDENT_NUMBER)" > /dev/null && echo "true" || echo "false")
-IS_HOTEL_RESERVATION_SCENARIO := $(shell echo "$(HOTEL_RESERVATION_SCENARIOS)" | grep -w "$(INCIDENT_NUMBER)" > /dev/null && echo "true" || echo "false")
-
-SAMPLE_APPLICATION := otel_astronomy_shop
-ifeq ($(IS_HOTEL_RESERVATION_SCENARIO),true)
-SAMPLE_APPLICATION := dsb_hotel_reservation
-else
-endif
 
 .PHONY: help
 help: ## Display this help.
@@ -26,131 +11,45 @@ help: ## Display this help.
 
 .PHONY: deploy_observability_stack
 deploy_observability_stack: ## Deploys the observability tools to cluster
-ifeq ($(USE_JAEGER_QUERY_ENDPOINT),false)
-	ansible-playbook -v base.yaml --tags "install_tools" \
-		--extra-vars "domain=sre" \
-		--extra-vars "enable_jaeger_query_endpoint=false"
-else
-	ansible-playbook -v base.yaml --tags "install_tools" \
-		--extra-vars "domain=sre" \
-		--extra-vars "enable_jaeger_query_endpoint=true"
-endif
+	ansible-playbook -v scenario-runner.yaml \
+		--tags "install_observability_tools,install_tools" \
+		--extra-vars "incident_number=$(INCIDENT_NUMBER)"
 
 .PHONY: undeploy_observability_stack
 undeploy_observability_stack: ## Undeploys observability tools to cluster
-	ansible-playbook -v base.yaml --tags "uninstall_tools" \
-		--extra-vars "domain=sre"
+	ansible-playbook -v scenario-runner.yaml \
+		--tags "uninstall_observability_tools,uninstall_tools" \
+		--extra-vars "incident_number=$(INCIDENT_NUMBER)"
 
-.PHONY: deploy_finops_stack
-deploy_finops_stack: ## Deploys the finops tools to cluster
-	ansible-playbook -v base.yaml --tags "install_tools" \
-		--extra-vars "domain=finops"
+.PHONY: deploy_sample_application
+deploy_sample_application: ## Deploys the sample application to cluster
+	ansible-playbook -v scenario-runner.yaml \
+		--tags "install_sample_applications,install_applications" \
+		--extra-vars "incident_number=$(INCIDENT_NUMBER)"
 
-.PHONY: undeploy_finops_stack
-undeploy_finops_stack: ## Undeploys finops tools to cluster
-	ansible-playbook -v base.yaml --tags "uninstall_tools" \
-		--extra-vars "domain=finops"
-
-.PHONY: deploy_astronomy_shop
-deploy_astronomy_shop: ## Deploys the Astronomy Shop application
-	ansible-playbook -v base.yaml --tags "install_sample_applications" \
-		--extra-vars "sample_application=otel_astronomy_shop"
-
-.PHONY: undeploy_astronomy_shop
-undeploy_astronomy_shop: ## Undeploys the Astronomy Shop application
-	ansible-playbook -v base.yaml --tags "uninstall_sample_applications" \
-		--extra-vars "sample_application=otel_astronomy_shop"
-
-.PHONY: deploy_hotel_reservation
-deploy_hotel_reservation: ## Deploys the Hotel Reservation application
-	ansible-playbook -v base.yaml --tags "install_sample_applications" \
-		--extra-vars "sample_application=dsb_hotel_reservation"
-
-.PHONY: undeploy_hotel_reservation
-undeploy_hotel_reservation: ## Undeploys the Hotel Reservation application
-	ansible-playbook -v base.yaml --tags "uninstall_sample_applications" \
-		--extra-vars "sample_application=dsb_hotel_reservation"
-
-.PHONY: deploy_elasticsearch
-deploy_elasticsearch: ## Deploys the Elasticsearch cluster
-	ansible-playbook -v base.yaml --tags "install_sample_applications" \
-		--extra-vars "sample_application=elasticsearch"
-
-.PHONY: undeploy_elasticsearch
-undeploy_elasticsearch: ## Undeploys the Elasticsearch cluster
-	ansible-playbook -v base.yaml --tags "uninstall_sample_applications" \
-		--extra-vars "sample_application=elasticsearch"
-
-.PHONY: install_chaos_mesh
-install_chaos_mesh: ## Installs a Chaos mesh to the cluster
-	ansible-playbook -v base.yaml --tags "chaos_mesh_installation" \
-		--extra-vars "is_install_chaos_mesh=true"
+.PHONY: undeploy_sample_application
+undeploy_sample_application: ## Uneploys the sample application to cluster
+	ansible-playbook -v scenario-runner.yaml \
+		--tags "uninstall_sample_applications,uninstall_applications" \
+		--extra-vars "incident_number=$(INCIDENT_NUMBER)"
 
 .PHONY: inject_incident_fault
 inject_incident_fault: ## Injects the fault used in a specific incident
-ifeq ($(IS_DEBUG_SCENARIO),true)
-	ansible-playbook -v base.yaml --tags "incident_$(INCIDENT_NUMBER)" \
-		--extra-vars "debug=true" \
-		--extra-vars "is_fault_injection=true" \
-		--extra-vars "incident_number=$(INCIDENT_NUMBER)" \
-		--extra-vars "sample_application=$(SAMPLE_APPLICATION)"
-else
-	ansible-playbook -v base.yaml --tags "incident_$(INCIDENT_NUMBER)" \
-		--extra-vars "is_fault_injection=true" \
-		--extra-vars "incident_number=$(INCIDENT_NUMBER)" \
-		--extra-vars "sample_application=$(SAMPLE_APPLICATION)"
-endif
-	ansible-playbook -v base.yaml --tags "post_fault_injection"
+	ansible-playbook -v scenario-runner.yaml \
+		--tags "fault_injection,install_tools" \
+		--extra-vars "incident_number=$(INCIDENT_NUMBER)"
 
 .PHONY: remove_incident_fault
 remove_incident_fault: ## Removes the fault used in a specific incident
-	ansible-playbook -v base.yaml --tags "pre_fault_removal"
-ifeq ($(IS_DEBUG_SCENARIO),true)
-	ansible-playbook -v base.yaml --tags "incident_$(INCIDENT_NUMBER)" \
-		--extra-vars "debug=true" \
-		--extra-vars "is_fault_removal=true" \
-		--extra-vars "incident_number=$(INCIDENT_NUMBER)" \
-		--extra-vars "sample_application=$(SAMPLE_APPLICATION)"
-else
-	ansible-playbook -v base.yaml --tags "incident_$(INCIDENT_NUMBER)" \
-		--extra-vars "is_fault_removal=true" \
-		--extra-vars "incident_number=$(INCIDENT_NUMBER)" \
-		--extra-vars "sample_application=$(SAMPLE_APPLICATION)"
-endif
-
-.PHONY: deploy_scenario_application
-ifeq ($(IS_HOTEL_RESERVATION_SCENARIO),true)
-deploy_scenario_application: deploy_hotel_reservation
-else
-deploy_scenario_application: deploy_astronomy_shop
-endif
-
-.PHONY: undeploy_scenario_application
-ifeq ($(IS_HOTEL_RESERVATION_SCENARIO),true)
-undeploy_scenario_application: undeploy_hotel_reservation
-else
-undeploy_scenario_application: undeploy_astronomy_shop
-endif
-
-.PHONY: deploy_scenario_tools
-ifeq ($(IS_FINOPS_SCENARIO),true)
-deploy_scenario_tools: deploy_finops_stack
-else
-deploy_scenario_tools: deploy_observability_stack
-endif
-
-.PHONY: undeploy_scenario_tools
-ifeq ($(IS_FINOPS_SCENARIO),true)
-undeploy_scenario_tools: undeploy_finops_stack
-else
-undeploy_scenario_tools: undeploy_observability_stack
-endif
+	ansible-playbook -v scenario-runner.yaml \
+		--tags "fault_removal,uninstall_tools" \
+		--extra-vars "incident_number=$(INCIDENT_NUMBER)"
 
 .PHONY: start_incident
-start_incident: deploy_scenario_tools deploy_scenario_application inject_incident_fault ## Starts an incident by deploying a stack, application, and fault for an incident
+start_incident: deploy_observability_stack deploy_sample_application inject_incident_fault ## Starts an incident by deploying a stack, application, and fault for an incident
 
 .PHONY: stop_incident
-stop_incident: remove_incident_fault undeploy_scenario_application undeploy_scenario_tools ## Stops an incident by undeploying a stack, application, and fault for an incident
+stop_incident: remove_incident_fault undeploy_sample_application undeploy_observability_stack ## Stops an incident by undeploying a stack, application, and fault for an incident
 
 .PHONY: awx_setup
 awx_setup:

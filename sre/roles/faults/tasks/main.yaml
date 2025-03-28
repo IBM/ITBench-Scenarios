@@ -1,0 +1,15 @@
+---
+- name: Executing Chaos Mesh fault tasks
+  ansible.builtin.import_tasks:
+    file: chaos_mesh_fault.yaml
+  when:
+    - source == "chaos-mesh"
+    - spec.chaos is defined
+
+- name: Executing Custom Unsupported Image tasks
+  ansible.builtin.import_tasks:
+    file: custom_unsupported_image.yaml
+  when:
+    - source == "custom"
+    - spec.custom is defined
+    - spec.custom.name == "unsupported-image"

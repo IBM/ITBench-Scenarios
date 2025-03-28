@@ -4,7 +4,7 @@
     state: present
     kubeconfig: "{{ kubeconfig }}"
     namespace: "{{ chaos_mesh_namespace_project_name }}"
-    resource_definition: "{{ k8s_resource_definition | from_yaml }}"
+    resource_definition: "{{ spec.chaos['resource_definition.yaml'] | from_yaml }}"
   tags:
     - fault_injection
 
@@ -13,6 +13,6 @@
     state: absent
     kubeconfig: "{{ kubeconfig }}"
     namespace: "{{ chaos_mesh_namespace_project_name }}"
-    resource_definition: "{{ k8s_resource_definition | from_yaml }}"
+    resource_definition: "{{ spec.chaos['resource_definition.yaml'] | from_yaml }}"
   tags:
     - fault_removal

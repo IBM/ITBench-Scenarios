@@ -18,8 +18,6 @@
       vars:
         tools:
           - kubernetes-topology-mapper
-      tags:
-        - unintall_tools
   tags:
     - fault_removal
 
@@ -31,8 +29,6 @@
   ansible.builtin.include_role:
     name: faults
     apply:
-      tags:
-        - fault_removal
       vars:
         source: "{{ item.source }}"
         spec: "{{ item.spec }}"

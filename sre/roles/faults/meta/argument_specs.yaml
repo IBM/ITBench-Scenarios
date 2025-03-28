@@ -40,20 +40,3 @@ main:
                     namespace:
                       required: true
                       type: str
-chaos_mesh_fault:
-  options:
-    k8s_resource_definition:
-      required: true
-      type: str
-unsupported_image:
-  options:
-    deployment:
-      required: true
-      type: dict
-      options:
-        name:
-          required: true
-          type: str
-        namespace:
-          required: true
-          type: str

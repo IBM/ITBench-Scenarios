@@ -1,46 +1,7 @@
 ---
-- name: Create datasource processing variables
+- name: Load datasources template as yaml
   ansible.builtin.set_fact:
-    datasources: []
-
-- name: Convert datasource templates to yaml
-  ansible.builtin.template:
-    src: templates/datasource_{{ item }}.j2
-    dest: /tmp/datasource_{{ item }}.yaml
-  loop:
-    - clickhouse
-    - jaeger
-    - opensearch
-    - prometheus
-
-- name: Load datasources from files
-  ansible.builtin.set_fact:
-    clickhouse_datasources: "{{ lookup('ansible.builtin.file', '/tmp/datasource_clickhouse.yaml') | from_yaml }}"
-    jaeger_datasources: "{{ lookup('ansible.builtin.file', '/tmp/datasource_jaeger.yaml') | from_yaml }}"
-    opensearch_datasources: "{{ lookup('ansible.builtin.file', '/tmp/datasource_opensearch.yaml') | from_yaml }}"
-    prometheus_datasources: "{{ lookup('ansible.builtin.file', '/tmp/datasource_prometheus.yaml') | from_yaml }}"
-
-- name: Append Prometheus datasource to list
-  ansible.builtin.set_fact:
-    datasources: "{{ datasources + prometheus_datasources }}"
-  when:
-    - tools | intersect(['prometheus']) | length == 1
-
-- name: Append Jaeger datasource to list
-  ansible.builtin.set_fact:
-    datasources: "{{ datasources + jaeger_datasources }}"
-  when:
-    - tools | intersect(['jaeger']) | length == 1
-
-- name: Append Clickhouse datasource to list
-  ansible.builtin.set_fact:
-    datasources: "{{ datasources + clickhouse_datasources }}"
-
-- name: Append Opensearch datasource to list
-  ansible.builtin.set_fact:
-    datasources: "{{ datasources + opensearch_datasources }}"
-  when:
-    - tools | intersect(['opensearch']) | length == 1
+    datasources: "{{ lookup('ansible.builtin.template', 'templates/grafana_datasources.j2') | from_yaml }}"
 
 - name: Create dashboard processing variables
   ansible.builtin.set_fact:

@@ -6,8 +6,6 @@
 - name: Install Ingress NGINX Controller
   ansible.builtin.import_tasks:
     file: install_ingress.yaml
-  when:
-    - tools | intersect(['ingress']) | length == 1
 
 - name: Install Jaeger
   ansible.builtin.import_tasks:
@@ -30,26 +28,24 @@
 - name: Install Prometheus
   ansible.builtin.import_tasks:
     file: install_prometheus.yaml
-  when:
-    - tools | intersect(['prometheus']) | length == 1
 
-- name: List of common (SRE+FinOps) Helm installations
-  ansible.builtin.set_fact:
-    common_helm_installations:
-      - name: "{{ loki_namespace_project_name }}"
-        namespace: "{{ loki_installation_name }}"
-      - name: "{{ opensearch_namespace_project_name }}"
-        namespace: "{{ opensearch_installation_name }}"
-      - name: "{{ prometheus_namespace_project_name }}"
-        namespace: "{{ prometheus_installation_name }}"
-
-- name: Wait for common (SRE + FinOps) installations to complete
-  ansible.builtin.command: "helm status {{ item.name }} -n {{ item.namespace }}"
-  register: helm_status
-  until: "helm_status.rc == 0 and helm_status.stdout.find('STATUS: deployed') != -1"
+- name: Wait for Grafana datasource services
+  kubernetes.core.helm_info:
+    release_name: "{{ item.name }}"
+    release_namespace: "{{ item.namespace }}"
+  loop:
+    - name: "{{ jaeger_namespace_project_name }}"
+      namespace: "{{ jaeger_installation_name }}"
+    - name: "{{ loki_namespace_project_name }}"
+      namespace: "{{ loki_installation_name }}"
+    - name: "{{ opensearch_namespace_project_name }}"
+      namespace: "{{ opensearch_installation_name }}"
+    - name: "{{ prometheus_installation_name }}"
+      namespace: "{{ prometheus_namespace_project_name }}"
+  register: helm_info
+  until: helm_info.status.status == 'deployed'
   retries: 10
   delay: 60
-  loop: "{{ common_helm_installations }}"
 
 - name: Install Kubernetes Event Exporter (OpenTelemetry)
   ansible.builtin.import_tasks:
@@ -60,14 +56,12 @@
 - name: Install Grafana
   ansible.builtin.import_tasks:
     file: install_grafana.yaml
-  when:
-    - tools | intersect(['grafana']) | length == 1
 
-- name: Install Kubernetes Metric Server
+- name: Install Kubernetes Metrics Server
   ansible.builtin.import_tasks:
     file: install_metrics_server.yaml
   when:
-    - tools | intersect(['kubernetes-metric-server']) | length == 1
+    - tools | intersect(['kubernetes-metrics-server']) | length == 1
 
 - name: Install Opencost
   ansible.builtin.import_tasks:
@@ -75,23 +69,21 @@
   when:
     - tools | intersect(['opencost']) | length == 1
 
-- name: List of common FinOps Helm installations
-  ansible.builtin.set_fact:
-    finops_related_helm_installations:
-      - name: "{{ opencost_installation_name }}"
-        namespace: "{{ opencost_namespace_project_name }}"
-      - name: "{{ metrics_server_installation_name }}"
-        namespace: "{{ metrics_server_namespace_project_name }}"
-
 - name: Wait for common FinOps installations to complete
-  ansible.builtin.command: "helm status {{ item.name }} -n {{ item.namespace }}"
-  register: helm_status
-  until: "helm_status.rc == 0 and helm_status.stdout.find('STATUS: deployed') != -1"
+  kubernetes.core.helm_info:
+    release_name: "{{ item.name }}"
+    release_namespace: "{{ item.namespace }}"
+  loop:
+    - name: "{{ opencost_installation_name }}"
+      namespace: "{{ opencost_namespace_project_name }}"
+    - name: "{{ metrics_server_installation_name }}"
+      namespace: "{{ metrics_server_namespace_project_name }}"
+  register: helm_info
+  until: helm_info.status.status == 'deployed'
   retries: 10
   delay: 60
-  loop: "{{ finops_related_helm_installations }}"
   when:
-    - tools | intersect(['opencost']) | length == 1
+    - tools | intersect(['opencost','kubernetes-metrics-server']) | length > 0
 
 - name: Check if Grafana is healthy
   ansible.builtin.import_tasks:

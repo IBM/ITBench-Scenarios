@@ -3,16 +3,16 @@
   ansible.builtin.import_tasks:
     file: initialize_assertion_json.yaml
   tags:
-    - install_tools
+    - install_observability_tools
   when:
     - sre_bench_runner
-    - tools | intersect(['kubernetes-topology-mapper']) | length == 0
+    - tools | difference(['kubernetes-topology-mapper']) | length > 0
 
 - name: Install Observability Tools
   ansible.builtin.import_tasks:
     file: install_observability_stack.yaml
   tags:
-    - install_tools
+    - install_observability_tools
 
 - name: Install Kubernetes Topology Mapper
   ansible.builtin.import_tasks:
@@ -34,13 +34,12 @@
   ansible.builtin.import_tasks:
     file: uninstall_observability_stack.yaml
   tags:
-    - uninstall_tools
+    - uninstall_observability_tools
 
 - name: Finalize bench runner assertion json
   ansible.builtin.import_tasks:
     file: finalize_assertion_json.yaml
   tags:
-    - uninstall_tools
+    - uninstall_observability_tools
   when:
     - sre_bench_runner
-    - tools | intersect(['kubernetes-topology-mapper']) | length == 0

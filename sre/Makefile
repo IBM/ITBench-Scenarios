@@ -12,13 +12,13 @@ help: ## Display this help.
 .PHONY: deploy_observability_stack
 deploy_observability_stack: ## Deploys the observability tools to cluster
 	ansible-playbook -v scenario-runner.yaml \
-		--tags "install_observability_tools,install_tools" \
+		--tags "install_observability_tools" \
 		--extra-vars "incident_number=$(INCIDENT_NUMBER)"
 
 .PHONY: undeploy_observability_stack
 undeploy_observability_stack: ## Undeploys observability tools to cluster
 	ansible-playbook -v scenario-runner.yaml \
-		--tags "uninstall_observability_tools,uninstall_tools" \
+		--tags "uninstall_observability_tools" \
 		--extra-vars "incident_number=$(INCIDENT_NUMBER)"
 
 .PHONY: deploy_sample_application

@@ -1,16 +1,16 @@
 ---
 - name: Create Prometheus rules list
-  set_fact:
+  ansible.builtin.set_fact:
     prometheus_rules: []
 
 - name: Load OpenCost recording rules from yaml
-  set_fact:
+  ansible.builtin.set_fact:
     opencost_recording_rules: "{{ lookup('ansible.builtin.file', 'files/recording_rules_opencost.yaml')| from_yaml }}"
   when:
     - tools | intersect(['opencost']) | length == 1
 
 - name: Add OpenCost rules to Prometheus rules list
-  set_fact:
+  ansible.builtin.set_fact:
     prometheus_rules: "{{ prometheus_rules + opencost_recording_rules }}"
   when:
     - tools | intersect(['opencost']) | length == 1

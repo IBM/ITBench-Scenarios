@@ -54,5 +54,3 @@
         enabled: false
       write:
         replicas: 0
-  when:
-    - enable_loki_endpoint

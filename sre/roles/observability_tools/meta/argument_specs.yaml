@@ -3,16 +3,13 @@ main:
   options:
     tools:
       choices:
-        - grafana
-        - ingress
         - jaeger
         - kubernetes-event-exporter
-        - kubernetes-metric-exporter
+        - kubernetes-metrics-exporter
         - kubernetes-topology-mapper
         - loki
         - opensearch
         - opencost
-        - prometheus
       description: A list of tools to be installed
       elements: str
       required: true

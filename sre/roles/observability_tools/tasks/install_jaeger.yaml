@@ -33,8 +33,6 @@
     release_namespace: "{{ jaeger_namespace_project_name }}"
     release_state: present
     create_namespace: true
-    wait: true
-    timeout: 10m0s
     values:
       collector:
         service:

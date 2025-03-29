@@ -1,5 +1,5 @@
 ---
-- name: Deploy Kubernetes Metric Server
+- name: Deploy Kubernetes Metrics Server
   kubernetes.core.helm:
     name: "{{ metrics_server_installation_name }}"
     kubeconfig_path: "{{ kubeconfig }}"

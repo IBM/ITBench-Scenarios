@@ -11,13 +11,10 @@ incident:
       - Node.js
   deployments:
     observability_tools:
-      - grafana
-      - ingress
       - jaeger
       - kubernetes-event-exporter
       - loki
       - opensearch
-      - prometheus
     sample_applications:
       - otel_astronomy_shop
   faults:

@@ -2,8 +2,6 @@
 - name: Uninstall Ingress NGINX Controller
   ansible.builtin.import_tasks:
     file: uninstall_ingress.yaml
-  when:
-    - tools | intersect(['ingress']) | length == 1
 
 - name: Uninstall Grafana Loki
   ansible.builtin.import_tasks:
@@ -26,8 +24,6 @@
 - name: Uninstall Prometheus
   ansible.builtin.import_tasks:
     file: uninstall_prometheus.yaml
-  when:
-    - tools | intersect(['prometheus']) | length == 1
 
 - name: Uninstall Kubernetes Event Exporter (OpenTelemetry)
   ansible.builtin.import_tasks:
@@ -38,14 +34,12 @@
 - name: Uninstall Grafana
   ansible.builtin.import_tasks:
     file: uninstall_grafana.yaml
-  when:
-    - tools | intersect(['grafana']) | length == 1
 
-- name: Uninstall Kubernetes Metric Server
+- name: Uninstall Kubernetes Metrics Server
   ansible.builtin.import_tasks:
     file: uninstall_metrics_server.yaml
   when:
-    - tools | intersect(['kubernetes-metric-server']) | length == 1
+    - tools | intersect(['kubernetes-metrics-server']) | length == 1
 
 - name: Uninstall Opencost
   ansible.builtin.import_tasks:

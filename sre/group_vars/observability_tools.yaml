@@ -3,7 +3,6 @@
 loki_namespace_project_name: "loki"
 loki_installation_name: "loki"
 loki_chart_version: "6.27.0"
-enable_loki_endpoint: true
 
 # Opensearch configuration
 opensearch_namespace_project_name: "opensearch"

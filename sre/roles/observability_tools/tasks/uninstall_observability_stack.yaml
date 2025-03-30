@@ -1,48 +1,43 @@
 ---
-- name: Uninstall Ingress NGINX Controller
-  ansible.builtin.import_tasks:
-    file: uninstall_ingress.yaml
+- name: Create list of tools to uninstall
+  ansible.builtin.set_fact:
+    observability_releases:
+      - name: "{{ ingress_installation_name }}"
+        namespace: "{{ ingress_namespace_project_name }}"
+      - name: "{{ prometheus_installation_name }}"
+        namespace: "{{ prometheus_namespace_project_name }}"
+      - name: "{{ grafana_installation_name }}"
+        namespace: "{{ grafana_namespace_project_name }}"
+      - name: "{{ jaeger_installation_name }}"
+        namespace: "{{ jaeger_namespace_project_name }}"
+      - name: "{{ es_installation_name }}"
+        namespace: "{{ es_namespace_project_name }}"
+      - name: "{{ opentelemetry_collector_installation_name }}"
+        namespace: "{{ opentelemetry_collector_namespace_project_name }}"
+      - name: "{{ metrics_server_installation_name }}"
+        namespace: "{{ metrics_server_namespace_project_name }}"
+      - name: "{{ loki_installation_name }}"
+        namespace: "{{ loki_namespace_project_name }}"
+      - name: "{{ opencost_installation_name }}"
+        namespace: "{{ opencost_namespace_project_name }}"
+      - name: "{{ opensearch_installation_name }}"
+        namespace: "{{ opensearch_namespace_project_name }}"
 
-- name: Uninstall Grafana Loki
-  ansible.builtin.import_tasks:
-    file: uninstall_loki.yaml
-  when:
-    - tools | intersect(['loki']) | length > 0
+- name: Uninstall observability tools
+  kubernetes.core.helm:
+    kubeconfig_path: "{{ kubeconfig }}"
+    release_name: "{{ item.name }}"
+    release_namespace: "{{ item.namespace }}"
+    state: absent
+    wait: true
+  loop: "{{ observability_releases }}"
 
-- name: Uninstall OpenSearch
-  ansible.builtin.import_tasks:
-    file: uninstall_opensearch.yaml
-  when:
-    - tools | intersect(['opensearch']) | length == 1
-
-- name: Uninstall Jaeger
-  ansible.builtin.import_tasks:
-    file: uninstall_jaeger.yaml
-  when:
-    - tools | intersect(['jaeger']) | length == 1
-
-- name: Uninstall Prometheus
-  ansible.builtin.import_tasks:
-    file: uninstall_prometheus.yaml
-
-- name: Uninstall Kubernetes Event Exporter (OpenTelemetry)
-  ansible.builtin.import_tasks:
-    file: uninstall_opentelemetry_collector.yaml
-  when:
-    - tools | intersect(['kubernetes-event-exporter']) | length == 1
-
-- name: Uninstall Grafana
-  ansible.builtin.import_tasks:
-    file: uninstall_grafana.yaml
-
-- name: Uninstall Kubernetes Metrics Server
-  ansible.builtin.import_tasks:
-    file: uninstall_metrics_server.yaml
-  when:
-    - tools | intersect(['kubernetes-metrics-server']) | length == 1
-
-- name: Uninstall Opencost
-  ansible.builtin.import_tasks:
-    file: uninstall_opencost.yaml
-  when:
-    - tools | intersect(['opencost']) | length == 1
+- name: Delete associated namespaces
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    name: "{{ item.namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: absent
+    wait: true
+  loop: "{{ observability_releases }}"

@@ -1,12 +1,4 @@
 ---
-# - name: Set additional template variables
-#   ansible.builtin.set_fact:
-#     recording_rules:
-#       finops:
-#         enabled: "{{ tools | intersect(['opencost']) | length == 1 }}"
-#       file_paths:
-#         opencost: files/recording_rules_opencost.yaml
-
 - name: Create Prometheus rules list
   ansible.builtin.set_fact:
     prometheus_rules: []

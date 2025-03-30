@@ -31,6 +31,7 @@
 
 - name: Wait for Grafana datasource services
   kubernetes.core.helm_info:
+    kubeconfig_path: "{{ kubeconfig }}"
     release_name: "{{ item.name }}"
     release_namespace: "{{ item.namespace }}"
   loop:
@@ -71,6 +72,7 @@
 
 - name: Wait for common FinOps installations to complete
   kubernetes.core.helm_info:
+    kubeconfig_path: "{{ kubeconfig }}"
     release_name: "{{ item.name }}"
     release_namespace: "{{ item.namespace }}"
   loop:

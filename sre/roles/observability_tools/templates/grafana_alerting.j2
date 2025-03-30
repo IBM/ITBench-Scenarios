@@ -1,0 +1,30 @@
+rules.yaml:
+  apiVersion: 1
+  groups:
+    - orgId: 1
+      name: BenchmarkNotifications
+      folder: GoldenSignalAlerts
+      interval: 60s
+      rules: {{ golden_signal_alert_rules }}
+    - orgId: 1
+      name: BenchmarkNotifications
+      folder: KafkaAlerts
+      interval: 60s
+      rules: {{ kafka_consumer_connection_alert_rules }}
+    - orgId: 1
+      name: BenchmarkNotifications
+      folder: GeneralAlerts
+      interval: 60s
+      rules: {{ general_alert_rules }}
+{% if alerting.finops.enabled %}
+    - orgId: 1
+      name: BenchmarkNotifications
+      folder: CostAlerts
+      interval: 60s
+      rules: {{ cost_alert_rules }}
+    - orgId: 1
+      name: BenchmarkNotifications
+      folder: EfficiencyAlerts
+      interval: 60s
+      rules: {{ efficiency_alert_rules }}
+{% endif %}

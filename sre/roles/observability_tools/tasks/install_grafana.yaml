@@ -1,12 +1,4 @@
 ---
-- name: Load datasources template as yaml
-  ansible.builtin.set_fact:
-    datasources: "{{ lookup('ansible.builtin.template', 'templates/grafana_datasources.j2') | from_yaml }}"
-
-- name: Create Astronomy Shop dashboard map
-  ansible.builtin.set_fact:
-    astronomy_shop_dashboards: {}
-
 - name: Remove OpenTelemetry Astronomy Shop tar file
   ansible.builtin.file:
     path: /tmp/opentelemetry-demo-{{ otel_astronomy_app_chart_version }}.tgz
@@ -31,6 +23,10 @@
     patterns: "*.json"
   register: grafana_dashboards
 
+- name: Create Astronomy Shop dashboard map
+  ansible.builtin.set_fact:
+    astronomy_shop_dashboards: {}
+
 - name: Update Astronomy Shop dashboard map with modified Grafana dashboards
   ansible.builtin.set_fact:
     astronomy_shop_dashboards: |
@@ -51,7 +47,6 @@
 
 - name: Create alert rules processing variables
   ansible.builtin.set_fact:
-    alert_groups: []
     alert_rules_file_names:
       - cost
       - efficiency
@@ -81,48 +76,24 @@
 
 - name: Load sample applications alert rules from file
   ansible.builtin.set_fact:
+    cost_alert_rules: "{{ lookup('ansible.builtin.file', '/tmp/cost_alert_rules.yaml') | from_yaml }}"
+    efficiency_alert_rules: "{{ lookup('ansible.builtin.file', '/tmp/efficiency_alert_rules.yaml') | from_yaml }}"
+    general_alert_rules: "{{ lookup('ansible.builtin.file', '/tmp/general_alert_rules.yaml') | from_yaml }}"
     golden_signal_alert_rules: "{{ lookup('ansible.builtin.file', '/tmp/golden_signal_alert_rules.yaml') | from_yaml }}"
     kafka_consumer_connection_alert_rules: "{{ lookup('ansible.builtin.file', '/tmp/kafka_consumer_connection_alert_rules.yaml') | from_yaml }}"
 
-- name: Create sample applications alert rules list
+- name: Set additional template variables
   ansible.builtin.set_fact:
-    sample_application_alert_rules: "{{ golden_signal_alert_rules + kafka_consumer_connection_alert_rules }}"
-
-- name: Create alert groups list
-  ansible.builtin.set_fact:
-    alert_groups:
-      - orgId: 1
-        name: BenchmarkNotifications
-        folder: ApplicationAlerts
-        interval: 60s
-        rules: "{{ sample_application_alert_rules }}"
-      - orgId: 1
-        name: BenchmarkNotifications
-        folder: GeneralAlerts
-        interval: 60s
-        rules: "{{ lookup('ansible.builtin.file', '/tmp/general_alert_rules.yaml') | from_yaml }}"
-
-- name: Create finops alert group list
-  ansible.builtin.set_fact:
-    finops_alert_groups:
-      - orgId: 1
-        name: BenchmarkNotifications
-        folder: CostAlerts
-        interval: 60s
-        rules: "{{ lookup('ansible.builtin.file', '/tmp/cost_alert_rules.yaml') | from_yaml }}"
-      - orgId: 1
-        name: BenchmarkNotifications
-        folder: EfficiencyAlerts
-        interval: 60s
-        rules: "{{ lookup('ansible.builtin.file', '/tmp/efficiency_alert_rules.yaml') | from_yaml }}"
-  when:
-    - tools | intersect(['opencost']) | length == 1
-
-- name: Append finops alert groups to list
-  ansible.builtin.set_fact:
-    alert_groups: "{{ alert_groups + finops_alert_groups }}"
-  when:
-    - tools | intersect(['opencost']) | length == 1
+    alerting:
+      finops:
+        enabled: "{{ tools | intersect(['opencost']) | length == 1 }}"
+    datasources:
+      loki:
+        enabled: "{{ tools | intersect(['loki']) | length == 1 }}"
+      jaeger:
+        enabled: "{{ tools | intersect(['jaeger']) | length == 1 }}"
+      opensearch:
+        enabled: "{{ tools | intersect(['opensearch']) | length == 1 }}"
 
 - name: Deploy Grafana
   kubernetes.core.helm:
@@ -136,10 +107,7 @@
     wait: true
     timeout: 10m0s
     values:
-      alerting:
-        rules.yaml:
-          apiVersion: 1
-          groups: "{{ alert_groups }}"
+      alerting: "{{ lookup('ansible.builtin.template', 'templates/grafana_alerting.j2') | from_yaml }}"
       dashboardProviders:
         dashboardproviders.yaml:
           apiVersion: 1
@@ -155,10 +123,7 @@
                 foldersFromFilesStructure: false
       dashboards:
         astronomy-shop: "{{ astronomy_shop_dashboards }}"
-      datasources:
-        datasources.yaml:
-          apiVersion: 1
-          datasources: "{{ datasources }}"
+      datasources: "{{ lookup('ansible.builtin.template', 'templates/grafana_datasources.j2') | from_yaml }}"
       grafana.ini:
         auth:
           disable_login_form: true
@@ -179,3 +144,7 @@
       plugins:
         - grafana-opensearch-datasource
         - vertamedia-clickhouse-datasource
+
+- name: Check if Grafana is healthy
+  ansible.builtin.import_tasks:
+    file: check_grafana_status.yaml

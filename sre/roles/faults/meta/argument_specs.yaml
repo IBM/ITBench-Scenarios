@@ -50,6 +50,6 @@ main:
             cluster_namespace:
               required: true
               type: str
-            fault:
+            name:
               choice:
                 - bad-password

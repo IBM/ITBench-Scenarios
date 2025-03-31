@@ -1,7 +1,7 @@
 ---
 - name: Executing Chaos Mesh fault tasks
   ansible.builtin.import_tasks:
-    file: chaos_mesh_fault.yaml
+    file: chaos_mesh.yaml
   when:
     - source == "chaos-mesh"
     - spec.chaos is defined
@@ -30,4 +30,4 @@
   when:
     - source == "elasticsearch"
     - spec.elasticsearch is defined
-    - spec.elasticsearch.fault == "bad-password"
+    - spec.elasticsearch.name == "bad-password"

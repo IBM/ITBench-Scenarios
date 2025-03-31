@@ -53,3 +53,27 @@ main:
             name:
               choice:
                 - bad-password
+        flagd:
+          required: false
+          type: dict
+          options:
+            name:
+              required: true
+              type: str
+            target:
+              required: true
+              type: dict
+              options:
+                configmap:
+                  required: true
+                  type: dict
+                  options:
+                    data_key:
+                      required: true
+                      type: str
+                    name:
+                      required: true
+                      type: str
+                    namespace:
+                      required: true
+                      type: str

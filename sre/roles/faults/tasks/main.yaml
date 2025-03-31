@@ -6,6 +6,13 @@
     - source == "chaos-mesh"
     - spec.chaos is defined
 
+- name: Executing Flagd tasks
+  ansible.builtin.import_tasks:
+    file: flagd.yaml
+  when:
+    - source == "flagd"
+    - spec.flagd is defined
+
 - name: Executing Custom Memory Resource Quota tasks
   ansible.builtin.import_tasks:
     file: custom_memory_resource_quota.yaml

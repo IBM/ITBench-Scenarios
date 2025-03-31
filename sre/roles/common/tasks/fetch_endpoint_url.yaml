@@ -6,16 +6,18 @@
     namespace: "{{ ingress.namespace }}"
     kubeconfig: "{{ kubeconfig }}"
     wait: true
+  ignore_errors: true
   register: ingress_info
+  until: ingress_info.resources[0].status.loadBalancer.ingress is defined
+  delay: 30
+  retries: 4
   when:
-    - ingress.name is defined
-    - ingress.namespace is defined
+    - ingress is defined
 
 - name: Extract the Ingress hostname information
   ansible.builtin.set_fact:
     ingress_hostname: "{{ ingress_info.resources[0].status.loadBalancer.ingress[0].hostname }}"
   when:
-    - ingress_info.resources | length == 1
     - ingress_info.resources[0].status.loadBalancer.ingress is defined
     - ingress_info.resources[0].status.loadBalancer.ingress | length > 0
     - ingress_info.resources[0].status.loadBalancer.ingress[0].hostname is defined

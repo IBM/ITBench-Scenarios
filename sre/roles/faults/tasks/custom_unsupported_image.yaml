@@ -10,7 +10,6 @@
       - op: replace
         path: /spec/template/spec/containers/0/image
         value: quay.io/felix_george/checkout_service:latest
-    wait: true
   tags:
     - fault_injection
 
@@ -21,6 +20,5 @@
     kubeconfig: "{{ kubeconfig }}"
     name: "{{ spec.custom.target.deployment.name }}"
     namespace: "{{ spec.custom.target.deployment.namespace }}"
-    wait: true
   tags:
     - fault_removal

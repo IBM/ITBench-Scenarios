@@ -1,0 +1,54 @@
+---
+incident:
+  metadata:
+    id: 1
+    author: "@mudverma"
+    name: Recommendation Service Cache
+    description: Recommendation Service in Astronomy Shop has a cache failure
+    complexity: Medium
+    platform: kubernetes
+    technologies:
+      - Python
+      - Node.js
+  deployments:
+    observability_tools:
+      - jaeger
+      - kubernetes-event-exporter
+      - loki
+      - opensearch
+    sample_applications:
+      - otel_astronomy_shop
+  faults:
+    - source: flagd
+      spec:
+        flagd:
+          name: recommendationServiceCacheFailure
+          target:
+            configmap:
+              name: "{{ otel_astronomy_app_installation_name }}-flagd-config"
+              namespace: "{{ otel_astronomy_app_namespace_project_name }}"
+              data_key: demo.flagd.json
+  alerts:
+    firing:
+      - id: Error_Rate_is_Above_Threshold_frontend
+  solution:
+    propagations:
+      - source: flagd-config-1
+        target: flagd-service-1
+        condition: flagd-config ConfigMap recommendationServiceCacheFailure feature flag set
+        effect: flagd enables injection
+      - source: flagd-service-1
+        target: recommendation-pod-1
+        condition: flagd enables injection
+        effect: recommendation pod crashLoopBack Failure
+      - source: recommendation-pod-1
+        target: frontend-service-1
+        condition: flagd-config ConfigMap recommendationServiceCacheFailure feature flag set
+        effect: frontend service Error Rate is Above Threshold
+    recommendations:
+      - id: Disable_recommendationServiceCacheFailure_feature_flag
+        actions:
+          - Disable recommendationServiceCacheFailure feature flag
+      - id: Increase_Memory_Allocation
+        actions:
+          - Increase Memory Allocation

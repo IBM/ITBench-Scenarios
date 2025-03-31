@@ -11,7 +11,7 @@ incident:
       - Node.js
   deployments:
     observability_tools:
-      # - jaeger
+      - jaeger
       - kubernetes-event-exporter
       - loki
       - opensearch

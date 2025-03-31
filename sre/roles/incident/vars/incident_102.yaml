@@ -1,0 +1,45 @@
+---
+incident:
+  metadata:
+    id: 102
+    author: "@JacksonArthurClark"
+    name: Memory resource quota limit on a namespace
+    description: Introduce memory resource quota limit and make search service unavailable
+    complexity: Low
+    platform: kubernetes
+    technologies:
+      - Go
+      - Node.js
+  deployments:
+    observability_tools:
+      - jaeger
+      - kubernetes-event-exporter
+      - loki
+      - opensearch
+    sample_applications:
+      - dsb_hotel_reservation
+  faults:
+    - source: custom
+      spec:
+        custom:
+          name: memory-resource-quota
+          target:
+            deployment:
+              name: search-hotel-reservation
+              namespace: "{{ deathstarbench_hotelreservation_app_namespace_project_name }}"
+  alerts:
+    firing:
+      - id: Error_Rate_is_Above_Threshold_frontend
+  solution:
+    propagations:
+      - source: search-deployment-1
+        target: frontend-service-1
+        condition: searchservice replicaset has 0 pods causing searchservice to be unavailable
+        effect: frontend service Error Rate is Above Threshold
+    recommendations:
+      - id: increase_memory_resource_limit
+        actions:
+          - increase memory resource limit
+      - id: reduce_memory_on_deployment_pods
+        actions:
+          - patch deployments or pods to reduce the requested memory

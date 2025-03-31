@@ -6,10 +6,28 @@
     - source == "chaos-mesh"
     - spec.chaos is defined
 
+- name: Executing Custom Memory Resource Quota tasks
+  ansible.builtin.import_tasks:
+    file: custom_memory_resource_quota.yaml
+  when:
+    - source == "custom"
+    - spec.custom is defined
+    - spec.custom.target.deployment is defined
+    - spec.custom.name == "memory-resource-quota"
+
 - name: Executing Custom Unsupported Image tasks
   ansible.builtin.import_tasks:
     file: custom_unsupported_image.yaml
   when:
     - source == "custom"
     - spec.custom is defined
+    - spec.custom.target.deployment is defined
     - spec.custom.name == "unsupported-image"
+
+- name: Executing Elasticsearch Bad Password tasks
+  ansible.builtin.import_tasks:
+    file: elasticsearch_bad_password.yaml
+  when:
+    - source == "elasticsearch"
+    - spec.elasticsearch is defined
+    - spec.elasticsearch.fault == "bad-password"

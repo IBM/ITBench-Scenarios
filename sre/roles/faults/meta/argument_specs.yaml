@@ -5,6 +5,8 @@ main:
       choices:
         - chaos-mesh
         - custom
+        - elasticsearch
+        - kubernetes
       type: str
     spec:
       required: true
@@ -23,6 +25,7 @@ main:
           options:
             name:
               choices:
+                - memory-resource-quota
                 - unsupported-image
               required: true
               type: str
@@ -40,3 +43,13 @@ main:
                     namespace:
                       required: true
                       type: str
+        elasticsearch:
+          requred: false
+          type: dict
+          options:
+            cluster_namespace:
+              required: true
+              type: str
+            fault:
+              choice:
+                - bad-password

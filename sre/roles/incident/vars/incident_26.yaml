@@ -11,6 +11,8 @@ incident:
       - Go
       - Ruby
   deployments:
+    fault_tools:
+      - chaos-mesh
     observability_tools:
       - jaeger
       - kubernetes-event-exporter

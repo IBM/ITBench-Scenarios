@@ -1,0 +1,59 @@
+---
+incident:
+  metadata:
+    id: 3
+    author: "@mudverma"
+    name: Ad Service CPU
+    description: Ad Service in Astronomy Shop runs with high CPU load
+    complexity: Medium
+    platform: kubernetes
+    technologies:
+      - Java
+      - Node.js
+  deployments:
+    observability_tools:
+      - jaeger
+      - kubernetes-event-exporter
+      - loki
+      - opensearch
+    sample_applications:
+      - otel_astronomy_shop
+  faults:
+    - source: custom
+      spec:
+        custom:
+          name: modify-cpu-resource-limits
+          target:
+            deployment:
+              name: "{{ otel_astronomy_app_installation_name }}-adservice"
+              namespace: "{{ otel_astronomy_app_namespace_project_name }}"
+    - source: flagd
+      spec:
+        flagd:
+          name: adServiceHighCpu
+          target:
+            configmap:
+              name: "{{ otel_astronomy_app_installation_name }}-flagd-config"
+              namespace: "{{ otel_astronomy_app_namespace_project_name }}"
+              data_key: demo.flagd.json
+  alerts:
+    firing:
+      - id: Error_Rate_is_Above_Threshold_frontend
+  solution:
+    propagations:
+      - source: flagd-config-1
+        target: flagd-service-1
+        condition: flagd-config ConfigMap adServiceHighCpu feature flag set
+        effect: flagd enables injection
+      - source: flagd-service-1
+        target: ad-service-1
+        condition: flagd enables injection
+        effect: ad pod High CPU Utilization. ad service Error Rate is Above Threshold
+      - source: ad-service-1
+        target: frontend-service-1
+        condition: ad service is returning errors
+        effect: frontend Error Rate is Above Threshold
+    recommendations:
+      - id: Disable_adServicHighCpu_feature_flag
+        actions:
+          - Disable adServicHighCpu feature flag

@@ -10,6 +10,7 @@ incident:
     technologies:
       - Node.js
   deployments:
+    fault_tools: []
     observability_tools:
       - jaeger
       - kubernetes-event-exporter

@@ -1,0 +1,28 @@
+---
+- name: Executing Memory Resource Quota fault tasks
+  ansible.builtin.import_tasks:
+    file: custom_memory_resource_quota.yaml
+  when:
+    - spec.custom.name == "memory-resource-quota"
+    - spec.custom.target.deployment is defined
+
+- name: Executing Misconfigured Service Port fault tasks
+  ansible.builtin.import_tasks:
+    file: /custom_misconfigured_service_port.yaml
+  when:
+    - spec.custom.name == "misconfigured-service-port"
+    - spec.custom.target.service is defined
+
+- name: Executing Modify CPU Resource Limit fault tasks
+  ansible.builtin.import_tasks:
+    file: custom_modify_cpu_resource_limits.yaml
+  when:
+    - spec.custom.name == "modify-cpu-resource-limits"
+    - spec.custom.target.deployment is defined
+
+- name: Executing Unsupported Image fault tasks
+  ansible.builtin.import_tasks:
+    file: custom_unsupported_image.yaml
+  when:
+    - spec.custom.name == "unsupported-image"
+    - spec.custom.target.deployment is defined

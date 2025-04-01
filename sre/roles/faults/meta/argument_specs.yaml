@@ -26,6 +26,8 @@ main:
             name:
               choices:
                 - memory-resource-quota
+                - misconfigured-service-port
+                - modify-cpu-resource-limits
                 - unsupported-image
               required: true
               type: str
@@ -43,6 +45,19 @@ main:
                     namespace:
                       required: true
                       type: str
+                service:
+                  required: false
+                  type: dict
+                  options:
+                    name:
+                      required: true
+                      type: str
+                    namespace:
+                      required: true
+                      type: str
+                    target_port:
+                      required: true
+                      type: int
         elasticsearch:
           requred: false
           type: dict

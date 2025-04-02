@@ -52,7 +52,7 @@
         with: prometheus
       - replace: webstore-traces
         with: jaeger
-      - replace: P9744FCCEAAFBD98F
+      - replace: webstore-logs
         with: opensearch
 
 - name: Download OpenTelemtry Demo dashboards

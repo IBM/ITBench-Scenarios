@@ -3,7 +3,7 @@ scenario_domain: sre
 sample_application: otel_astronomy_shop
 
 target_namespace_name: "{{ otel_astronomy_app_namespace_project_name }}"
-target_label_name1: "quoteservice"
+target_label_name1: "quote"
 target_label_name2: ""
 
 docs_incident_27:
@@ -46,28 +46,28 @@ docs_incident_27:
   groups:
     - id: http-abort-otel-demo-quoteservice-1
       kind: HttpChaos
-      filter: 
+      filter:
       - .*quoteservice
       namespace: chaos-mesh
       root_cause: true
     - id: quote-service-1
       kind: Service
-      filter: 
+      filter:
       - .*quoteservice\b
       namespace: otel-demo
     - id: checkout-service-1
       kind: Service
-      filter: 
+      filter:
       - .*checkoutservice\b
       namespace: otel-demo
     - id: shipping-service-1
       kind: Service
-      filter: 
+      filter:
       - .*shippingservice\b
       namespace: otel-demo
     - id: frontend-service-1
       kind: Service
-      filter: 
+      filter:
       - .*frontend\b
       namespace: otel-demo
     - id: frontend-pod-1

@@ -3,7 +3,7 @@ scenario_domain: sre
 sample_application: otel_astronomy_shop
 
 target_namespace_name: "{{ otel_astronomy_app_namespace_project_name }}"
-target_label_name1: "emailservice"
+target_label_name1: "email"
 
 docs_incident_26:
   platform: kubernetes
@@ -40,18 +40,18 @@ docs_incident_26:
   groups:
     - id: tamper-body-otel-demo-emailservice-1
       kind: HttpChaos
-      filter: 
+      filter:
       - .*emailservice
       namespace: chaos-mesh
       root_cause: true
     - id: send_order_confirmation-endpoint-1
       kind: ServiceOperation
-      filter: 
+      filter:
       - emailservice-.*_send_order_confirmation
       namespace: otel-demo
     - id: email-service-1
       kind: Service
-      filter: 
+      filter:
         - .*emailservice
       namespace: otel-demo
     - id: checkout-pod-1
@@ -61,7 +61,7 @@ docs_incident_26:
         - .*checkoutservice-.*
     - id: checkout-service-1
       kind: Service
-      filter: 
+      filter:
          - .*checkoutservice
       namespace: otel-demo
     - id: email-pod-1
@@ -97,4 +97,3 @@ docs_incident_26:
         id: Delete_the_resource_httpchaos_tamper-body-otel-demo-26-emailservice
         actions:
           - Delete the resource httpchaos tamper-body-otel-demo-26-emailservice
-

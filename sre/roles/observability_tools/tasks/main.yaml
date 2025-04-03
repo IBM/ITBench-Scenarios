@@ -17,6 +17,11 @@
     - install_tools
 
 - ansible.builtin.import_tasks:
+    file: install_clickhouse.yaml
+  tags:
+    - install_tools
+
+- ansible.builtin.import_tasks:
     file: install_loki.yaml
   tags:
     - install_tools

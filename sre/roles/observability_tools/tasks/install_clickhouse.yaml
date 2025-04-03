@@ -1,0 +1,31 @@
+---
+- name: Deploy Clickhouse Operator and Clickhouse
+  kubernetes.core.helm:
+    name: "{{ clickhouse_installation_name }}"
+    kubeconfig_path: "{{ kubeconfig }}"
+    chart_ref: altinity/clickhouse
+    chart_version: "{{ clickhouse_chart_version }}"
+    release_namespace: "{{ clickhouse_namespace_project_name }}"
+    release_state: present
+    create_namespace: true
+    wait: true
+    values:
+      clickhouse:
+        defaultUser:
+          allowExternalAccess: true
+    timeout: 10m0s
+
+- name: Wait for Clickhouse install to complete
+  kubernetes.core.k8s_info:
+    api_version: clickhouse.altinity.com/v1
+    kind: ClickHouseInstallation
+    name: "{{ clickhouse_installation_name }}"
+    namespace: "{{ clickhouse_namespace_project_name }}"
+    kubeconfig: "{{ kubeconfig }}"
+    wait: true
+  register: clickhouse_installation_info
+  until:
+    - clickhouse_installation_info.resources[0].status.status is defined
+    - clickhouse_installation_info.resources[0].status.status == 'Completed'
+  retries: 4
+  delay: 30

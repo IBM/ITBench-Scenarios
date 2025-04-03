@@ -4,6 +4,8 @@
 Depending on the scenario domain (SRE or FinOps), the following tools are deployed:
 | Tool | Scenario Domain(s) | Repository |
 | --- | --- | --- |
+| Altinity Clickhouse | FinOps, SRE | https://github.com/Altinity/ClickHouse |
+| Altinity Clickhouse Operator | FinOps, SRE | https://github.com/Altinity/clickhouse-operator |
 | Chaos Mesh | SRE | https://github.com/chaos-mesh/chaos-mesh |
 | Grafana | FinOps, SRE | https://github.com/grafana/grafana |
 | Jaeger | FinOps, SRE | https://github.com/jaegertracing/jaeger |

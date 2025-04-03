@@ -1,4 +1,23 @@
 ---
+- name: Remove the Clickhouse Custom Resource Definitions (CRDs)
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    delete_all: true
+    api_version: "{{ item.api_version }}"
+    namespace: "{{ clickhouse_namespace_project_name }}"
+    kind: "{{ item.kind }}"
+    state: absent
+    wait: true
+  loop:
+    - api_version: clickhouse-keeper.altinity.com/v1
+      kind: ClickHouseKeeperInstallation
+    - api_version: clickhouse.altinity.com/v1
+      kind: ClickHouseInstallation
+    - api_version: clickhouse.altinity.com/v1
+      kind: ClickHouseInstallationTemplate
+    - api_version: clickhouse.altinity.com/v1
+      kind: ClickHouseOperatorConfiguration
+
 - name: Uninstall OpenTelemetry Collector (Kubernetes)
   kubernetes.core.helm:
     name: "{{ opentelemetry_collector_installation_name }}"
@@ -20,6 +39,14 @@
     name: "{{ jaeger_installation_name }}"
     kubeconfig_path: "{{ kubeconfig }}"
     release_namespace: "{{ jaeger_namespace_project_name }}"
+    state: absent
+    wait: true
+
+- name: Uninstall Clickhouse
+  kubernetes.core.helm:
+    name: "{{ clickhouse_installation_name }}"
+    kubeconfig_path: "{{ kubeconfig }}"
+    release_namespace: "{{ clickhouse_namespace_project_name }}"
     state: absent
     wait: true
 
@@ -84,6 +111,15 @@
   kubernetes.core.k8s:
     kubeconfig: "{{ kubeconfig }}"
     name: "{{ jaeger_namespace_project_name }}"
+    api_version: v1
+    kind: Namespace
+    state: absent
+    wait: true
+
+- name: Remove the namespace associated with Clickhouse
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    name: "{{ clickhouse_namespace_project_name }}"
     api_version: v1
     kind: Namespace
     state: absent

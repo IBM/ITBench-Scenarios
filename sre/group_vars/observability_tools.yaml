@@ -23,6 +23,11 @@ grafana_namespace_project_name: "grafana"
 grafana_installation_name: "grafana"
 grafana_chart_version: "8.10.0"
 
+# Clickhouse
+clickhouse_namespace_project_name: "clickhouse"
+clickhouse_installation_name: "clickhouse"
+clickhouse_chart_version: "0.2.0"
+
 # Jaeger configuration
 jaeger_namespace_project_name: "jaeger"
 jaeger_installation_name: "jaeger"

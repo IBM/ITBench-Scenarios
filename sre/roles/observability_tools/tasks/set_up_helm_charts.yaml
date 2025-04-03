@@ -10,6 +10,8 @@
     name: bitnami
     kubeconfig_path: "{{ kubeconfig }}"
     repo_url: "https://raw.githubusercontent.com/bitnami/charts/refs/heads/index/bitnami/"
+  when:
+    - tools | intersect(['jaeger']) | length == 1
 
 - name: Add Helm chart repo for Loki
   kubernetes.core.helm_repository:
@@ -17,19 +19,23 @@
     kubeconfig_path: "{{ kubeconfig }}"
     repo_url: "https://grafana.github.io/helm-charts"
   when:
-    - enable_loki_endpoint
+    - tools | intersect(['loki']) | length == 1
 
 - name: Add Helm chart repo for OpenSearch
   kubernetes.core.helm_repository:
     name: opensearch
     kubeconfig_path: "{{ kubeconfig }}"
     repo_url: "https://opensearch-project.github.io/helm-charts"
+  when:
+    - tools | intersect(['opensearch']) | length == 1
 
 - name: Add Helm chart repo for Jaeger
   kubernetes.core.helm_repository:
     name: jaegertracing
     kubeconfig_path: "{{ kubeconfig }}"
     repo_url: "https://jaegertracing.github.io/helm-charts"
+  when:
+    - tools | intersect(['jaeger']) | length == 1
 
 - name: Add Helm chart repo from the Prometheus community
   kubernetes.core.helm_repository:
@@ -42,6 +48,8 @@
     name: open-telemetry
     kubeconfig_path: "{{ kubeconfig }}"
     repo_url: "https://open-telemetry.github.io/opentelemetry-helm-charts"
+  when:
+    - tools | intersect(['kubernetes-event-exporter']) | length == 1
 
 - name: Add Helm chart repo for Grafana
   kubernetes.core.helm_repository:
@@ -55,7 +63,7 @@
     kubeconfig_path: "{{ kubeconfig }}"
     repo_url: "https://kubernetes-sigs.github.io/metrics-server/"
   when:
-    - domain == "finops"   
+    - tools | intersect(['kubernetes-metrics-server']) | length == 1
 
 - name: Add Helm chart repo for OpenCost
   kubernetes.core.helm_repository:
@@ -63,7 +71,7 @@
     kubeconfig_path: "{{ kubeconfig }}"
     repo_url: "https://opencost.github.io/opencost-helm-chart"
   when:
-    - domain == "finops"
+    - tools | intersect(['opencost']) | length == 1
 
 - name: Update Helm repo
   kubernetes.core.helm:

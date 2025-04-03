@@ -1,0 +1,62 @@
+---
+- name: Retrieve endpoint url
+  ansible.builtin.include_tasks:
+    file: fetch_endpoint_url.yaml
+    apply:
+      vars:
+        ingress:
+          name: topology-monitor
+          namespace: "{{ topology_mapper_namespace_project_name }}"
+          path: topology
+        service:
+          name: topology-monitor
+          namespace: "{{ topology_mapper_namespace_project_name }}"
+          port: 8080
+
+- name: Call the Topology APIs
+  uri:
+    url: "{{ endpoint_url }}/{{ item }}"
+    method: GET
+    return_content: yes
+    body_format: json
+    headers:
+      Content-Type: "application/json"
+  loop:
+    - nodes
+    - edges
+    - graph
+    - events
+  register: topology_responses
+  retries: 10
+  delay: 5
+  until: topology_responses is succeeded
+
+- name: Ensure topology_information directory exists
+  ansible.builtin.file:
+    path: "/runner/topology_information"
+    state: directory
+  when:
+    - run_uuid is defined
+    - scenario_number is defined
+    - run_number is defined
+
+- name: Copy content to file(s)
+  ansible.builtin.copy:
+    content: "{{ item.content | to_json }}"
+    dest: "/runner/topology_information/{{ file_prefix }}_{{ item.item }}_{{now(utc=true,fmt='%Y-%m-%dT%H:%M:%S.%f')}}.json"
+  loop: "{{ topology_responses.results }}"
+  when:
+    - run_uuid is defined
+    - scenario_number is defined
+    - run_number is defined
+
+- name: Upload structured-unstructured outputs to S3
+  community.aws.s3_sync:
+    bucket: "{{ s3_bucket_name_for_results }}"
+    file_root: "/runner/topology_information"
+    key_prefix: "{{ sre_agent_name__version_number }}/{{run_uuid}}/{{scenario_number}}/{{run_number}}/topology_information"
+    endpoint_url: "{{ s3_endpoint_url }}"
+  when:
+    - run_uuid is defined
+    - scenario_number is defined
+    - run_number is defined

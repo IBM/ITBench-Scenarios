@@ -1,0 +1,6 @@
+---
+- name: Executing Bad Password fault tasks
+  ansible.builtin.import_tasks:
+    file: elasticsearch_bad_password.yaml
+  when:
+    - spec.elasticsearch.name == "bad-password"

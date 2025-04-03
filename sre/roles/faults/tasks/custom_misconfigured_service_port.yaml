@@ -1,0 +1,20 @@
+---
+- name: Configure the service with the wrong port
+  kubernetes.core.k8s_service:
+    kubeconfig: "{{ kubeconfig }}"
+    name: "{{ spec.custom.target.service.name }}"
+    namespace: "{{ spec.custom.target.service.namespace }}"
+    ports:
+      - targetPort: 9999
+  tags:
+    - fault_injection
+
+- name: Configure the service with the original port
+  kubernetes.core.k8s_service:
+    kubeconfig: "{{ kubeconfig }}"
+    name: "{{ spec.custom.target.service.name }}"
+    namespace: "{{ spec.custom.target.service.namespace }}"
+    ports:
+      - targetPort: "{{ spec.custom.target.service.target_port }}"
+  tags:
+    - fault_removal

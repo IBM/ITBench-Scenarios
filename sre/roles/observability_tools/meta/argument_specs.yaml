@@ -1,0 +1,16 @@
+---
+main:
+  options:
+    tools:
+      choices:
+        - jaeger
+        - kubernetes-event-exporter
+        - kubernetes-metrics-exporter
+        - kubernetes-topology-mapper
+        - loki
+        - opensearch
+        - opencost
+      description: A list of tools to be installed
+      elements: str
+      required: true
+      type: list

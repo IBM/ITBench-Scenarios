@@ -1,0 +1,46 @@
+---
+- name: Retrieve deployment
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ kubeconfig }}"
+    api_version: apps/v1
+    kind: Deployment
+    name: "{{ spec.custom.target.deployment.name }}"
+    namespace: "{{ spec.custom.target.deployment.namespace }}"
+  register: deployment_info
+  tags:
+    - fault_injection
+
+- name: Parse the container resources
+  ansible.builtin.set_fact:
+    containers: "{{ deployment_info.resources[0].spec.template.spec.containers }}"
+  tags:
+    - fault_injection
+
+- name: Set the CPU limits to the CPU requests
+  kubernetes.core.k8s_json_patch:
+    kubeconfig: "{{ kubeconfig }}"
+    api_version: apps/v1
+    kind: Deployment
+    name: "{{ spec.custom.target.deployment.name }}"
+    namespace: "{{ spec.custom.target.deployment.namespace }}"
+    patch:
+      - op: replace
+        path: "/spec/template/spec/containers/0/resources/limits/cpu"
+        value: "{{ containers[0].resources.requests.cpu }}"
+    wait: true
+  tags:
+    - fault_injection
+
+- name: Remove the CPU limits
+  kubernetes.core.k8s_json_patch:
+    kubeconfig: "{{ kubeconfig }}"
+    api_version: apps/v1
+    kind: Deployment
+    name: "{{ spec.custom.target.deployment.name }}"
+    namespace: "{{ spec.custom.target.deployment.namespace }}"
+    patch:
+      - op: remove
+        path: "/spec/template/spec/containers/0/resources/limits/cpu"
+    wait: true
+  tags:
+    - fault_injection

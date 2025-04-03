@@ -1,13 +1,5 @@
 ---
-# Simple app configuration
-simple_app_namespace_project_name: "simple-us"
-simple_app_installation_name: "simple-app"
-
-# Robot-Shop configuration
-robotshop_app_namespace_project_name: "robot-shop"
-robotshop_app_installation_name: "robot-shop"
-
-# OTEL Astronomy demo configuration
+# OpenTelemetry Astronomy demo configuration
 otel_astronomy_app_namespace_project_name: "otel-demo"
 otel_astronomy_app_installation_name: "otel-demo"
 otel_astronomy_app_chart_version: "0.33.8"

@@ -1,25 +1,24 @@
 ---
-- name: Leverage ingress
-  ansible.builtin.include_tasks:
-    file: leverage_ingress.yaml
+- name: Retrieve endpoint url
+  ansible.builtin.include_role:
+    name: common
     apply:
       tags:
         - install_tools
-  tags:
-    - install_tools
-
-- name: Leverage port-forwarding
-  ansible.builtin.include_tasks:
-    file: leverage_port_forwarding.yaml
-    apply:
-      tags:
-        - install_tools
-  tags:
-    - install_tools
+      vars:
+        ingress:
+          name: grafana
+          namespace: "{{ grafana_namespace_project_name }}"
+          path: grafana
+        service:
+          name: grafana
+          namespace: "{{ grafana_namespace_project_name }}"
+          port: 80
+    tasks_from: fetch_endpoint_url.yaml
 
 - name: Grafana health check
   ansible.builtin.uri:
-    url: "{{ grafana_url }}/healthz"
+    url: "{{ endpoint_url }}/healthz"
     method: GET
     status_code: 200
     return_content: true

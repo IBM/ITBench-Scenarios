@@ -11,11 +11,6 @@ opensearch_installation_name: "opensearch"
 opensearch_chart_version: "2.31.0"
 opensearch_version_number: "2.19.0"
 
-# Elasticsearch configuration
-es_namespace_project_name: "elastic"
-es_installation_name: "elastic"
-es_chart_version: "21.4.5"
-
 # Prometheus - Grafana configuration
 prometheus_namespace_project_name: "prometheus"
 prometheus_installation_name: "prometheus-stack"

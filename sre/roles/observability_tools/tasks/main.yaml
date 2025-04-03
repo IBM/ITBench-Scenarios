@@ -1,42 +1,37 @@
 ---
-- ansible.builtin.import_tasks: 
+- ansible.builtin.import_tasks:
     file: initialize_assertion_json.yaml
   tags:
     - install_tools
   when:
     - sre_bench_runner
 
-- ansible.builtin.import_tasks: 
+- ansible.builtin.import_tasks:
     file: set_up_helm_charts.yaml
   tags:
     - install_tools
 
-- ansible.builtin.import_tasks: 
+- ansible.builtin.import_tasks:
     file: install_ingress.yaml
   tags:
     - install_tools
 
-- ansible.builtin.import_tasks: 
-    file: install_elasticsearch.yaml
-  tags:
-    - install_tools
-
-- ansible.builtin.import_tasks: 
+- ansible.builtin.import_tasks:
     file: install_loki.yaml
   tags:
     - install_tools
 
-- ansible.builtin.import_tasks: 
+- ansible.builtin.import_tasks:
     file: install_opensearch.yaml
   tags:
     - install_tools
 
-- ansible.builtin.import_tasks: 
+- ansible.builtin.import_tasks:
     file: install_jaeger.yaml
   tags:
     - install_tools
 
-- ansible.builtin.import_tasks: 
+- ansible.builtin.import_tasks:
     file: install_prometheus.yaml
   tags:
     - install_tools
@@ -61,12 +56,12 @@
   delay: 60
   loop: "{{ common_helm_installations }}"
 
-- ansible.builtin.import_tasks: 
+- ansible.builtin.import_tasks:
     file: install_opentelemetry_collector.yaml
   tags:
     - install_tools
 
-- ansible.builtin.import_tasks: 
+- ansible.builtin.import_tasks:
     file: install_grafana.yaml
   tags:
     - install_tools
@@ -78,7 +73,7 @@
   when:
     - domain == "finops"
 
-- ansible.builtin.import_tasks: 
+- ansible.builtin.import_tasks:
     file: install_opencost.yaml
   tags:
     - install_tools
@@ -103,17 +98,17 @@
   when:
     - domain == "finops"
 
-- ansible.builtin.import_tasks: 
+- ansible.builtin.import_tasks:
     file: check_grafana_status.yaml
   tags:
     - install_tools
 
-- ansible.builtin.import_tasks: 
+- ansible.builtin.import_tasks:
     file: uninstall_observability_stack.yaml
   tags:
     - uninstall_tools
 
-- ansible.builtin.import_tasks: 
+- ansible.builtin.import_tasks:
     file: finalize_assertion_json.yaml
   tags:
     - uninstall_tools

@@ -55,14 +55,6 @@
     state: absent
     wait: true
 
-- name: Uninstall Elasticsearch
-  kubernetes.core.helm:
-    name: "{{ es_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ es_namespace_project_name }}"
-    state: absent
-    wait: true
-
 - name: Uninstall OpenCost
   kubernetes.core.helm:
     name: "{{ opencost_installation_name }}"
@@ -137,15 +129,6 @@
   kubernetes.core.k8s:
     kubeconfig: "{{ kubeconfig }}"
     name: "{{ loki_namespace_project_name }}"
-    api_version: v1
-    kind: Namespace
-    state: absent
-    wait: true
-
-- name: Remove the namespace associated with Elasticsearch
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    name: "{{ es_namespace_project_name }}"
     api_version: v1
     kind: Namespace
     state: absent

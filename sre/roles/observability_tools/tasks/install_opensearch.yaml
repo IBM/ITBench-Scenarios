@@ -8,6 +8,7 @@
     release_namespace: "{{ opensearch_namespace_project_name }}"
     release_state: present
     create_namespace: true
+    wait: true
     values:
       replicas: 1
       config:

@@ -1,0 +1,136 @@
+---
+- name: Deploy OpenTelemetry Operator
+  kubernetes.core.helm:
+    name: "{{ opentelemetry_operator_installation_name }}"
+    kubeconfig_path: "{{ kubeconfig }}"
+    chart_ref: open-telemetry/opentelemetry-operator
+    chart_version: "{{ opentelemetry_operator_chart_version }}"
+    release_namespace: "{{ opentelemetry_operator_namespace_project_name }}"
+    release_state: present
+    create_namespace: true
+    wait: true
+    values:
+      manager:
+        collectorImage:
+          repository: otel/opentelemetry-collector-k8s
+      admissionWebhooks:
+        certManager:
+          enabled: false
+        autoGenerateCert:
+          enabled: true
+
+- name: Create a namespace for OpenTelemetry Collectors
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    name: "{{ opentelemetry_operator_collectors_namespace }}"
+    api_version: v1
+    kind: Namespace
+    state: present
+    wait: true
+
+- name: Create a service account for OpenTelemetry Collector (Kubernetes Events)
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    name: "{{ opentelemetry_operator_collector_kubernetes_events_name }}-collector"
+    namespace: "{{ opentelemetry_operator_collectors_namespace }}"
+    api_version: v1
+    kind: ServiceAccount
+    state: present
+    wait: true
+
+- name: Create a cluster role for OpenTelemetry Collector (Kubernetes Events)
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    name: "{{ opentelemetry_operator_collector_kubernetes_events_name }}-collector"
+    api_version: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    state: present
+    wait: true
+    resource_definition:
+      rules:
+        - apiGroups:
+            - events.k8s.io
+          resources:
+            - events
+          verbs:
+            - watch
+            - list
+
+- name: Create a cluster role binding for OpenTelemetry Collector (Kubernetes Events)
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    name: "{{ opentelemetry_operator_collector_kubernetes_events_name }}-collector"
+    api_version: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    state: present
+    wait: true
+    resource_definition:
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: "{{ opentelemetry_operator_collector_kubernetes_events_name }}-collector"
+      subjects:
+        - kind: ServiceAccount
+          name: "{{ opentelemetry_operator_collector_kubernetes_events_name }}-collector"
+          namespace: "{{ opentelemetry_operator_collectors_namespace }}"
+
+- name: Deploy OpenTelemetry Collector (Kubernetes Events)
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    name: "{{ opentelemetry_operator_collector_kubernetes_events_name }}"
+    namespace: "{{ opentelemetry_operator_collectors_namespace }}"
+    api_version: opentelemetry.io/v1beta1
+    kind: OpenTelemetryCollector
+    state: present
+    wait: true
+    resource_definition:
+      spec:
+        image: otel/opentelemetry-collector-k8s:0.123.0
+        serviceAccount: "{{ opentelemetry_operator_collector_kubernetes_events_name }}-collector"
+        config:
+          exporters:
+            debug: {}
+            otlphttp/logs:
+              endpoint: http://{{ loki_installation_name }}-gateway.{{ loki_namespace_project_name }}.svc.cluster.local/otlp
+              tls:
+                insecure: true
+          receivers:
+            k8sobjects:
+              objects:
+                - exclude_watch_type:
+                    - DELETED
+                  group: events.k8s.io
+                  mode: watch
+                  name: events
+            otlp:
+              protocols:
+                grpc:
+                  endpoint: 0.0.0.0:4317
+                http:
+                  endpoint: 0.0.0.0:4318
+          service:
+            pipelines:
+              logs:
+                receivers:
+                  - otlp
+                  - k8sobjects
+                exporters:
+                  - debug
+                  - otlphttp/logs
+
+- name: Deploy OpenTelemetry Collector (Jaeger)
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    name: "{{ opentelemetry_operator_collector_jaeger_name }}"
+    namespace: "{{ opentelemetry_operator_collectors_namespace}}"
+    api_version: opentelemetry.io/v1beta1
+    kind: OpenTelemetryCollector
+    state: present
+    wait: true
+    resource_definition:
+      spec:
+        image: jaegertracing/jaeger:2.4.0
+        ports:
+        - name: jaeger
+          port: 16686
+        config: "{{ lookup('ansible.builtin.template', 'templates/otel-jaeger-config.j2') | from_yaml }}"

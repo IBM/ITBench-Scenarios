@@ -1,28 +1,70 @@
 ---
-- name: Remove the Clickhouse Custom Resource Definitions (CRDs)
+- name: Remove operator managed resources
   kubernetes.core.k8s:
     kubeconfig: "{{ kubeconfig }}"
     delete_all: true
     api_version: "{{ item.api_version }}"
-    namespace: "{{ clickhouse_namespace_project_name }}"
+    namespace: "{{ item.namespace }}"
     kind: "{{ item.kind }}"
     state: absent
     wait: true
   loop:
     - api_version: clickhouse-keeper.altinity.com/v1
       kind: ClickHouseKeeperInstallation
+      namespace: "{{ clickhouse_namespace_project_name }}"
     - api_version: clickhouse.altinity.com/v1
       kind: ClickHouseInstallation
+      namespace: "{{ clickhouse_namespace_project_name }}"
     - api_version: clickhouse.altinity.com/v1
       kind: ClickHouseInstallationTemplate
+      namespace: "{{ clickhouse_namespace_project_name }}"
     - api_version: clickhouse.altinity.com/v1
       kind: ClickHouseOperatorConfiguration
+      namespace: "{{ clickhouse_namespace_project_name }}"
+    - api_version: opentelemetry.io/v1beta1
+      kind: OpenTelemetryCollector
+      namespace: "{{ opentelemetry_operator_collectors_namespace }}"
 
-- name: Uninstall OpenTelemetry Collector (Kubernetes)
+- name: Remove the Custom Resource Definitions (CRDs)
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    delete_all: true
+    api_version: apiextensions.k8s.io/v1
+    kind: CustomResourceDefinition
+    name: "{{ item }}"
+    state: absent
+    wait: true
+  loop:
+    - clickhouseinstallations.clickhouse.altinity.com
+    - clickhouseinstallationtemplates.clickhouse.altinity.com
+    - clickhousekeeperinstallations.clickhouse-keeper.altinity.com
+    - clickhouseoperatorconfigurations.clickhouse.altinity.com
+    - opentelemetrycollectors.opentelemetry.io
+    - opampbridges.opentelemetry.io
+    - instrumentations.opentelemetry.io
+    - targetallocators.opentelemetry.io
+
+- name: Remove non-namespaced resources
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    api_version: "{{ item.api_version }}"
+    name: "{{ item.name }}"
+    kind: "{{ item.kind }}"
+    state: absent
+    wait: true
+  loop:
+    - api_version: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      name: "{{ opentelemetry_operator_collector_kubernetes_events_name }}-collector"
+    - api_version: rbac.authorization.k8s.io/v1
+      kind: ClusterRole
+      name: "{{ opentelemetry_operator_collector_kubernetes_events_name }}-collector"
+
+- name: Uninstall OpenTelemetry Operator
   kubernetes.core.helm:
-    name: "{{ opentelemetry_collector_installation_name }}"
+    name: "{{ opentelemetry_operator_installation_name }}"
     kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ opentelemetry_collector_namespace_project_name }}"
+    release_namespace: "{{ opentelemetry_operator_namespace_project_name }}"
     state: absent
     wait: true
 
@@ -31,14 +73,6 @@
     name: "{{ opensearch_installation_name }}"
     kubeconfig_path: "{{ kubeconfig }}"
     release_namespace: "{{ opensearch_namespace_project_name }}"
-    state: absent
-    wait: true
-
-- name: Uninstall Jaeger
-  kubernetes.core.helm:
-    name: "{{ jaeger_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ jaeger_namespace_project_name }}"
     state: absent
     wait: true
 
@@ -107,15 +141,6 @@
     state: absent
     wait: true
 
-- name: Remove the namespace associated with Jaeger
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    name: "{{ jaeger_namespace_project_name }}"
-    api_version: v1
-    kind: Namespace
-    state: absent
-    wait: true
-
 - name: Remove the namespace associated with Clickhouse
   kubernetes.core.k8s:
     kubeconfig: "{{ kubeconfig }}"
@@ -143,10 +168,10 @@
     state: absent
     wait: true
 
-- name: Remove the namespace associated with OpenTelemetry Collector (Kubernetes)
+- name: Remove the namespace associated with OpenTelemetry Collectors
   kubernetes.core.k8s:
     kubeconfig: "{{ kubeconfig }}"
-    name: "{{ opentelemetry_collector_namespace_project_name }}"
+    name: "{{ opentelemetry_operator_collectors_namespace }}"
     api_version: v1
     kind: Namespace
     state: absent

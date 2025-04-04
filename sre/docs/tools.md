@@ -15,6 +15,7 @@ Depending on the scenario domain (SRE or FinOps), the following tools are deploy
 | OpenCost | FinOps | https://github.com/opencost/opencost |
 | OpenSearch | FinOps, SRE | https://github.com/opensearch-project/OpenSearch |
 | OpenTelemetry Collector | FinOps, SRE | https://github.com/open-telemetry/opentelemetry-collector |
+| OpenTelemetry Operator | FinOps, SRE | https://github.com/open-telemetry/opentelemetry-operator |
 | Prometheus | FinOps, SRE | https://github.com/prometheus/prometheus |
 
 ### Installing Observability stack for SRE scenarios

@@ -22,17 +22,12 @@
     - install_tools
 
 - ansible.builtin.import_tasks:
-    file: install_loki.yaml
-  tags:
-    - install_tools
-
-- ansible.builtin.import_tasks:
     file: install_opensearch.yaml
   tags:
     - install_tools
 
 - ansible.builtin.import_tasks:
-    file: install_jaeger.yaml
+    file: install_loki.yaml
   tags:
     - install_tools
 
@@ -46,10 +41,6 @@
     common_helm_installations:
       - name: "{{ loki_namespace_project_name }}"
         namespace: "{{ loki_installation_name }}"
-      - name: "{{ opensearch_namespace_project_name }}"
-        namespace: "{{ opensearch_installation_name }}"
-      - name: "{{ jaeger_namespace_project_name }}"
-        namespace: "{{ jaeger_installation_name }}"
       - name: "{{ prometheus_namespace_project_name }}"
         namespace: "{{ prometheus_installation_name }}"
 
@@ -62,7 +53,7 @@
   loop: "{{ common_helm_installations }}"
 
 - ansible.builtin.import_tasks:
-    file: install_opentelemetry_collector.yaml
+    file: install_opentelemetry.yaml
   tags:
     - install_tools
 

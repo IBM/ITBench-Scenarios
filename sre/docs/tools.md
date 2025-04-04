@@ -11,7 +11,6 @@ Depending on the scenario domain (SRE or FinOps), the following tools are deploy
 | Jaeger | FinOps, SRE | https://github.com/jaegertracing/jaeger |
 | Kubernetes Ingress | FinOps, SRE | https://github.com/kubernetes/ingress-nginx |
 | Kubernetes Metric Server | FinOps | https://github.com/kubernetes-sigs/metrics-server |
-| Loki | FinOps, SRE | https://github.com/grafana/loki |
 | OpenCost | FinOps | https://github.com/opencost/opencost |
 | OpenSearch | FinOps, SRE | https://github.com/opensearch-project/OpenSearch |
 | OpenTelemetry Collector | FinOps, SRE | https://github.com/open-telemetry/opentelemetry-collector |

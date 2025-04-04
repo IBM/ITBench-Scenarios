@@ -27,11 +27,6 @@
     - install_tools
 
 - ansible.builtin.import_tasks:
-    file: install_loki.yaml
-  tags:
-    - install_tools
-
-- ansible.builtin.import_tasks:
     file: install_prometheus.yaml
   tags:
     - install_tools
@@ -39,8 +34,6 @@
 - name: List of common (SRE+FinOps) Helm installations
   ansible.builtin.set_fact:
     common_helm_installations:
-      - name: "{{ loki_namespace_project_name }}"
-        namespace: "{{ loki_installation_name }}"
       - name: "{{ prometheus_namespace_project_name }}"
         namespace: "{{ prometheus_installation_name }}"
 

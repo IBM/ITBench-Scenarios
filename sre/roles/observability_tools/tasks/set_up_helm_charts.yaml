@@ -11,14 +11,6 @@
     kubeconfig_path: "{{ kubeconfig }}"
     repo_url: "https://helm.altinity.com"
 
-- name: Add Helm chart repo for Loki
-  kubernetes.core.helm_repository:
-    name: grafana
-    kubeconfig_path: "{{ kubeconfig }}"
-    repo_url: "https://grafana.github.io/helm-charts"
-  when:
-    - enable_loki_endpoint
-
 - name: Add Helm chart repo for OpenSearch
   kubernetes.core.helm_repository:
     name: opensearch

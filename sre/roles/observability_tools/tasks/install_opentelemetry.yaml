@@ -85,15 +85,20 @@
     wait: true
     resource_definition:
       spec:
-        image: otel/opentelemetry-collector-k8s:0.123.0
+        image: otel/opentelemetry-collector-contrib:0.120.0
+        # image: otel/opentelemetry-collector-k8s:0.123.0
         serviceAccount: "{{ opentelemetry_operator_collector_kubernetes_events_name }}-collector"
         config:
           exporters:
             debug: {}
-            otlphttp/logs:
-              endpoint: http://{{ loki_installation_name }}-gateway.{{ loki_namespace_project_name }}.svc.cluster.local/otlp
-              tls:
-                insecure: true
+            clickhouse:
+              username: "{{ clickhouse_user }}"
+              password: "{{ clickhouse_password }}"
+              endpoint: tcp://clickhouse-{{ clickhouse_installation_name }}.{{ clickhouse_namespace_project_name }}.svc.cluster.local:9000
+            # otlphttp/logs:
+            #   endpoint: http://{{ loki_installation_name }}-gateway.{{ loki_namespace_project_name }}.svc.cluster.local/otlp
+            #   tls:
+            #     insecure: true
           receivers:
             k8sobjects:
               objects:
@@ -116,7 +121,8 @@
                   - k8sobjects
                 exporters:
                   - debug
-                  - otlphttp/logs
+                  - clickhouse
+                  # - otlphttp/logs
 
 - name: Deploy OpenTelemetry Collector (Jaeger)
   kubernetes.core.k8s:

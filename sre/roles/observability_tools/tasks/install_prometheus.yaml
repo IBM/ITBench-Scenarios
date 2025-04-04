@@ -19,30 +19,18 @@
   kubernetes.core.helm:
     name: "{{ prometheus_installation_name }}"
     kubeconfig_path: "{{ kubeconfig }}"
-    chart_ref: prometheus-community/kube-prometheus-stack 
+    chart_ref: prometheus-community/prometheus
     chart_version: "{{ prometheus_chart_version }}"
     release_namespace: "{{ prometheus_namespace_project_name }}"
     release_state: present
     create_namespace: true
     values:
-      additionalPrometheusRulesMap:
-        rule-name:
+      server:
+        extraFlags:
+          - web.enable-lifecycle
+          - web.enable-otlp-receiver
+      serverFiles:
+        recording_rules.yml:
           groups: "{{ prometheus_rules }}"
-      alertmanager:
-        ingress:
-          enabled: true
-      grafana:
+      prometheus-pushgateway:
         enabled: false
-      prometheus:
-        enabled: true
-        prometheusSpec:
-          additionalArgs:
-            - name: web.enable-otlp-receiver
-              value: ""
-          defaultRules:
-            additionalRuleLabels:
-              - for_instance_in_namespace: "{{ prometheus_namespace_project_name }}"
-          enableFeatures:
-            - otlp-write-receiver
-          podMonitorSelectorNilUsesHelmValues: false
-          serviceMonitorSelectorNilUsesHelmValues: false

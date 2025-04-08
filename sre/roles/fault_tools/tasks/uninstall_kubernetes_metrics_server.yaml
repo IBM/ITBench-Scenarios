@@ -1,15 +1,15 @@
 ---
 - name: Uninstall Kubernetes Metrics Server
   kubernetes.core.helm:
-    name: "{{k8s_metrics_server_release_name }}"
+    name: "{{kubernetes_metrics_server_release_name }}"
     kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ k8s_metrics_server_release_namespace }}"
+    release_namespace: "{{ kubernetes_metrics_server_release_namespace }}"
     release_state: absent
 
 - name: Remove Kubernetes Metrics Server namespace
   kubernetes.core.k8s:
     kubeconfig: "{{ kubeconfig }}"
-    name: "{{ k8s_metrics_server_release_namespace }}"
+    name: "{{ kubernetes_metrics_server_release_namespace }}"
     api_version: v1
     kind: Namespace
     state: absent

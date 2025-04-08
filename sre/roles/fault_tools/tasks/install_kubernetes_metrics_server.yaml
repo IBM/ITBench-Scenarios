@@ -1,10 +1,10 @@
 ---
 - name: Deploy Kubernetes Metrics Server
   kubernetes.core.helm:
-    name: "{{ k8s_metrics_server_release_name }}"
+    name: "{{ kubernetes_metrics_server_release_name }}"
     kubeconfig_path: "{{ kubeconfig }}"
     chart_ref: metrics-server/metrics-server
-    chart_version: "{{ k8s_metrics_server_chart_version }}"
-    release_namespace: "{{ k8s_metrics_server_release_namespace }}"
+    chart_version: "{{ kubernetes_metrics_server_chart_version }}"
+    release_namespace: "{{ kubernetes_metrics_server_release_namespace }}"
     release_state: present
     create_namespace: true

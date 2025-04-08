@@ -7,6 +7,6 @@
 
 - name: Unnstall Kubernetes Metrics Server
   ansible.builtin.import_tasks:
-    file: uninstall_k8s_metrics_server.yaml
+    file: uninstall_kubernetes_metrics_server.yaml
   when:
     - tools | intersect(['kubernetes-metrics-server']) | length == 1

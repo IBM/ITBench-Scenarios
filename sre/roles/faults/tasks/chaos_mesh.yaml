@@ -3,7 +3,7 @@
   kubernetes.core.k8s:
     state: present
     kubeconfig: "{{ kubeconfig }}"
-    namespace: "{{ chaos_mesh_namespace_project_name }}"
+    namespace: "{{ chaos_mesh_release_namespace }}"
     resource_definition: "{{ spec.chaos['resource_definition.yaml'] | from_yaml }}"
   tags:
     - fault_injection
@@ -12,7 +12,7 @@
   kubernetes.core.k8s:
     state: absent
     kubeconfig: "{{ kubeconfig }}"
-    namespace: "{{ chaos_mesh_namespace_project_name }}"
+    namespace: "{{ chaos_mesh_release_namespace }}"
     resource_definition: "{{ spec.chaos['resource_definition.yaml'] | from_yaml }}"
   tags:
     - fault_removal

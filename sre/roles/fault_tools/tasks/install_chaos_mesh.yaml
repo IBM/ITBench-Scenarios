@@ -10,16 +10,16 @@
     name: dummy
     kubeconfig: "{{ kubeconfig }}"
     state: absent
-    release_namespace: "{{ chaos_mesh_namespace_project_name }}"
+    release_namespace: "{{ chaos_mesh_release_namespace }}"
     update_repo_cache: true
 
 - name: Deploy Chaos Mesh
   kubernetes.core.helm:
-    name: "{{ chaos_mesh_installation_name }}"
+    name: "{{ chaos_mesh_release_name }}"
     kubeconfig_path: "{{ kubeconfig }}"
     chart_ref: chaos-mesh/chaos-mesh
     chart_version: "{{ chaos_mesh_chart_version }}"
-    release_namespace: "{{ chaos_mesh_namespace_project_name }}"
+    release_namespace: "{{ chaos_mesh_release_namespace }}"
     release_state: present
     create_namespace: true
     wait: true

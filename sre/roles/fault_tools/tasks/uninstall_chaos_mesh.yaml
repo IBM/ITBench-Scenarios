@@ -1,17 +1,15 @@
 ---
 - name: Uninstall Chaos Mesh
   kubernetes.core.helm:
-    name: "{{ chaos_mesh_installation_name }}"
+    name: "{{ chaos_mesh_release_name }}"
     kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ chaos_mesh_namespace_project_name }}"
+    release_namespace: "{{ chaos_mesh_release_namespace }}"
     release_state: absent
-    wait: true
-    timeout: 10m0s
 
-- name: Remove the namespace associated with the Chaos Mesh
+- name: Remove Chaos Mesh namespace
   kubernetes.core.k8s:
     kubeconfig: "{{ kubeconfig }}"
-    name: "{{ chaos_mesh_namespace_project_name }}"
+    name: "{{ chaos_mesh_release_namespace }}"
     api_version: v1
     kind: Namespace
     state: absent

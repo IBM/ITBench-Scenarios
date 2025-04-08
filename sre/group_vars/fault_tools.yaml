@@ -1,4 +1,8 @@
 ---
-chaos_mesh_installation_name: chaos-mesh
-chaos_mesh_namespace_project_name: chaos-mesh
+chaos_mesh_release_name: chaos-mesh
+chaos_mesh_release_namespace: chaos-mesh
 chaos_mesh_chart_version: 2.7.0
+
+k8s_metrics_server_release_namespace: metrics-server
+k8s_metrics_server_release_name: metrics-server
+k8s_metrics_server_chart_version: 3.12.2

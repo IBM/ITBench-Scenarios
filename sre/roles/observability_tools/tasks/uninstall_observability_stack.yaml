@@ -14,8 +14,6 @@
         namespace: "{{ es_namespace_project_name }}"
       - name: "{{ opentelemetry_collector_installation_name }}"
         namespace: "{{ opentelemetry_collector_namespace_project_name }}"
-      - name: "{{ metrics_server_installation_name }}"
-        namespace: "{{ metrics_server_namespace_project_name }}"
       - name: "{{ loki_installation_name }}"
         namespace: "{{ loki_namespace_project_name }}"
       - name: "{{ opencost_installation_name }}"

@@ -4,6 +4,7 @@ main:
     tools:
       choices:
         - chaos-mesh
+        - kubernetes-metrics-server
       description: A list of tool to be installed
       elements: str
       required: true

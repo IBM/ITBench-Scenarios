@@ -4,3 +4,9 @@
     file: install_chaos_mesh.yaml
   when:
     - tools | intersect(['chaos-mesh']) | length == 1
+
+- name: Install Kubernetes Metrics Server
+  ansible.builtin.import_tasks:
+    file: install_k8s_metrics_server.yaml
+  when:
+    - tools | intersect(['kubernetes-metrics-server']) | length == 1

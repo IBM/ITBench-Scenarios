@@ -7,7 +7,6 @@ main:
         - kubernetes-event-exporter
         - kubernetes-metrics-exporter
         - kubernetes-topology-mapper
-        - loki
         - opensearch
         - opencost
       description: A list of tools to be installed

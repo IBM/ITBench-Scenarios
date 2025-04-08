@@ -31,11 +31,6 @@ opencost_namespace_project_name: "opencost"
 opencost_installation_name: "opencost"
 opencost_chart_version: "1.43.2"
 
-# Kubernetes Metrics Server
-metrics_server_namespace_project_name: "metrics-server"
-metrics_server_installation_name: "metrics-server"
-metrics_server_chart_version: "3.12.2"
-
 # OpenTelemetry Operator & Collector
 opentelemetry_operator_installation_name: opentelemetry-operator
 opentelemetry_operator_namespace_project_name: opentelemetry-operator

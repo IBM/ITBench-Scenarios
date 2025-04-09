@@ -14,8 +14,6 @@ incident:
     observability_tools:
       - jaeger
       - kubernetes-event-exporter
-      - loki
-      - opensearch
     sample_applications:
       - otel_astronomy_shop
   faults:

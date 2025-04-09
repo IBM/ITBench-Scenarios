@@ -7,23 +7,11 @@
   ansible.builtin.import_tasks:
     file: install_ingress.yaml
 
-- name: Install Jaeger
-  ansible.builtin.import_tasks:
-    file: install_jaeger.yaml
-  when:
-    - tools | intersect(['jaeger']) | length == 1
-
-- name: Install Grafana Loki
-  ansible.builtin.import_tasks:
-    file: install_loki.yaml
-  when:
-    - tools | intersect(['loki', 'kubernetes-event-exporter']) | length > 0
-
 - name: Install OpenSearch
   ansible.builtin.import_tasks:
     file: install_opensearch.yaml
   when:
-    - tools | intersect(['opensearch']) | length == 1
+    - tools | intersect(['jaeger']) | length > 1
 
 - name: Install Prometheus
   ansible.builtin.import_tasks:
@@ -35,10 +23,6 @@
     release_name: "{{ item.name }}"
     release_namespace: "{{ item.namespace }}"
   loop:
-    - name: "{{ jaeger_namespace_project_name }}"
-      namespace: "{{ jaeger_installation_name }}"
-    - name: "{{ loki_namespace_project_name }}"
-      namespace: "{{ loki_installation_name }}"
     - name: "{{ opensearch_namespace_project_name }}"
       namespace: "{{ opensearch_installation_name }}"
     - name: "{{ prometheus_installation_name }}"
@@ -48,11 +32,11 @@
   retries: 10
   delay: 60
 
-- name: Install Kubernetes Event Exporter (OpenTelemetry)
+- name: Install OpenTelemetry Collectors
   ansible.builtin.import_tasks:
-    file: install_opentelemetry_collector.yaml
+    file: install_opentelemetry.yaml
   when:
-    - tools | intersect(['kubernetes-event-exporter']) | length == 1
+    - tools | intersect(['kubernetes-event-exporter', 'jaeger']) | length > 1
 
 - name: Install Grafana
   ansible.builtin.import_tasks:

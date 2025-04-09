@@ -5,9 +5,7 @@ main:
       choices:
         - jaeger
         - kubernetes-event-exporter
-        - kubernetes-metrics-exporter
         - kubernetes-topology-mapper
-        - opensearch
         - opencost
       description: A list of tools to be installed
       elements: str

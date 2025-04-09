@@ -35,6 +35,8 @@
     api_version: v1
     kind: ServiceAccount
     state: present
+  when:
+    - tools | intersect(['kubernetes-event-exporter']) | length == 1
 
 - name: Create a cluster role for OpenTelemetry Collector (Kubernetes Events)
   kubernetes.core.k8s:
@@ -53,6 +55,8 @@
           verbs:
             - watch
             - list
+  when:
+    - tools | intersect(['kubernetes-event-exporter']) | length == 1
 
 - name: Create a cluster role binding for OpenTelemetry Collector (Kubernetes Events)
   kubernetes.core.k8s:
@@ -71,6 +75,8 @@
         - kind: ServiceAccount
           name: "{{ opentelemetry_operator_collector_kubernetes_events_name }}-collector"
           namespace: "{{ opentelemetry_operator_collectors_namespace }}"
+  when:
+    - tools | intersect(['kubernetes-event-exporter']) | length == 1
 
 - name: Deploy OpenTelemetry Collector (Kubernetes Events)
   kubernetes.core.k8s:
@@ -116,6 +122,8 @@
                 exporters:
                   - debug
                   - clickhouse
+  when:
+    - tools | intersect(['kubernetes-event-exporter']) | length == 1
 
 - name: Deploy OpenTelemetry Collector (Jaeger)
   kubernetes.core.k8s:
@@ -133,6 +141,8 @@
         - name: jaeger
           port: 16686
         config: "{{ lookup('ansible.builtin.template', 'templates/otel-jaeger-config.j2') | from_yaml }}"
+  when:
+    - tools | intersect(['jaeger']) | length == 1
 
 
 # NOTE: The rewrite annotation is not added to the following Ingress because
@@ -161,3 +171,5 @@
                       name: "{{ opentelemetry_operator_collector_jaeger_name }}-collector"
                       port:
                         number: 16686
+  when:
+    - tools | intersect(['jaeger']) | length == 1

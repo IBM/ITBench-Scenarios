@@ -1,0 +1,94 @@
+---
+- name: Create variables
+  ansible.builtin.set_fact:
+    associated_pods: []
+    associated_replicasets: []
+  tags:
+    - fault_injection
+
+- name: Create ResourceQuota
+  kubernetes.core.k8s:
+    api_version: v1
+    kind: ResourceQuota
+    name: "{{ spec.custom.target.deployment.namespace }}-memory-quota"
+    namespace: "{{ spec.custom.target.deployment.namespace }}"
+    state: present
+    kubeconfig: "{{ kubeconfig }}"
+    resource_definition:
+      spec:
+        hard:
+          memory: "1Gi"
+  tags:
+    - fault_injection
+
+- name: Remove ResourceQuota
+  kubernetes.core.k8s:
+    api_version: v1
+    kind: ResourceQuota
+    name: "{{ spec.custom.target.deployment.namespace }}-memory-quota"
+    namespace: "{{ spec.custom.target.deployment.namespace }}"
+    state: present
+    kubeconfig: "{{ kubeconfig }}"
+  tags:
+    - fault_removal
+
+- name: Retrieve ReplicaSets
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ kubeconfig }}"
+    api_version: apps/v1
+    kind: ReplicaSet
+    namespace: "{{ spec.custom.target.deployment.namespace }}"
+  register: replicasets_info
+  tags:
+    - fault_injection
+    - fault_removal
+
+- name: Parse ReplicaSets associated with target deployment
+  ansible.builtin.set_fact:
+    associated_replicasets: "{{ associated_replicasets + [replicaset.metadata.name] }}"
+  loop: "{{ replicasets_info.resources }}"
+  loop_control:
+    loop_var: replicaset
+  tags:
+    - fault_injection
+    - fault_removal
+  when:
+    - replicaset.metadata.ownerReferences[0].kind == 'Deployment'
+    - replicaset.metadata.ownerReferences[0].name == spec.custom.target.deployment.name
+
+- name: Retrieve Pods
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ kubeconfig }}"
+    api_version: v1
+    kind: Pod
+    namespace: "{{ spec.custom.target.deployment.namespace }}"
+  register: pods_info
+  tags:
+    - fault_injection
+    - fault_removal
+
+- name: Parse pods associated with replicasets
+  ansible.builtin.set_fact:
+    associated_replicasets: "{{ associated_pods + [pod_replicaset[0].metadata.name] }}"
+  loop: "{{ pods_info.resources | product(associated_replicasets) | list }}"
+  loop_control:
+    loop_var: pod_replicaset
+  tags:
+    - fault_injection
+    - fault_removal
+  when:
+    - pod_replicaset[0].metadata.ownerReferences[0].kind == 'ReplicaSet'
+    - pod_replicaset[0].metadata.ownerReferences[0].name == pod_replicaset[1]
+
+- name: Delete all associated pods
+  kubernetes.core.k8s:
+    api_version: v1
+    kind: Pod
+    name: "{{ item }}"
+    namespace: "{{ spec.custom.target.deployment.namespace }}"
+    state: absent
+    kubeconfig: "{{ kubeconfig }}"
+  loop: "{{ associated_pods }}"
+  tags:
+    - fault_injection
+    - fault_removal

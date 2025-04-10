@@ -1,0 +1,94 @@
+---
+main:
+  options:
+    source:
+      choices:
+        - chaos-mesh
+        - custom
+        - elasticsearch
+        - kubernetes
+      type: str
+    spec:
+      required: true
+      type: dict
+      options:
+        chaos:
+          required: false
+          type: dict
+          options:
+            resource_definition.yaml:
+              required: true
+              type: str
+        custom:
+          required: false
+          type: dict
+          options:
+            name:
+              choices:
+                - memory-resource-quota
+                - misconfigured-service-port
+                - modify-cpu-resource-limits
+                - unsupported-image
+              required: true
+              type: str
+            target:
+              required: true
+              type: dict
+              options:
+                deployment:
+                  required: false
+                  type: dict
+                  options:
+                    name:
+                      required: true
+                      type: str
+                    namespace:
+                      required: true
+                      type: str
+                service:
+                  required: false
+                  type: dict
+                  options:
+                    name:
+                      required: true
+                      type: str
+                    namespace:
+                      required: true
+                      type: str
+                    target_port:
+                      required: true
+                      type: int
+        elasticsearch:
+          requred: false
+          type: dict
+          options:
+            cluster_namespace:
+              required: true
+              type: str
+            name:
+              choice:
+                - bad-password
+        flagd:
+          required: false
+          type: dict
+          options:
+            name:
+              required: true
+              type: str
+            target:
+              required: true
+              type: dict
+              options:
+                configmap:
+                  required: true
+                  type: dict
+                  options:
+                    data_key:
+                      required: true
+                      type: str
+                    name:
+                      required: true
+                      type: str
+                    namespace:
+                      required: true
+                      type: str

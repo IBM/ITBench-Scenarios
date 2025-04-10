@@ -1,0 +1,28 @@
+---
+- name: Executing Chaos Mesh fault tasks
+  ansible.builtin.import_tasks:
+    file: chaos_mesh.yaml
+  when:
+    - source == "chaos-mesh"
+    - spec.chaos is defined
+
+- name: Executing Custom fault tasks
+  ansible.builtin.import_tasks:
+    file: custom.yaml
+  when:
+    - source == "custom"
+    - spec.custom is defined
+
+- name: Executing Elasticsearch fault tasks
+  ansible.builtin.import_tasks:
+    file: elasticsearch.yaml
+  when:
+    - source == "elasticsearch"
+    - spec.elasticsearch is defined
+
+- name: Executing Flagd fault tasks
+  ansible.builtin.import_tasks:
+    file: flagd.yaml
+  when:
+    - source == "flagd"
+    - spec.flagd is defined

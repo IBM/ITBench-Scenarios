@@ -1,0 +1,37 @@
+---
+fetch_endpoint_url:
+  options:
+    ingress:
+      description: The Ingress object
+      type: dict
+      required: false
+      options:
+        name:
+          description: The name os the Ingress object
+          required: true
+          type: str
+        namespace:
+          description: The namespace of the Ingress object
+          required: true
+          type: str
+        path:
+          description: The path of the Ingress object
+          required: true
+          type: str
+    service:
+      description: The Service object
+      type: dict
+      required: true
+      options:
+        name:
+          description: The name os the Service object
+          required: true
+          type: str
+        namespace:
+          description: The namespace of the Service object
+          required: true
+          type: str
+        port:
+          description: The port of the Service object
+          required: true
+          type: int

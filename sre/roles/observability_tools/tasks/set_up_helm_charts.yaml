@@ -10,12 +10,16 @@
     name: altinity
     kubeconfig_path: "{{ kubeconfig }}"
     repo_url: "https://helm.altinity.com"
+  when:
+    - tools | intersect(['clickhouse']) | length == 1
 
 - name: Add Helm chart repo for OpenSearch
   kubernetes.core.helm_repository:
     name: opensearch
     kubeconfig_path: "{{ kubeconfig }}"
     repo_url: "https://opensearch-project.github.io/helm-charts"
+  when:
+    - tools | intersect(['opensearch']) | length == 1
 
 - name: Add Helm chart repo from the Prometheus community
   kubernetes.core.helm_repository:
@@ -28,6 +32,8 @@
     name: open-telemetry
     kubeconfig_path: "{{ kubeconfig }}"
     repo_url: "https://open-telemetry.github.io/opentelemetry-helm-charts"
+  when:
+    - tools | intersect(['kubernetes-event-exporter']) | length == 1
 
 - name: Add Helm chart repo for Grafana
   kubernetes.core.helm_repository:
@@ -41,7 +47,7 @@
     kubeconfig_path: "{{ kubeconfig }}"
     repo_url: "https://kubernetes-sigs.github.io/metrics-server/"
   when:
-    - domain == "finops"
+    - tools | intersect(['kubernetes-metrics-server']) | length == 1
 
 - name: Add Helm chart repo for OpenCost
   kubernetes.core.helm_repository:
@@ -49,7 +55,7 @@
     kubeconfig_path: "{{ kubeconfig }}"
     repo_url: "https://opencost.github.io/opencost-helm-chart"
   when:
-    - domain == "finops"
+    - tools | intersect(['opencost']) | length == 1
 
 - name: Update Helm repo
   kubernetes.core.helm:

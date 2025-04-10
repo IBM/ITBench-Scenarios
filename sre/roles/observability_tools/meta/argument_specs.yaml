@@ -1,0 +1,13 @@
+---
+main:
+  options:
+    tools:
+      choices:
+        - jaeger
+        - kubernetes-event-exporter
+        - kubernetes-topology-mapper
+        - opencost
+      description: A list of tools to be installed
+      elements: str
+      required: true
+      type: list

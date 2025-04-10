@@ -1,7 +1,7 @@
 ---
 - name: Set additional template variables
   ansible.builtin.set_fact:
-    enable_finops_rules: "{{ domain == 'finops' }}"
+    enable_finops_rules: "{{ tools | intersect(['opencost']) | length == 1 }}"
 
 - name: Copy alerting rules template into tmp directory for processing
   ansible.builtin.copy:

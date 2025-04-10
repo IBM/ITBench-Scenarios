@@ -1,4 +1,22 @@
 ---
+- name: Create list of tools to uninstall
+  ansible.builtin.set_fact:
+    observability_releases:
+      - name: "{{ clickhouse_installation_name }}"
+        namespace: "{{ clickhouse_namespace_project_name }}"
+      - name: "{{ ingress_installation_name }}"
+        namespace: "{{ ingress_namespace_project_name }}"
+      - name: "{{ prometheus_installation_name }}"
+        namespace: "{{ prometheus_namespace_project_name }}"
+      - name: "{{ grafana_installation_name }}"
+        namespace: "{{ grafana_namespace_project_name }}"
+      - name: "{{ opentelemetry_operator_installation_name }}"
+        namespace: "{{ opentelemetry_operator_namespace_project_name }}"
+      - name: "{{ opencost_installation_name }}"
+        namespace: "{{ opencost_namespace_project_name }}"
+      - name: "{{ opensearch_installation_name }}"
+        namespace: "{{ opensearch_namespace_project_name }}"
+
 - name: Remove operator managed resources
   kubernetes.core.k8s:
     kubeconfig: "{{ kubeconfig }}"
@@ -60,146 +78,32 @@
       kind: ClusterRole
       name: "{{ opentelemetry_operator_collector_kubernetes_events_name }}-collector"
 
-- name: Uninstall OpenTelemetry Operator
+- name: Uninstall observability tools
   kubernetes.core.helm:
-    name: "{{ opentelemetry_operator_installation_name }}"
     kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ opentelemetry_operator_namespace_project_name }}"
+    release_name: "{{ item.name }}"
+    release_namespace: "{{ item.namespace }}"
     state: absent
     wait: true
+  loop: "{{ observability_releases }}"
 
-- name: Uninstall OpenSearch
-  kubernetes.core.helm:
-    name: "{{ opensearch_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ opensearch_namespace_project_name }}"
-    state: absent
-    wait: true
-
-- name: Uninstall Clickhouse
-  kubernetes.core.helm:
-    name: "{{ clickhouse_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ clickhouse_namespace_project_name }}"
-    state: absent
-    wait: true
-
-- name: Uninstall Grafana
-  kubernetes.core.helm:
-    name: "{{ grafana_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ grafana_namespace_project_name }}"
-    state: absent
-    wait: true
-
-- name: Uninstall the Prometheus stack
-  kubernetes.core.helm:
-    name: "{{ prometheus_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ prometheus_namespace_project_name }}"
-    state: absent
-    wait: true
-
-- name: Uninstall the Kubernetes Metrics Server
-  kubernetes.core.helm:
-    name: "{{ metrics_server_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ metrics_server_namespace_project_name }}"
-    state: absent
-    wait: true
-
-- name: Uninstall the Kubernetes topology mapper
-  kubernetes.core.helm:
-    name: "{{ topology_mapper_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ topology_mapper_namespace_project_name }}"
-    state: absent
-    wait: true
-
-- name: Uninstall OpenCost
-  kubernetes.core.helm:
-    name: "{{ opencost_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ opencost_namespace_project_name }}"
-    state: absent
-    wait: true
-
-- name: Uninstall Ingress
-  kubernetes.core.helm:
-    name: "{{ ingress_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    release_namespace: "{{ ingress_namespace_project_name }}"
-    state: absent
-    wait: true
-
-- name: Remove the namespace associated with OpenSearch
+- name: Delete associated namespaces
   kubernetes.core.k8s:
     kubeconfig: "{{ kubeconfig }}"
-    name: "{{ opensearch_namespace_project_name }}"
+    name: "{{ item.namespace }}"
     api_version: v1
     kind: Namespace
     state: absent
     wait: true
+  loop: "{{ observability_releases }}"
 
-- name: Remove the namespace associated with Clickhouse
+- name: Delete additional namespaces
   kubernetes.core.k8s:
     kubeconfig: "{{ kubeconfig }}"
-    name: "{{ clickhouse_namespace_project_name }}"
+    name: "{{ item }}"
     api_version: v1
     kind: Namespace
     state: absent
     wait: true
-
-- name: Remove the namespace associated with Grafana
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    name: "{{ grafana_namespace_project_name }}"
-    api_version: v1
-    kind: Namespace
-    state: absent
-    wait: true
-
-- name: Remove the namespace associated with Prometheus
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    name: "{{ prometheus_namespace_project_name }}"
-    api_version: v1
-    kind: Namespace
-    state: absent
-    wait: true
-
-- name: Remove the namespace associated with OpenTelemetry Collectors
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    name: "{{ opentelemetry_operator_collectors_namespace }}"
-    api_version: v1
-    kind: Namespace
-    state: absent
-    wait: true
-
-- name: Remove the namespace associated with Kubernetes Metric Server
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    name: "{{ metrics_server_namespace_project_name }}"
-    api_version: v1
-    kind: Namespace
-    state: absent
-    wait: true
-
-- name: Remove the namespace associated with OpenCost
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    name: "{{ opencost_namespace_project_name }}"
-    api_version: v1
-    kind: Namespace
-    state: absent
-    wait: true
-
-- name: Remove the namespace associated with Ingress
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    name: "{{ ingress_namespace_project_name }}"
-    api_version: v1
-    kind: Namespace
-    state: absent
-    wait: true
+  loop:
+    - "{{ opentelemetry_operator_collectors_namespace }}"

@@ -8,6 +8,8 @@
     release_namespace: "{{ opencost_namespace_project_name }}"
     release_state: present
     create_namespace: true
+    wait: true
+    timeout: 10m0s
     values:
       networkPolicies:
         enabled: true

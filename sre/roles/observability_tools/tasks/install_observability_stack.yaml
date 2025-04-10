@@ -1,0 +1,49 @@
+---
+- name: Initialize Helm charts for observability tools
+  ansible.builtin.import_tasks:
+    file: set_up_helm_charts.yaml
+
+- name: Install Ingress NGINX Controller
+  ansible.builtin.import_tasks:
+    file: install_ingress.yaml
+
+- name: Install OpenSearch
+  ansible.builtin.import_tasks:
+    file: install_opensearch.yaml
+  when:
+    - tools | intersect(['jaeger']) | length > 1
+
+- name: Install Prometheus
+  ansible.builtin.import_tasks:
+    file: install_prometheus.yaml
+
+- name: Wait for Grafana datasource services
+  kubernetes.core.helm_info:
+    kubeconfig_path: "{{ kubeconfig }}"
+    release_name: "{{ item.name }}"
+    release_namespace: "{{ item.namespace }}"
+  loop:
+    - name: "{{ opensearch_namespace_project_name }}"
+      namespace: "{{ opensearch_installation_name }}"
+    - name: "{{ prometheus_installation_name }}"
+      namespace: "{{ prometheus_namespace_project_name }}"
+  register: helm_info
+  until: helm_info.status.status == 'deployed'
+  retries: 10
+  delay: 60
+
+- name: Install OpenTelemetry Collectors
+  ansible.builtin.import_tasks:
+    file: install_opentelemetry.yaml
+  when:
+    - tools | intersect(['kubernetes-event-exporter', 'jaeger']) | length > 1
+
+- name: Install Grafana
+  ansible.builtin.import_tasks:
+    file: install_grafana.yaml
+
+- name: Install Opencost
+  ansible.builtin.import_tasks:
+    file: install_opencost.yaml
+  when:
+    - tools | intersect(['opencost']) | length == 1

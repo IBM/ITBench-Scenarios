@@ -1,0 +1,12 @@
+---
+- name: Uninstall Chaos Mesh
+  ansible.builtin.import_tasks:
+    file: uninstall_chaos_mesh.yaml
+  when:
+    - tools | intersect(['chaos-mesh']) | length == 1
+
+- name: Unnstall Kubernetes Metrics Server
+  ansible.builtin.import_tasks:
+    file: uninstall_kubernetes_metrics_server.yaml
+  when:
+    - tools | intersect(['kubernetes-metrics-server']) | length == 1

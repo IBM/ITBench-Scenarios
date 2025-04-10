@@ -1,0 +1,81 @@
+---
+- name: Create enabled flagd fault flag variable
+  ansible.builtin.set_fact:
+    enabled: "on"
+  tags:
+    - fault_injection
+
+- name: Create disabled flagd fault flag variable
+  ansible.builtin.set_fact:
+    enabled: "off"
+  tags:
+    - fault_removal
+
+- name: Retrieve the ConfigMap for flagd deployment
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: ConfigMap
+    namespace: "{{ spec.flagd.target.configmap.namespace }}"
+    kubeconfig: "{{ kubeconfig }}"
+    name: "{{ spec.flagd.target.configmap.name }}"
+  register: configmap_info
+  tags:
+    - fault_injection
+    - fault_removal
+
+- name: Retrieve ConfigMap data
+  ansible.builtin.set_fact:
+    configmap_data: "{{ configmap_info.resources[0].data }}"
+  tags:
+    - fault_injection
+    - fault_removal
+
+- name: Retrieve Flagd json from ConfigMap data
+  ansible.builtin.set_fact:
+    flagd_json: "{{ configmap_data[ spec.flagd.target.configmap.data_key ] | from_json }}"
+  tags:
+    - fault_injection
+    - fault_removal
+
+- name: Override Flagd json with fault flag variable
+  ansible.builtin.set_fact:
+    flagd_json: |
+      {{
+        flagd_json |
+        combine(
+          {
+            "flags": {
+              spec.flagd.name: {
+                "defaultVariant": enabled
+              }
+            }
+          },
+          recursive=True
+        )
+      }}
+  tags:
+    - fault_injection
+    - fault_removal
+
+- name: Update the ConfigMap with the flag fault
+  kubernetes.core.k8s:
+    api_version: v1
+    kind: ConfigMap
+    namespace: "{{ spec.flagd.target.configmap.namespace }}"
+    kubeconfig: "{{ kubeconfig }}"
+    name: "{{ spec.flagd.target.configmap.name }}"
+    resource_definition:
+      data: |
+        {{
+          configmap_data |
+          combine(
+            {
+              spec.flagd.target.configmap.data_key: flagd_json | to_nice_json
+            },
+            recursive=True
+          )
+        }}
+    wait: true
+  tags:
+    - fault_injection
+    - fault_removal

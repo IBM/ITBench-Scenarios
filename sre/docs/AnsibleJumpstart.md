@@ -104,7 +104,6 @@ If you leave the tags block off, the task will be ignored with no debugging outp
   vars:
       is_native: true
       is_injection: true
-      is_otel_astronomy_shop_dynamic_load: true
       dynamic_load_vars:
         - name: GET_RECOMMENDATIONS_WEIGHT
           value: "1000"

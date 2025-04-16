@@ -8,6 +8,7 @@ updates:
 
   - package-ecosystem: docker
     directories:
+      - sre/tools/death-star-bench-*/
       - sre/tools/kubernetes-topology-mapper/
       - sre/tools/elasticsearch-dummy-app/
       - ciso/

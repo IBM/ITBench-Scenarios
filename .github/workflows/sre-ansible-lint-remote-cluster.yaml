@@ -1,0 +1,34 @@
+name: Lint SRE remote cluster playbooks
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - sre/remote_cluster/*
+
+jobs:
+  lint:
+    name: Lint remote cluster playbooks
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run ansible-lint
+        uses: ansible/ansible-lint@v25
+        with:
+          args:
+            - sre/remote_cluster/batch_create_cluster.yaml
+            - sre/remote_cluster/batch_delete_cluster.yaml
+            - sre/remote_cluster/build_cluster.yaml
+            - sre/remote_cluster/configure_aws_user_and_storage.yaml
+            - sre/remote_cluster/configure_localmachine.yaml
+            - sre/remote_cluster/create_cluster.yaml
+            - sre/remote_cluster/delete_cluster.yaml
+            - sre/remote_cluster/delete_max_batch_cluster.yaml
+            - sre/remote_cluster/destroy_all_clusters.yaml
+            - sre/remote_cluster/edit_clustersize.yaml
+            - sre/remote_cluster/get_kcfg.yaml
+            - sre/remote_cluster/install-istio-based-monitoring.yaml
+            - sre/remote_cluster/list_clusters.yaml
+          working_directory: sre
+          requirements_file: requirements.yaml

@@ -1,0 +1,44 @@
+---
+- name: Temporary Validator
+  hosts:
+    - localhost
+  vars:
+    alerting_rules_names:
+      - PendingPodsDetected
+      - FailedPodsDetected
+      - RequestLatency
+      - RequestErrorRate
+      - KafkaConnectionClosureRate
+      - CPUSpend
+      - MemorySpend
+      - CPUEfficiency
+      - MemoryEfficiency
+    enable_finops_rules: true
+  tasks:
+    - name: Template the alerting rules file to get full rules list
+      ansible.builtin.template:
+        src: roles/observability_tools/templates/prometheus-alerting-rules.j2
+        dest: /tmp/prometheus-alerting-rules-validation.yaml
+        variable_start_string: "<<"
+        variable_end_string: ">>"
+        mode: '0644'
+
+    - name: Load alert rules from file as yaml
+      ansible.builtin.set_fact:
+        rules: "{{ lookup('ansible.builtin.file', '/tmp/prometheus-alerting-rules-validation.yaml') | from_yaml }}"
+
+    - name: Parse alerting rules names from list
+      ansible.builtin.set_fact:
+        names: "{{ rules | community.general.json_query('groups[*].rules[*].alert') | flatten | unique }}"
+
+    - name: Check for differences between file and validated alerts
+      ansible.builtin.set_fact:
+        result: "{{ names | difference(alerting_rules_names) }}"
+
+    - name: Validate result
+      ansible.builtin.assert:
+        that: "result | length == 0"
+        fail_msg: "Alerting rules template file contains invalid alert names: {{ result }}."
+        success_msg: "Ok"
+      tags:
+        - always

@@ -1,14 +1,18 @@
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.5-1745855087
-
-ENV DATA_DIRECTORY /app/topology_data
-
-WORKDIR /app
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.5-1745855087 AS build-venv
 
 RUN microdnf update -y && \
     microdnf install -y python3.12 python3.12-pip
 
 COPY requirements.txt requirements.txt
-RUN python3.12 -m pip install --no-cache-dir -r requirements.txt
+
+RUN python3.12 -m venv venv
+RUN venv/bin/pip install --no-cache-dir -r requirements.txt
+
+FROM gcr.io/distroless/python3-debian12:nonroot
+
+COPY --from=build-venv /venv/ /venv/
+
+WORKDIR /app
 
 COPY __init__.py __init__.py
 COPY app.py app.py
@@ -20,11 +24,4 @@ COPY taxonomy_creator.py taxonomy_creator.py
 COPY topology_analyzer.py topology_analyzer.py
 COPY topology_manager.py topology_manager.py
 
-USER 0
-
-RUN mkdir ${DATA_DIRECTORY} && \
-    chown -R 1001 ${DATA_DIRECTORY}
-
-USER 1001
-
-CMD ["python3.12", "main.py"]
+CMD ["/venv/bin/python", "main.py"]

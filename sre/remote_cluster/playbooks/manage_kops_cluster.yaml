@@ -1,0 +1,46 @@
+---
+- name: KOps (Kubernetes Operations) Cluster Management
+  hosts:
+    - development
+  pre_tasks:
+    - name: Import KOps role validation tasks
+      ansible.builtin.import_role:
+        name: kops
+        tasks_from: validate.yaml
+      vars:
+        kops_cluster: "{{ cluster }}"
+      tags:
+        - always
+  tasks:
+    - name: Create bucket if it doesn't exist
+      amazon.aws.s3_bucket:
+        name: "{{ cluster.s3.bucket_name }}"
+        region: "{{ cluster.aws.region }}"
+        state: present
+      tags:
+        - create
+
+    - name: Check for all.yaml group_var in main directory
+      ansible.builtin.find:
+        paths:
+          - "../../group_vars"
+        pattern:
+          - all.yaml
+      register: files_found
+      tags:
+        - export
+
+    - name: Include all.yaml variables
+      ansible.builtin.include_vars:
+        file: ../../group_vars/all.yaml
+      tags:
+        - export
+      when:
+        - files_found.files | length == 1
+
+    - name: Import KOps role
+      ansible.builtin.import_role:
+        name: kops
+      vars:
+        kops_cluster: "{{ cluster }}"
+        kops_kubeconfig_path: "{{ kubeconfig | default('/tmp/current-kops-cluster.yaml') }}"

@@ -1,0 +1,14 @@
+---
+- name: Delete the cluster
+  ansible.builtin.command:
+    argv:
+      - kops
+      - delete
+      - cluster
+      - --name
+      - "{{ cluster_name }}"
+      - --yes
+      - --state
+      - "{{ state_store }}"
+  register: kops_delete_output
+  changed_when: kops_delete_output.rc == 0

@@ -5,7 +5,8 @@ on:
     branches:
       - main
     paths:
-      - sre/remote_cluster/*
+      - sre/remote_cluster/playbooks/*
+      - sre/remote_cluster/roles/*
 
 jobs:
   lint:
@@ -17,18 +18,9 @@ jobs:
         uses: ansible/ansible-lint@v25
         with:
           args:
-            - sre/remote_cluster/batch_create_cluster.yaml
-            - sre/remote_cluster/batch_delete_cluster.yaml
-            - sre/remote_cluster/build_cluster.yaml
-            - sre/remote_cluster/configure_aws_user_and_storage.yaml
-            - sre/remote_cluster/configure_localmachine.yaml
-            - sre/remote_cluster/create_cluster.yaml
-            - sre/remote_cluster/delete_cluster.yaml
-            - sre/remote_cluster/delete_max_batch_cluster.yaml
-            - sre/remote_cluster/destroy_all_clusters.yaml
-            - sre/remote_cluster/edit_clustersize.yaml
-            - sre/remote_cluster/get_kcfg.yaml
-            - sre/remote_cluster/install-istio-based-monitoring.yaml
-            - sre/remote_cluster/list_clusters.yaml
-          working_directory: sre
-          requirements_file: requirements.yaml
+            - playbooks/manage_awx_stack.yaml
+            - playbooks/manage_kops_cluster.yaml
+            - roles/awx
+            - roles/kops
+          working_directory: sre/remote_cluster
+          requirements_file: ../requirements.yaml

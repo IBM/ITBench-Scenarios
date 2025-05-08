@@ -6,6 +6,36 @@ _Note: The following guide has been largely based on this [blog](https://aws.ama
 
 _Note: The following setup guide presumes that the required software listed [here](../README.md#required-software) has been installed along with [creating the virtual environment and installing the dependencies](../README.md#installing-dependencies). If it has not, please go back and do so before following this document._
 
+## Recommended Software
+
+### MacOS
+
+- [Homebrew](https://brew.sh/)
+
+## Required Software
+
+- [awscli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) (v2)
+- [kops](https://kops.sigs.k8s.io/getting_started/install/)
+
+### Installing Required Software via Homebrew (for MacOS)
+
+1. Install required software
+```bash
+brew install awscli
+brew install kops
+```
+
+### Installing Required Software (for Red Hat Enterprise Linux -- RHEL)
+
+1. Install the AWS CLI v2, curl, and jq by running:
+```bash
+sudo dnf install awscli
+sudo dnf install curl
+sudo dnf install jq
+```
+2. Set up kops by following the instructions [here](https://kops.sigs.k8s.io/getting_started/install/#linux)
+
+
 ## First Time Setup
 
 1. Install Python dependencies. (Working directory is `remote_cluster`.)
@@ -13,37 +43,22 @@ _Note: The following setup guide presumes that the required software listed [her
 python -m pip install -r requirements-dev.txt
 ```
 
-2. Create `variables.yaml` from the example.
+2. Create the group variables for the development host. The `kops_cluster.yaml` file contains the configuration needed to customize the kops deployment.
 ```bash
-cp -n playbooks/variables.yaml.example playbooks/variables.yaml
+make group_vars
+vim group_vars/development/kops_cluster.yaml
 ```
 
-5. Create `secret.yaml` (copy `secret.yaml.example`) and update the values. The `s3name` should be the cluster status s3 store (currently `sre-bench` for the `us-east-2` cluster and `sre-bench-de` for the `eu-central-1` cluster) as well as your AWS credentials. If you do not need access to the cluster nodes, then you can leave the ssh key field blank. Otherwise, create an ssh key and provide the absolute path to the public key.
+3. Set up AWS credentials by running the following command. Enter the AWS access key ID and security access key when requested.
 ```bash
-cp -n playbooks/secret.yaml.example playbooks/secret.yaml
-```
-```yaml
-ssh_key_for_cluster: "/home/<user>/.ssh/<key-name>.pub"
-```
-
-6. To set up your local machine with the curl, aws-cli, jq, kubectl and kops run:
-```bash
-# BECOME password is your user password or root password.
-make configure_localmachine
-```
-For Red Hat Enterprise Linux (RHEL), Fedora, CentOS installs to: /usr/local/bin
-For MacOS installation uses Homebrew.
-
-7. Set up AWS credentials by running the following command. Enter the AWS access key ID and security access key when requested.
-```bash
-make configure_aws_access
+aws configure
 ```
 
 ## Cluster Management
 
-1. Run the following command to create a cluster using EC2 resources. If you already have a cluster, you can skip this step. When prompted, supply the number of control nodes, worker nodes, name of the cluster, and type of instance required for the cluster. Recommended: 1 control node, 3 worker nodes, and instance type of m4.xlarge.
+1. Run the following command to create a cluster using EC2 resources. If you already have a cluster, you can skip this step. The configuration used for creating the cluster is specified in the `kops_cluster` group variables.
 ```bash
-make create
+make create_kops_cluster
 ```
 
 2. Update the value of the `kubeconfig` key in the `../group_vars/all.yaml`, with the absolute path that the kubeconfig should be downloaded to
@@ -55,9 +70,9 @@ vim ../group_vars/all.yaml
 kubeconfig: "<path to kubeconfig>"
 ```
 
-3. Run the following command to download the kubeconfig of a selected cluster to the path specified by the `kubeconfig` in `all.yaml`. A cluster can be selected by typing the name of cluster into the prompt or pressing the `Return` key if the first entry in the table is what is desired.
+3. Run the following command to download the kubeconfig for the created cluster. Changing the value of the `cluster.name_prefix` to the prefix of an already created cluster allows the command to export that kubeconfig instead.
 ```bash
-make get_kcfg
+make export_kops_kubeconfig
 ```
 
 4. Access remote k8s cluster
@@ -70,7 +85,7 @@ kubectl get pod --all-namespaces
 
 6. Once done with the experiment runs, to destroy the cluster, run the following command:
 ```bash
-make delete
+make destroy_kops_cluster
 ```
 
 _Note_: For a full list of `make` commands, run the following command:

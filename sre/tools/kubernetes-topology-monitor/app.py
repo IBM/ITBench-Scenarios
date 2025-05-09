@@ -17,7 +17,7 @@ def healthz():
 
 @app.route('/nodes')
 def get_nodes():
-    topology_manager.refresh_topology()  
+    topology_manager.refresh_topology()
     return jsonify([{
         'id': node_id,
         **{k: str(v) for k, v in topology_manager.graph.nodes[node_id].items()}  # Convert all values to strings
@@ -42,12 +42,12 @@ def get_events():
     events = []
     current_date = datetime.now().strftime("%Y-%m-%d")
     log_file = event_logger._get_current_logfile()
-    
+
     if log_file.exists():
         with open(log_file, 'r') as f:
             events = f.read().split('-' * 80)
             events = [e.strip() for e in events if e.strip()]
-            
+
     return jsonify(events)
 
 

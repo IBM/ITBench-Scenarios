@@ -1,0 +1,12 @@
+---
+argument_specs:
+  main:
+    options:
+      fault_tools_enabled:
+        required: true
+        type: dict
+        options:
+          chaos_mesh:
+            default: false
+            required: false
+            type: bool

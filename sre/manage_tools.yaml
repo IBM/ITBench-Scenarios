@@ -1,0 +1,12 @@
+---
+- name: Manage Observability and Fault Tool Stack
+  hosts:
+    - localhost
+  tasks:
+    - name: Import fault tools role
+      ansible.builtin.import_role:
+        name: fault_tools
+      vars:
+        fault_tools_enabled:
+          chaos_mesh: "{{ fault_tools.chaos_mesh | default(false) }}"
+          kubernetes_topology_mapper: "{{ fault_tools.kubernetes_topology_mapper | default(false) }}"

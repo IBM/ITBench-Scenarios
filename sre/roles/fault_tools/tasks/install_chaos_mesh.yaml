@@ -1,0 +1,18 @@
+---
+- name: Install Chaos Mesh
+  kubernetes.core.helm:
+    chart_ref: chaos-mesh
+    chart_repo_url: https://charts.chaos-mesh.org
+    chart_version: 2.7.1
+    create_namespace: true
+    kubeconfig: "{{ kubeconfig }}"
+    release_name: "{{ helm_release.name }}"
+    release_namespace: "{{ helm_release.namespace }}"
+    release_state: present
+    values:
+      chaosDaemon:
+        runtime: containerd
+        socketPath: /run/containerd/containerd.sock
+      dnsServer:
+        create: false
+    wait: true

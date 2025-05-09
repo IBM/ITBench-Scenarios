@@ -1,0 +1,8 @@
+---
+- name: Import Chaos Mesh uninstallation tasks
+  ansible.builtin.import_tasks:
+    file: uninstall_chaos_mesh.yaml
+  vars:
+    helm_release: "{{ fault_tools_helm_releases.chaos_mesh }}"
+  when:
+    - fault_tools_enabled.chaos_mesh

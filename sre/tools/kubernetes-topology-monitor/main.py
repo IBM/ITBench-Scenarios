@@ -32,8 +32,8 @@ def run_snapshot_thread(topology, interval, logger):
 def parse_args():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(description='Kubernetes Topology Monitor')
-    parser.add_argument('--kubeconfig', 
-                       help='Path to kubeconfig file. If not specified, uses default ~/.kube/config. ' 
+    parser.add_argument('--kubeconfig',
+                       help='Path to kubeconfig file. If not specified, uses default ~/.kube/config. '
                             'The current-context from the kubeconfig will be used.')
     parser.add_argument('--data-dir', default='./topology_data',
                        help='Directory for storing topology data')
@@ -50,7 +50,7 @@ def parse_args():
 def main():
     args = parse_args()
     setup_logging(args.log_level)
-    
+
     try:
         k8s_client = K8sClient(kubeconfig_path=args.kubeconfig)
         topology = K8sTopologyManager(k8s_client, persistence_dir=args.data_dir)
@@ -63,37 +63,37 @@ def main():
         else:
             # Initial topology build
             topology.refresh_topology()
-        
+
         # Start the watcher
         watcher = K8sResourceWatcher(k8s_client, topology, event_logger)
         watcher.start()
-        
+
         # Start snapshot thread
         def run_snapshots():
             while True:
                 try:
                     topology.save_snapshot()
                     topology.cleanup_old_snapshots(args.max_snapshots)
-                    topology.cleanup_old_nodes(max_age_seconds=3600)  
+                    topology.cleanup_old_nodes(max_age_seconds=3600)
                     time.sleep(args.interval)
                 except Exception as e:
                     logger.error(f"Snapshot error: {e}")
                     time.sleep(60)
-        
+
         snapshot_thread = threading.Thread(
             target=run_snapshots,
             daemon=True
         )
         snapshot_thread.start()
-        
+
         # Start API server
         from app import start_server
         start_server(topology, event_logger)
-        
+
     except Exception as e:
         logger.error(f"Fatal error: {e}", exc_info=True)
         return 1
-        
+
     return 0
 
 

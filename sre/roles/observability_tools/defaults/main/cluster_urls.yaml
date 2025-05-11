@@ -1,0 +1,4 @@
+observability_tools_cluster_urls:
+  clickhouse: http://{{ observability_tools_helm_releases.clickhouse.name }}-clickhouse.{{ observability_tools_helm_releases.clickhouse.namespace }}.svc.cluster.local:8123
+  opensearch: http://{{ observability_tools_helm_releases.opensearch.name }}-cluster-master.{{ observability_tools_helm_releases.opensearch.namespace }}.svc.cluster.local:9200
+  prometheus: http://{{ observability_tools_helm_releases.prometheus.name }}-server.{{ observability_tools_helm_releases.prometheus.namespace }}.svc.cluster.local:80

@@ -1,14 +1,14 @@
 ---
-- name: Deploy Clickhouse Operator and Clickhouse
+- name: Install Clickhouse Operator and Clickhouse
   kubernetes.core.helm:
-    name: "{{ clickhouse_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    chart_ref: altinity/clickhouse
-    chart_version: "{{ clickhouse_chart_version }}"
-    release_namespace: "{{ clickhouse_namespace_project_name }}"
+    chart_ref: clickhouse
+    chart_repo_url: https://helm.altinity.com
+    chart_version: 0.2.2
+    kubeconfig: "{{ kubeconfig }}"
+    release_name: "{{ helm_release.name }}"
+    release_namespace: "{{ helm_release.namespace }}"
     release_state: present
     timeout: 10m0s
-    wait: true
     values:
       clickhouse:
         defaultUser:
@@ -17,13 +17,14 @@
           runAsUser: 101
           runAsGroup: 101
           fsGroup: 101
+    wait: true
 
 - name: Wait for Clickhouse install to complete
   kubernetes.core.k8s_info:
     api_version: clickhouse.altinity.com/v1
     kind: ClickHouseInstallation
-    name: "{{ clickhouse_installation_name }}"
-    namespace: "{{ clickhouse_namespace_project_name }}"
+    name: "{{ helm_release.name }}"
+    namespace: "{{ helm_release.namespace }}"
     kubeconfig: "{{ kubeconfig }}"
     wait: true
   register: clickhouse_installation_info
@@ -33,20 +34,6 @@
   retries: 10
   delay: 30
 
-- name: Get Clickhouse credentials from secret
-  kubernetes.core.k8s_info:
-    kind: Secret
-    name: clickhouse-credentials
-    namespace: "{{ clickhouse_namespace_project_name }}"
-    kubeconfig: "{{ kubeconfig }}"
-    wait: true
-  register: clickhouse_secrets_info
-
-- name: Extract Clickhouse credentials from secret data
-  ansible.builtin.set_fact:
-    clickhouse_user: "{{ clickhouse_secrets_info.resources[0].data.user | b64decode }}"
-    clickhouse_password: "{{ clickhouse_secrets_info.resources[0].data.password | b64decode }}"
-
 - name: Deploy Ingress for Clickhouse
   kubernetes.core.k8s:
     state: present
@@ -55,8 +42,8 @@
       apiVersion: networking.k8s.io/v1
       kind: Ingress
       metadata:
-        name: clickhouse
-        namespace: "{{ clickhouse_namespace_project_name }}"
+        name: "{{ helm_release.name }}"
+        namespace: "{{ helm_release.namespace }}"
         annotations:
           nginx.ingress.kubernetes.io/rewrite-target: /$2
       spec:
@@ -68,6 +55,20 @@
                   path: /clickhouse(/|$)(.*)
                   backend:
                     service:
-                      name: "{{ clickhouse_installation_name }}-clickhouse"
+                      name: "{{ helm_release.name }}-clickhouse"
                       port:
                         number: 8123
+
+- name: Get Clickhouse credentials from secret
+  kubernetes.core.k8s_info:
+    kind: Secret
+    name: "{{ helm_release.name }}-credentials"
+    namespace: "{{ helm_release.namespace }}"
+    kubeconfig: "{{ kubeconfig }}"
+    wait: true
+  register: clickhouse_secrets_info
+
+- name: Extract Clickhouse credentials from secret data
+  ansible.builtin.set_fact:
+    clickhouse_user: "{{ clickhouse_secrets_info.resources[0].data.user | b64decode }}"
+    clickhouse_password: "{{ clickhouse_secrets_info.resources[0].data.password | b64decode }}"

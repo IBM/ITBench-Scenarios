@@ -1,0 +1,28 @@
+observability_tools_helm_releases:
+  clickhouse:
+    name: clickhouse
+    namespace: clickhouse
+  ingress:
+    name: ingress-nginx
+    namespace: ingress-nginx
+  kubernetes_metrics_server:
+    name: metrics-server
+    namespace: metrics-server
+  kubernetes_topology_monitor:
+    name: topology-monitor
+    namespace: kube-system
+  opencost:
+    name: opencost
+    namespace: opencost
+  opensearch:
+    name: opensearch
+    namespace: opensearch
+  opentelemetry_operator:
+    name: opentelemetry-operator
+    namespace: opentelemetry-operator
+  opentelemetry_kubernetes_events_collector:
+    name: k8s-events
+    namespace: opentelemetry-collectors
+  prometheus:
+    name: prometheus
+    namespace: prometheus

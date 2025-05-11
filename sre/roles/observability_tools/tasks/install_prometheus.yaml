@@ -1,8 +1,4 @@
 ---
-- name: Set additional template variables
-  ansible.builtin.set_fact:
-    enable_finops_rules: "{{ domain == 'finops' }}"
-
 - name: Copy alerting rules template into tmp directory for processing
   ansible.builtin.copy:
     src: templates/prometheus-alerting-rules.j2
@@ -31,18 +27,17 @@
     regexp: "\\\\"
     replace: ""
 
-- name: Deploy the Prometheus stack
+- name: Install Prometheus
   kubernetes.core.helm:
-    name: "{{ prometheus_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    chart_ref: prometheus-community/prometheus
-    chart_version: "{{ prometheus_chart_version }}"
-    release_namespace: "{{ prometheus_namespace_project_name }}"
+    chart_ref: prometheus
+    chart_repo_url: https://prometheus-community.github.io/helm-charts
+    chart_version: 27.11.0
+    kubeconfig: "{{ kubeconfig }}"
+    release_name: "{{ helm_release.name }}"
+    release_namespace: "{{ helm_release.namespace }}"
     release_state: present
-    wait: true
     timeout: 10m0s
     values:
-      alertmanager:
       extraScrapeConfigs: "{{ lookup('ansible.builtin.template', 'templates/prometheus-scrape-configs.j2') | from_yaml | to_yaml }}"
       server:
         extraFlags:
@@ -54,9 +49,10 @@
       prometheus-pushgateway:
         enabled: false
       prometheus-node-exporter:
-        enabled: "{{ false if (cluster_type is defined and ((cluster_type == 'openshift') or (cluster_type == 'openshift_crc_local'))) else true }}"
+        enabled: "{{ chart_values.node_exporter_enabled }}"
+    wait: true
 
-- name: Deploy Ingress for Prometheus and AlertManager frontends
+- name: Create Ingress for Prometheus and AlertManager frontends
   kubernetes.core.k8s:
     state: present
     kubeconfig: "{{ kubeconfig }}"
@@ -64,8 +60,8 @@
       apiVersion: networking.k8s.io/v1
       kind: Ingress
       metadata:
-        name: prometheus
-        namespace: "{{ prometheus_namespace_project_name }}"
+        name: "{{ helm_release.name }}"
+        namespace: "{{ helm_release.namespace }}"
         annotations:
           nginx.ingress.kubernetes.io/rewrite-target: /$2
       spec:
@@ -77,7 +73,7 @@
                   path: /prometheus(/|$)(.*)
                   backend:
                     service:
-                      name: "{{ prometheus_installation_name }}-server"
+                      name: "{{ helm_release.name }}-server"
                       port:
                         number: 80
           - http:
@@ -86,6 +82,6 @@
                   path: /alertmanager(/|$)(.*)
                   backend:
                     service:
-                      name: "{{ prometheus_installation_name }}-alertmanager"
+                      name: "{{ helm_release.name }}-alertmanager"
                       port:
                         number: 9093

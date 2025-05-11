@@ -1,19 +1,19 @@
 ---
-- name: Deploy OpenCost
+- name: Install OpenCost
   kubernetes.core.helm:
-    name: "{{ opencost_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    chart_ref: opencost-charts/opencost
-    chart_version: "{{ opencost_chart_version }}"
-    release_namespace: "{{ opencost_namespace_project_name }}"
+    chart_ref: opencost
+    chart_repo_url: https://opencost.github.io/opencost-helm-chart
+    chart_version: 2.0.1
+    kubeconfig: "{{ kubeconfig }}"
+    release_name: "{{ helm_release.name }}"
+    release_namespace: "{{ helm_release.namespace }}"
     release_state: present
-    wait: true
     timeout: 10m0s
     values:
       networkPolicies:
         enabled: true
         prometheus:
-          namespace: "{{ prometheus_namespace_project_name }}"
+          namespace: "{{ chart_values.prometheus.namespace }}"
       opencost:
         customPricing:
           enabled: true
@@ -36,15 +36,16 @@
         prometheus:
           external:
             enabled: true
-            url: "http://{{ prometheus_service_name }}.{{ prometheus_namespace_project_name }}.svc.cluster.local:80"
+            url: "{{ chart_values.prometheus.external_url }}"
           internal:
             enabled: false
         ui:
           ingress:
             enabled: true
             hosts:
-              - host: null
+              - host:
                 paths:
                   - /
                   # - /{{ opencost_namespace_project_name }}(/|$)(.*)
             ingressClassName: nginx
+    wait: true

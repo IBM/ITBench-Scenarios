@@ -1,0 +1,72 @@
+---
+- name: Create namespace(s) for observability components
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    state: present
+    template: templates/namespaces.j2
+
+- name: Import Kubernetes Metrics Server installation tasks
+  ansible.builtin.import_tasks:
+    file: install_kubernetes_metrics_server.yaml
+  vars:
+    helm_release: "{{ observability_tools_helm_releases.kubernetes_metrics_server }}"
+
+- name: Import Ingress installation tasks
+  ansible.builtin.import_tasks:
+    file: install_ingress.yaml
+  vars:
+    helm_release: "{{ observability_tools_helm_releases.ingress }}"
+
+- name: Import Clickhouse installation tasks
+  ansible.builtin.import_tasks:
+    file: install_clickhouse.yaml
+  vars:
+    helm_release: "{{ observability_tools_helm_releases.clickhouse }}"
+
+- name: Import OpenSearch installation tasks
+  ansible.builtin.import_tasks:
+    file: install_opensearch.yaml
+  vars:
+    helm_release: "{{ observability_tools_helm_releases.opensearch }}"
+
+# - name: Import Prometheus installation tasks
+#   ansible.builtin.import_tasks:
+#     file: install_prometheus.yaml
+#   vars:
+#     enable_finops_rules: "{{ domain == 'finops' }}"
+#     helm_release: "{{ observability_tools_helm_releases.prometheus }}"
+#     chart_values:
+#       node_exporter_enabled: "{{ false if (cluster_type is defined and ((cluster_type == 'openshift') or (cluster_type == 'openshift_crc_local'))) else true }}"
+
+- name: Import OpenTelemetry installation tasks
+  ansible.builtin.import_tasks:
+    file: install_opentelemetry.yaml
+  vars:
+    helm_releases:
+      kubernetes_events_collector: "{{ observability_tools_helm_releases.opentelemetry_kubernetes_events_collector }}"
+      operator: "{{ observability_tools_helm_releases.opentelemetry_operator }}"
+    chart_values:
+      kubernetes_events_collector:
+        clickhouse:
+          user: "{{ clickhouse_user }}"
+          password: "{{ clickhouse_password }}"
+          internal_url: "{{ observability_tools_cluster_urls.clickhouse }}"
+      jaeger:
+        opensearch:
+          internal_url: "{{ observability_tools_cluster_urls.opensearch }}"
+
+- name: Import OpenCost installation tasks
+  ansible.builtin.import_tasks:
+    file: install_opencost.yaml
+  vars:
+    helm_release: "{{ observability_tools_helm_releases.opencost }}"
+    chart_values:
+      prometheus:
+        external_url: "{{ observability_tools_cluster_urls.prometheus }}"
+        namespace: "{{ observability_tools_helm_releases.prometheus.namespace }}"
+
+- name: Import Kubernetes Topology Monitor installation tasks
+  ansible.builtin.import_tasks:
+    file: install_kubernetes_topology_monitor.yaml
+  vars:
+    helm_release: "{{ observability_tools_helm_releases.kubernetes_topology_monitor }}"

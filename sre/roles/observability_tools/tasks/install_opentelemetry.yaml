@@ -1,13 +1,67 @@
 ---
-- name: Deploy OpenTelemetry Operator
+- name: Install OpenTelemetry Collector for Kubernetes Events
   kubernetes.core.helm:
-    name: "{{ opentelemetry_operator_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    chart_ref: open-telemetry/opentelemetry-operator
-    chart_version: "{{ opentelemetry_operator_chart_version }}"
-    release_namespace: "{{ opentelemetry_operator_namespace_project_name }}"
+    chart_ref: opentelemetry-collector
+    chart_repo_url: https://open-telemetry.github.io/opentelemetry-helm-charts
+    chart_version: 0.122.5
+    kubeconfig: "{{ kubeconfig }}"
+    release_name: "{{ helm_releases.kubernetes_events_collector.name }}"
+    release_namespace: "{{ helm_releases.kubernetes_events_collector.namespace }}"
     release_state: present
+    timeout: 10m0s
+    values:
+      mode: deployment
+      replicaCount: 1
+      presets:
+        kubernetesEvents:
+          enabled: true
+      image:
+        repository: otel/opentelemetry-collector-contrib
+        tag: 0.123.0
+      ports:
+        jaeger-compact:
+          enabled: false
+        jaeger-thrift:
+          enabled: false
+        jaeger-grpc:
+          enabled: false
+        zipkin:
+          enabled: false
+      config:
+        exporters:
+          clickhouse:
+            username: "{{ chart_values.kubernetes_events_collector.clickhouse.user }}"
+            password: "{{ chart_values.kubernetes_events_collector.clickhouse.password }}"
+            endpoint: "{{ chart_values.kubernetes_events_collector.clickhouse.internal_url }}"
+            logs_table_name: otel_k8s_events_logs
+        receivers:
+          jaeger: null
+          prometheus: null
+          zipkin: null
+        service:
+          pipelines:
+            logs:
+              exporters:
+                - debug
+                - clickhouse
+            metrics:
+              receivers:
+                - otlp
+            traces:
+              receivers:
+                - otlp
     wait: true
+
+- name: Install OpenTelemetry Operator
+  kubernetes.core.helm:
+    chart_ref: opentelemetry-operator
+    chart_repo_url: https://open-telemetry.github.io/opentelemetry-helm-charts
+    chart_version: 0.85.0
+    kubeconfig: "{{ kubeconfig }}"
+    release_name: "{{ helm_releases.operator.name }}"
+    release_namespace: "{{ helm_releases.operator.namespace }}"
+    release_state: present
+    timeout: 10m0s
     values:
       manager:
         collectorImage:
@@ -17,14 +71,9 @@
           enabled: false
         autoGenerateCert:
           enabled: true
+    wait: true
 
-- name: Create RBAC objects for OpenTelemetry Collector (Kubernetes Events)
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    state: present
-    template: templates/rbac.j2
-
-- name: Deploy OpenTelemetry Collector (Kubernetes Events)
+- name: Install Jaeger
   kubernetes.core.k8s:
     kubeconfig: "{{ kubeconfig }}"
     state: present
@@ -32,66 +81,36 @@
       apiVersion: opentelemetry.io/v1beta1
       kind: OpenTelemetryCollector
       metadata:
-        name: "{{ opentelemetry_operator_collector_kubernetes_events_name }}"
-        namespace: "{{ opentelemetry_operator_collectors_namespace }}"
+        name: jaeger
+        namespace: "{{ helm_releases.kubernetes_events_collector.namespace }}"
       spec:
-        image: otel/opentelemetry-collector-contrib:0.123.0
-        serviceAccount: "{{ opentelemetry_operator_collector_kubernetes_events_name }}-collector"
-        config:
-          exporters:
-            debug: {}
-            clickhouse:
-              username: "{{ clickhouse_user }}"
-              password: "{{ clickhouse_password }}"
-              endpoint: tcp://{{ clickhouse_installation_name }}-clickhouse.{{ clickhouse_namespace_project_name }}.svc.cluster.local:9000
-              logs_table_name: otel_k8s_events_logs
-          receivers:
-            k8sobjects:
-              objects:
-                - exclude_watch_type:
-                    - DELETED
-                  group: events.k8s.io
-                  mode: watch
-                  name: events
-            otlp:
-              protocols:
-                grpc:
-                  endpoint: 0.0.0.0:4317
-                http:
-                  endpoint: 0.0.0.0:4318
-          service:
-            pipelines:
-              logs:
-                receivers:
-                  - otlp
-                  - k8sobjects
-                exporters:
-                  - debug
-                  - clickhouse
-
-- name: Deploy OpenTelemetry Collector (Jaeger)
-  kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
-    state: present
-    resource_definition:
-      apiVersion: opentelemetry.io/v1beta1
-      kind: OpenTelemetryCollector
-      metadata:
-        name: "{{ opentelemetry_operator_collector_jaeger_name }}"
-        namespace: "{{ opentelemetry_operator_collectors_namespace }}"
-      spec:
-        image: jaegertracing/jaeger:2.5.0
+        image: jaegertracing/jaeger:2.6.0
         ports:
-        - name: jaeger
-          port: 16686
+          - name: jaeger
+            port: 16686
         config: "{{ lookup('ansible.builtin.template', 'templates/otel-jaeger-config.j2') | from_yaml }}"
 
+- name: Wait for Jaeger Collector pods to be ready
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ kubeconfig }}"
+    kind: Pod
+    namespace: "{{ helm_releases.kubernetes_events_collector.namespace }}"
+    label_selectors:
+      - "app.kubernetes.io/name=jaeger-collector"
+      - "app.kubernetes.io/instance=opentelemetry-collectors.jaeger"
+      - "app.kubernetes.io/managed-by=opentelemetry-operator"
+    wait: true
+    wait_sleep: 30
+    wait_timeout: 600
+    wait_condition:
+      type: Ready
+      status: "True"
 
 # NOTE: The rewrite annotation is not added to the following Ingress because
 #       when rewriting the path, it adds the wrong Content-Type header to the
 #       request. This cases the Jaeger UI to not work correctly.
 
-- name: Deploy Ingress for OpenTelemetry Collector (Jaeger)
+- name: Deploy Ingress for Jaeger
   kubernetes.core.k8s:
     state: present
     kubeconfig: "{{ kubeconfig }}"
@@ -100,7 +119,7 @@
       kind: Ingress
       metadata:
         name: jaeger
-        namespace: "{{ opentelemetry_operator_collectors_namespace }}"
+        namespace: "{{ helm_releases.kubernetes_events_collector.namespace }}"
       spec:
         ingressClassName: nginx
         rules:
@@ -110,38 +129,6 @@
                   path: /jaeger
                   backend:
                     service:
-                      name: "{{ opentelemetry_operator_collector_jaeger_name }}-collector"
+                      name: "jaeger-collector"
                       port:
                         number: 16686
-
-- name: Wait for Kubernetes Events Collector pods to be ready
-  kubernetes.core.k8s_info:
-    kubeconfig: "{{ kubeconfig }}"
-    kind: Pod
-    namespace: "{{ opentelemetry_operator_collectors_namespace }}"
-    label_selectors:
-      - "app.kubernetes.io/name=kubernetes-events-collector"
-      - "app.kubernetes.io/instance=opentelemetry-collectors.kubernetes-events"
-      - "app.kubernetes.io/managed-by=opentelemetry-operator"
-    wait: yes
-    wait_sleep: 30
-    wait_timeout: 600
-    wait_condition:
-      type: Ready
-      status: "True"
-
-- name: Wait for Jaeger Collector pods to be ready
-  kubernetes.core.k8s_info:
-    kubeconfig: "{{ kubeconfig }}"
-    kind: Pod
-    namespace: "{{ opentelemetry_operator_collectors_namespace }}"
-    label_selectors:
-      - "app.kubernetes.io/name=jaeger-collector"
-      - "app.kubernetes.io/instance=opentelemetry-collectors.jaeger"
-      - "app.kubernetes.io/managed-by=opentelemetry-operator"
-    wait: yes
-    wait_sleep: 30
-    wait_timeout: 600
-    wait_condition:
-      type: Ready
-      status: "True"

@@ -1,5 +1,19 @@
 ---
-- name: Remove operator managed resources
+- name: Download Clickhouse Operator Helm repository
+  kubernetes.core.helm_pull:
+    chart_ref: altinity-clickhouse-operator
+    chart_version: 0.24.3
+    repo_url: https://docs.altinity.com/clickhouse-operator/
+    untar_chart: true
+    destination: /tmp
+
+- name: Find all Clickhouse Operator installed CRDs
+  ansible.builtin.find:
+    path: /tmp/altinity-clickhouse-operator/crds
+    patterns: "*.yaml"
+  register: clickhouse_operator_crd_files
+
+- name: Remove all CRD instances in the release namespace
   kubernetes.core.k8s:
     kubeconfig: "{{ kubeconfig }}"
     delete_all: true

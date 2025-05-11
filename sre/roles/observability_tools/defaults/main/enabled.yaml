@@ -1,0 +1,7 @@
+---
+observability_tools_enabled:
+  events: false
+  logs: false
+  metrics: false
+  topology: false
+  traces: false

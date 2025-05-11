@@ -1,0 +1,74 @@
+---
+- name: Delete Clickhouse Operator tar file
+  ansible.builtin.file:
+    path: /tmp/altinity-clickhouse-operator-0.24.3.tgz
+    state: absent
+
+- name: Delete Clickhouse Operator files
+  ansible.builtin.file:
+    path: /tmp/altinity-clickhouse-operator/
+    state: absent
+
+- name: Download Clickhouse Operator Helm repository
+  kubernetes.core.helm_pull:
+    chart_ref: altinity-clickhouse-operator
+    chart_version: 0.24.3
+    repo_url: https://docs.altinity.com/clickhouse-operator/
+    untar_chart: true
+    destination: /tmp
+
+- name: Find all Clickhouse Operator installed CRD files
+  ansible.builtin.find:
+    path: /tmp/altinity-clickhouse-operator/crds
+    patterns: "*.yaml"
+  register: clickhouse_operator_crd_files
+
+- name: Remove all CRD instances in the release namespace
+  kubernetes.core.k8s:
+    api_version: "{{ item.api_version }}"
+    delete_all: true
+    kind: "{{ item.kind }}"
+    kubeconfig: "{{ kubeconfig }}"
+    namespace: "{{ helm_release.namespace }}"
+    state: absent
+    wait: true
+  loop:
+    - api_version: clickhouse-keeper.altinity.com/v1
+      kind: ClickHouseKeeperInstallation
+    - api_version: clickhouse.altinity.com/v1
+      kind: ClickHouseInstallation
+    - api_version: clickhouse.altinity.com/v1
+      kind: ClickHouseInstallationTemplate
+    - api_version: clickhouse.altinity.com/v1
+      kind: ClickHouseOperatorConfiguration
+
+- name: Remove the CRDs from the cluster
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    resource_definition:
+      api_version: apiextensions.k8s.io/v1
+      kind: CustomResourceDefinition
+      metadata:
+        name: "{{ lookup('ansible.builtin.file', item) | from_yaml | community.general.json_query('metadata.name') }}"
+    state: absent
+    wait: true
+  loop: "{{ clickhouse_operator_crd_files | community.general.json_query('files[*].path') }}"
+
+- name: Uninstall Clickhouse Operator and Clickhouse
+  kubernetes.core.helm:
+    kubeconfig: "{{ kubeconfig }}"
+    release_name: "{{ helm_release.name }}"
+    release_namespace: "{{ helm_release.namespace }}"
+    release_state: absent
+    wait: true
+
+- name: Delete the release namespace
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    resource_definition:
+      api_version: v1
+      kind: Namespace
+      metadata:
+        name: "{{ helm_release.namespace }}"
+    state: absent
+    wait: true

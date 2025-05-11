@@ -1,0 +1,12 @@
+---
+- name: Install Kubernetes Metrics Server
+  kubernetes.core.helm:
+    chart_ref: metrics-server
+    chart_repo_url: https://kubernetes-sigs.github.io/metrics-server/
+    chart_version: 3.12.2
+    kubeconfig: "{{ kubeconfig }}"
+    release_name: "{{ helm_release.name }}"
+    release_namespace: "{{ helm_release.namespace }}"
+    release_state: present
+    timeout: 10m0s
+    wait: true

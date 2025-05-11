@@ -3,7 +3,7 @@
   kubernetes.core.helm_repository:
     name: ingress-nginx
     kubeconfig_path: "{{ kubeconfig }}"
-    repo_url: "https://kubernetes.github.io/ingress-nginx"
+    repo_url: ""
 
 - name: Add Helm repo for Altinity's Clickhouse
   kubernetes.core.helm_repository:
@@ -11,17 +11,17 @@
     kubeconfig_path: "{{ kubeconfig }}"
     repo_url: "https://helm.altinity.com"
 
-- name: Add Helm chart repo for OpenSearch
-  kubernetes.core.helm_repository:
-    name: opensearch
-    kubeconfig_path: "{{ kubeconfig }}"
-    repo_url: "https://opensearch-project.github.io/helm-charts"
+# - name: Add Helm chart repo for OpenSearch
+#   kubernetes.core.helm_repository:
+#     name: opensearch
+#     kubeconfig_path: "{{ kubeconfig }}"
+#     repo_url: "https://opensearch-project.github.io/helm-charts"
 
-- name: Add Helm chart repo from the Prometheus community
-  kubernetes.core.helm_repository:
-    name: prometheus-community
-    kubeconfig_path: "{{ kubeconfig }}"
-    repo_url: "https://prometheus-community.github.io/helm-charts"
+# - name: Add Helm chart repo from the Prometheus community
+#   kubernetes.core.helm_repository:
+#     name: prometheus-community
+#     kubeconfig_path: "{{ kubeconfig }}"
+#     repo_url: "https://prometheus-community.github.io/helm-charts"
 
 - name: Add Helm chart repo from the OpenTelemetry community
   kubernetes.core.helm_repository:
@@ -29,21 +29,21 @@
     kubeconfig_path: "{{ kubeconfig }}"
     repo_url: "https://open-telemetry.github.io/opentelemetry-helm-charts"
 
-- name: Add Helm chart repo for Kubernetes Metric Server
-  kubernetes.core.helm_repository:
-    name: metrics-server
-    kubeconfig_path: "{{ kubeconfig }}"
-    repo_url: "https://kubernetes-sigs.github.io/metrics-server/"
-  when:
-    - domain == "finops"
+# - name: Add Helm chart repo for Kubernetes Metric Server
+#   kubernetes.core.helm_repository:
+#     name: metrics-server
+#     kubeconfig_path: "{{ kubeconfig }}"
+#     repo_url: "https://kubernetes-sigs.github.io/metrics-server/"
+#   when:
+#     - domain == "finops"
 
-- name: Add Helm chart repo for OpenCost
-  kubernetes.core.helm_repository:
-    name: opencost-charts
-    kubeconfig_path: "{{ kubeconfig }}"
-    repo_url: "https://opencost.github.io/opencost-helm-chart"
-  when:
-    - domain == "finops"
+# - name: Add Helm chart repo for OpenCost
+#   kubernetes.core.helm_repository:
+#     name: opencost-charts
+#     kubeconfig_path: "{{ kubeconfig }}"
+#     repo_url: "https://opencost.github.io/opencost-helm-chart"
+#   when:
+#     - domain == "finops"
 
 - name: Update Helm repo
   kubernetes.core.helm:

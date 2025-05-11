@@ -1,0 +1,8 @@
+---
+observability_tools_content_security_policies:
+  - "img-src 'self' data:"
+  - connect-src 'self'
+  - font-src 'self'
+  - object-src 'none'
+  - form-action 'none'
+  - frame-ancestors 'none'

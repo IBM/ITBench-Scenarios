@@ -1,0 +1,70 @@
+{% if observability_tools_enabled.stack.ingress %}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: "{{ observability_tools_helm_releases.ingress.namespace }}"
+  labels:
+    it-bench/monitoring: "true"
+{% endif %}
+{% if observability_tools_enabled.stack.clickhouse %}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: "{{ observability_tools_helm_releases.clickhouse_operator.namespace }}"
+  labels:
+    it-bench/monitoring: "true"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: "{{ observability_tools_helm_releases.clickhouse.namespace }}"
+  labels:
+    it-bench/monitoring: "true"
+{% endif %}
+{% if observability_tools_enabled.stack.opensearch or observability_tools_enabled.stack.jaeger %}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: "{{ observability_tools_helm_releases.opensearch.namespace }}"
+  labels:
+    it-bench/monitoring: "true"
+{% endif %}
+{% if observability_tools_enabled.stack.jaeger %}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: "{{ observability_tools_helm_releases.opentelemetry_operator.namespace }}"
+  labels:
+    it-bench: "true"
+{% endif %}
+{% if observability_tools_enabled.stack.opentelemetry or observability_tools_enabled.stack.jaeger %}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: "{{ observability_tools_helm_releases.opentelemetry_collectors.namespace }}"
+  labels:
+    it-bench/monitoring: "true"
+{% endif %}
+{% if observability_tools_enabled.stack.opencost %}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: "{{ observability_tools_helm_releases.opencost.namespace }}"
+  labels:
+    it-bench/monitoring: "true"
+{% endif %}
+{% if observability_tools_enabled.stack.prometheus %}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: "{{ observability_tools_helm_releases.prometheus.namespace }}"
+  labels:
+    it-bench/monitoring: "true"
+{% endif %}

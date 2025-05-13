@@ -27,61 +27,28 @@
     regexp: "\\\\"
     replace: ""
 
-- name: Install Prometheus
+- name: Install Prometheus Operator and Prometheus
   kubernetes.core.helm:
-    chart_ref: prometheus
+    chart_ref: kube-prometheus-stack
     chart_repo_url: https://prometheus-community.github.io/helm-charts
-    chart_version: 27.11.0
+    chart_version: 72.3.0
     kubeconfig: "{{ kubeconfig }}"
     release_name: "{{ helm_release.name }}"
     release_namespace: "{{ helm_release.namespace }}"
     release_state: present
     timeout: 10m0s
     values:
-      extraScrapeConfigs: "{{ lookup('ansible.builtin.template', 'templates/prometheus-scrape-configs.j2') | from_yaml | to_yaml }}"
-      server:
-        extraFlags:
-          - web.enable-lifecycle
-          - web.enable-otlp-receiver
-      serverFiles:
-        alerting_rules.yml: "{{ lookup('ansible.builtin.template', '/tmp/prometheus-required-alerting-rules.j2') | from_yaml }}"
-        recording_rules.yml: "{{ lookup('ansible.builtin.template', 'templates/prometheus-recording-rules.j2') | from_yaml }}"
-      prometheus-pushgateway:
+      additionalPrometheusRulesMap:
+        "incident-alerts": "{{ lookup('ansible.builtin.template', '/tmp/prometheus-required-alerting-rules.j2') | from_yaml }}"
+        "incident-rules": "{{ lookup('ansible.builtin.template', 'templates/prometheus-recording-rules.j2') | from_yaml }}"
+      grafana:
         enabled: false
-      prometheus-node-exporter:
-        enabled: "{{ chart_values.node_exporter_enabled }}"
+      prometheus:
+        prometheusSpec:
+          serviceMonitorSelectorNilUsesHelmValues: false
+          serviceMonitorNamespaceSelector:
+            matchLabels:
+              it-bench/monitoring: "true"
     wait: true
-
-- name: Create Ingress for Prometheus and AlertManager frontends
-  kubernetes.core.k8s:
-    state: present
-    kubeconfig: "{{ kubeconfig }}"
-    resource_definition:
-      apiVersion: networking.k8s.io/v1
-      kind: Ingress
-      metadata:
-        name: "{{ helm_release.name }}"
-        namespace: "{{ helm_release.namespace }}"
-        annotations:
-          nginx.ingress.kubernetes.io/rewrite-target: /$2
-      spec:
-        ingressClassName: nginx
-        rules:
-          - http:
-              paths:
-                - pathType: ImplementationSpecific
-                  path: /prometheus(/|$)(.*)
-                  backend:
-                    service:
-                      name: "{{ helm_release.name }}-server"
-                      port:
-                        number: 80
-          - http:
-              paths:
-                - pathType: ImplementationSpecific
-                  path: /alertmanager(/|$)(.*)
-                  backend:
-                    service:
-                      name: "{{ helm_release.name }}-alertmanager"
-                      port:
-                        number: 9093
+  when:
+    - observability_tools_cluster.platform == "kubernetes"

@@ -1,0 +1,88 @@
+---
+- name: Import Assertion JSON initialization tasks
+  ansible.builtin.import_tasks:
+    file: initialize_assertion_json.yaml
+  when:
+    - (sre_bench_runner | default(false))
+
+- name: Create namespaces for stack tools
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    state: present
+    template: templates/stack-namespace.j2
+  when:
+    - lookup('ansible.builtin.template', 'templates/stack-namespace.j2') != ""
+
+- ansible.builtin.import_tasks:
+    file: set_up_service_account_scc_for_openshift.yaml
+  tags:
+    - install_tools
+  when:
+    - observability_tools_cluster.platform == "openshift"
+
+- name: Import Prometheus installation tasks
+  ansible.builtin.import_tasks:
+    file: install_prometheus.yaml
+  vars:
+    helm_release: "{{ observability_tools_helm_releases.prometheus }}"
+    chart_values:
+      node_exporter_enabled: "{{ false if (cluster_type is defined and ((cluster_type == 'openshift') or (cluster_type == 'openshift_crc_local'))) else true }}"
+  when:
+    - observability_tools_enabled.stack.prometheus
+
+- name: Import Clickhouse installation tasks
+  ansible.builtin.import_tasks:
+    file: install_clickhouse.yaml
+  vars:
+    helm_releases:
+      instance: "{{ observability_tools_helm_releases.clickhouse }}"
+      operator: "{{ observability_tools_helm_releases.clickhouse_operator }}"
+  when:
+    - observability_tools_enabled.stack.clickhouse
+
+- name: Import OpenSearch installation tasks
+  ansible.builtin.import_tasks:
+    file: install_opensearch.yaml
+  vars:
+    helm_release: "{{ observability_tools_helm_releases.opensearch }}"
+  when:
+    - observability_tools_enabled.stack.opensearch or observability_tools_enabled.stack.jaeger
+
+- name: Import OpenTelemetry installation tasks
+  ansible.builtin.import_tasks:
+    file: install_opentelemetry.yaml
+  vars:
+    helm_releases:
+      collectors: "{{ observability_tools_helm_releases.opentelemetry_collectors }}"
+      operator: "{{ observability_tools_helm_releases.opentelemetry_operator }}"
+    chart_values:
+      kubernetes_events_collector:
+        clickhouse:
+          user: "{{ clickhouse_user }}"
+          password: "{{ clickhouse_password }}"
+          internal_url: "{{ observability_tools_cluster_urls.clickhouse }}"
+      jaeger:
+        opensearch:
+          internal_url: "{{ observability_tools_cluster_urls.opensearch }}"
+  when:
+    - observability_tools_enabled.stack.opentelemetry or observability_tools_enabled.stack.jaeger
+
+- name: Import OpenCost installation tasks
+  ansible.builtin.import_tasks:
+    file: install_opencost.yaml
+  vars:
+    helm_release: "{{ observability_tools_helm_releases.opencost }}"
+    prometheus:
+      enabled: "{{ observability_tools_enabled.stack.prometheus }}"
+      namespace: "{{ observability_tools_helm_releases.prometheus.namespace }}"
+      url: "{{ observability_tools_cluster_urls.prometheus }}"
+  when:
+    - observability_tools_enabled.stack.opencost
+
+- name: Import Ingress installation tasks
+  ansible.builtin.import_tasks:
+    file: install_ingress.yaml
+  vars:
+    helm_release: "{{ observability_tools_helm_releases.ingress }}"
+  when:
+    - observability_tools_enabled.stack.ingress

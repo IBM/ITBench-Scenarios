@@ -23,4 +23,14 @@
           server-tokens: "false"
         service:
           type: "{{ 'NodePort' if (cluster_type is defined and ((cluster_type == 'kind_local') or (cluster_type == 'openshift_crc_local'))) else 'LoadBalancer' }}"
+        metrics:
+          enabled: "{{ observability_tools_enabled.stack.prometheus }}"
+          serviceMonitor:
+            enabled: "{{ observability_tools_enabled.stack.prometheus }}"
     wait: true
+
+- name: Create Ingress objects for Observability Stack
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    state: present
+    template: templates/stack-ingress.j2

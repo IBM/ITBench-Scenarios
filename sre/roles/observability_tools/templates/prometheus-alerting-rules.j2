@@ -31,7 +31,7 @@ groups:
         for: 1m
         annotations:
           description: 'Job {{ $labels.job }} has a closure rate above 0 (current value: {{ $value }})'
-{% if enable_finops_rules %}
+{% if observability_tools_enabled.stack.opencost %}
   - name: AstronomyShopCostAlerts
     interval: 1m
     rules:
@@ -45,6 +45,7 @@ groups:
         for: 1m
         annotations:
           description: '{{ $labels.exported_namespace }} has exceeded the allocated budget for RAM for 5m (current value: ${{ $value }})'
+{% endif %}
   - name: AstronomyShopEfficiencyAlerts
     interval: 1m
     rules:
@@ -58,4 +59,3 @@ groups:
         for: 1m
         annotations:
           description: '{{ $labels.container }} in {{ $labels.namespace }} has a memory efficiency below 70% for 5m (current value: {{ $value }}%)'
-{% endif %}

@@ -1,12 +1,33 @@
 ---
-- name: Install Clickhouse Operator and Clickhouse
+- name: Install Clickhouse Operator
+  kubernetes.core.helm:
+    chart_ref: altinity-clickhouse-operator
+    chart_repo_url: https://docs.altinity.com/clickhouse-operator/
+    chart_version: 0.24.5
+    kubeconfig: "{{ kubeconfig }}"
+    release_name: "{{ helm_releases.operator.name }}"
+    release_namespace: "{{ helm_releases.operator.namespace }}"
+    release_state: present
+    timeout: 10m0s
+    values:
+      configs:
+        files:
+          config.yaml:
+            watch:
+              namespaces:
+                - "{{ helm_releases.instance.namespace }}"
+      serviceMonitor:
+        enabled: "{{ observability_tools_enabled.stack.prometheus }}"
+    wait: true
+
+- name: Install Clickhouse
   kubernetes.core.helm:
     chart_ref: clickhouse
     chart_repo_url: https://helm.altinity.com
     chart_version: 0.2.2
     kubeconfig: "{{ kubeconfig }}"
-    release_name: "{{ helm_release.name }}"
-    release_namespace: "{{ helm_release.namespace }}"
+    release_name: "{{ helm_releases.instance.name }}"
+    release_namespace: "{{ helm_releases.instance.namespace }}"
     release_state: present
     timeout: 10m0s
     values:
@@ -17,14 +38,16 @@
           runAsUser: 101
           runAsGroup: 101
           fsGroup: 101
+      operator:
+        enabled: false
     wait: true
 
 - name: Wait for Clickhouse install to complete
   kubernetes.core.k8s_info:
     api_version: clickhouse.altinity.com/v1
     kind: ClickHouseInstallation
-    name: "{{ helm_release.name }}"
-    namespace: "{{ helm_release.namespace }}"
+    name: "{{ helm_releases.instance.name }}"
+    namespace: "{{ helm_releases.instance.namespace }}"
     kubeconfig: "{{ kubeconfig }}"
     wait: true
   register: clickhouse_installation_info
@@ -34,36 +57,11 @@
   retries: 10
   delay: 30
 
-- name: Deploy Ingress for Clickhouse
-  kubernetes.core.k8s:
-    state: present
-    kubeconfig: "{{ kubeconfig }}"
-    resource_definition:
-      apiVersion: networking.k8s.io/v1
-      kind: Ingress
-      metadata:
-        name: "{{ helm_release.name }}"
-        namespace: "{{ helm_release.namespace }}"
-        annotations:
-          nginx.ingress.kubernetes.io/rewrite-target: /$2
-      spec:
-        ingressClassName: nginx
-        rules:
-          - http:
-              paths:
-                - pathType: ImplementationSpecific
-                  path: /clickhouse(/|$)(.*)
-                  backend:
-                    service:
-                      name: "{{ helm_release.name }}-clickhouse"
-                      port:
-                        number: 8123
-
 - name: Get Clickhouse credentials from secret
   kubernetes.core.k8s_info:
     kind: Secret
-    name: "{{ helm_release.name }}-credentials"
-    namespace: "{{ helm_release.namespace }}"
+    name: "{{ helm_releases.instance.name }}-credentials"
+    namespace: "{{ helm_releases.instance.namespace }}"
     kubeconfig: "{{ kubeconfig }}"
     wait: true
   register: clickhouse_secrets_info

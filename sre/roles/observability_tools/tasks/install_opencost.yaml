@@ -13,7 +13,7 @@
       networkPolicies:
         enabled: true
         prometheus:
-          namespace: "{{ chart_values.prometheus.namespace }}"
+          namespace: "{{ prometheus.namespace }}"
       opencost:
         customPricing:
           enabled: true
@@ -33,19 +33,13 @@
         exporter:
           extraEnv:
             USE_CUSTOM_PROVIDER: true
+        metrics:
+          serviceMonitor:
+            enabled: "{{ prometheus.enabled }}"
         prometheus:
           external:
-            enabled: true
-            url: "{{ chart_values.prometheus.external_url }}"
+            enabled: "{{ prometheus.enabled }}"
+            url: "{{ prometheus.url }}"
           internal:
             enabled: false
-        ui:
-          ingress:
-            enabled: true
-            hosts:
-              - host:
-                paths:
-                  - /
-                  # - /{{ opencost_namespace_project_name }}(/|$)(.*)
-            ingressClassName: nginx
     wait: true

@@ -5,8 +5,8 @@
     chart_repo_url: https://open-telemetry.github.io/opentelemetry-helm-charts
     chart_version: 0.122.5
     kubeconfig: "{{ kubeconfig }}"
-    release_name: "{{ helm_releases.kubernetes_events_collector.name }}"
-    release_namespace: "{{ helm_releases.kubernetes_events_collector.namespace }}"
+    release_name: "{{ helm_releases.collectors.names.kubernetes_events }}"
+    release_namespace: "{{ helm_releases.collectors.namespace }}"
     release_state: present
     timeout: 10m0s
     values:
@@ -27,6 +27,10 @@
           enabled: false
         zipkin:
           enabled: false
+        metrics:
+          enabled: "{{ observability_tools_enabled.stack.prometheus }}"
+      serviceMonitor:
+        enabled: "{{ observability_tools_enabled.stack.prometheus }}"
       config:
         exporters:
           clickhouse:
@@ -35,9 +39,9 @@
             endpoint: "{{ chart_values.kubernetes_events_collector.clickhouse.internal_url }}"
             logs_table_name: otel_k8s_events_logs
         receivers:
-          jaeger: null
-          prometheus: null
-          zipkin: null
+          jaeger:
+          prometheus:
+          zipkin:
         service:
           pipelines:
             logs:
@@ -51,6 +55,8 @@
               receivers:
                 - otlp
     wait: true
+  when:
+    - observability_tools_enabled.stack.opentelemetry
 
 - name: Install OpenTelemetry Operator
   kubernetes.core.helm:
@@ -66,12 +72,16 @@
       manager:
         collectorImage:
           repository: otel/opentelemetry-collector-k8s
+        serviceMonitor:
+          enabled: "{{ observability_tools_enabled.stack.prometheus }}"
       admissionWebhooks:
         certManager:
           enabled: false
         autoGenerateCert:
           enabled: true
     wait: true
+  when:
+    - observability_tools_enabled.stack.jaeger
 
 - name: Install Jaeger
   kubernetes.core.k8s:
@@ -82,19 +92,24 @@
       kind: OpenTelemetryCollector
       metadata:
         name: jaeger
-        namespace: "{{ helm_releases.kubernetes_events_collector.namespace }}"
+        namespace: "{{ helm_releases.collectors.namespace }}"
       spec:
         image: jaegertracing/jaeger:2.6.0
+        observability:
+          metrics:
+            enableMetrics: true
         ports:
           - name: jaeger
             port: 16686
         config: "{{ lookup('ansible.builtin.template', 'templates/otel-jaeger-config.j2') | from_yaml }}"
+  when:
+    - observability_tools_enabled.stack.jaeger
 
 - name: Wait for Jaeger Collector pods to be ready
   kubernetes.core.k8s_info:
     kubeconfig: "{{ kubeconfig }}"
     kind: Pod
-    namespace: "{{ helm_releases.kubernetes_events_collector.namespace }}"
+    namespace: "{{ helm_releases.collectors.namespace }}"
     label_selectors:
       - "app.kubernetes.io/name=jaeger-collector"
       - "app.kubernetes.io/instance=opentelemetry-collectors.jaeger"
@@ -105,30 +120,5 @@
     wait_condition:
       type: Ready
       status: "True"
-
-# NOTE: The rewrite annotation is not added to the following Ingress because
-#       when rewriting the path, it adds the wrong Content-Type header to the
-#       request. This cases the Jaeger UI to not work correctly.
-
-- name: Deploy Ingress for Jaeger
-  kubernetes.core.k8s:
-    state: present
-    kubeconfig: "{{ kubeconfig }}"
-    resource_definition:
-      apiVersion: networking.k8s.io/v1
-      kind: Ingress
-      metadata:
-        name: jaeger
-        namespace: "{{ helm_releases.kubernetes_events_collector.namespace }}"
-      spec:
-        ingressClassName: nginx
-        rules:
-          - http:
-              paths:
-                - pathType: ImplementationSpecific
-                  path: /jaeger
-                  backend:
-                    service:
-                      name: "jaeger-collector"
-                      port:
-                        number: 16686
+  when:
+    - observability_tools_enabled.stack.jaeger

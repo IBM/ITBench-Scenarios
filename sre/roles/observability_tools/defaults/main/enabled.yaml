@@ -1,7 +1,12 @@
 ---
 observability_tools_enabled:
-  events: false
-  logs: false
-  metrics: false
-  topology: false
-  traces: false
+  stack:
+    clickhouse: false
+    ingress: false
+    jaeger: false
+    opencost: false
+    opensearch: false
+    opentelemetry: false
+    prometheus: false
+  kubernetes:
+    topology_monitor: false

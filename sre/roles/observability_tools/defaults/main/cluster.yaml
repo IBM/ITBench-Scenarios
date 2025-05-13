@@ -1,0 +1,3 @@
+---
+observability_tools_cluster:
+  platform: kubernetes

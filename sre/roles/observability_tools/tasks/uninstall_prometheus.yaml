@@ -1,11 +1,34 @@
 ---
-- name: Uninstall Prometheus
+- name: Uninstall Prometheus Operator and Prometheus
   kubernetes.core.helm:
     kubeconfig: "{{ kubeconfig }}"
     release_name: "{{ helm_release.name }}"
     release_namespace: "{{ helm_release.namespace }}"
     release_state: absent
     wait: true
+
+- name: Retrieve all CRDs
+  kubernetes.core.k8s_info:
+    api_version: apiextensions.k8s.io/v1
+    kind: CustomResourceDefinition
+  register: crd_info
+
+- name: Remove the Prometheus Operator related CRDs from the cluster
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    resource_definition:
+      api_version: apiextensions.k8s.io/v1
+      kind: CustomResourceDefinition
+      metadata:
+        name: "{{ item }}"
+    state: absent
+    wait: true
+  loop: |
+    {{
+      crd_info.resources |
+      selectattr('spec.group', '==', 'monitoring.coreos.com') |
+      community.general.json_query('[*].metadata.name')
+    }}
 
 - name: Delete the release namespace
   kubernetes.core.k8s:

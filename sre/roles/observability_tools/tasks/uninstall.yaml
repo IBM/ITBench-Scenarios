@@ -4,47 +4,9 @@
     file: uninstall_kubernetes_topology_monitor.yaml
   vars:
     helm_release: "{{ observability_tools_helm_releases.kubernetes_topology_monitor }}"
+  when:
+    - observability_tools_enabled.kubernetes.topology_monitor
 
-- name: Import OpenCost uninstallation tasks
+- name: Import Observability Stack uninstallation tasks
   ansible.builtin.import_tasks:
-    file: uninstall_opencost.yaml
-  vars:
-    helm_release: "{{ observability_tools_helm_releases.opencost }}"
-
-- name: Import OpenTelemetry uninstallation tasks
-  ansible.builtin.import_tasks:
-    file: uninstall_opentelemetry.yaml
-  vars:
-    helm_releases:
-      kubernetes_events_collector: "{{ observability_tools_helm_releases.opentelemetry_kubernetes_events_collector }}"
-      operator: "{{ observability_tools_helm_releases.opentelemetry_operator }}"
-
-- name: Import Prometheus uninstallation tasks
-  ansible.builtin.import_tasks:
-    file: uninstall_prometheus.yaml
-  vars:
-    helm_release: "{{ observability_tools_helm_releases.prometheus }}"
-
-- name: Import Clickhouse installation tasks
-  ansible.builtin.import_tasks:
-    file: uninstall_clickhouse.yaml
-  vars:
-    helm_release: "{{ observability_tools_helm_releases.clickhouse }}"
-
-- name: Import OpenSearch uninstallation tasks
-  ansible.builtin.import_tasks:
-    file: uninstall_opensearch.yaml
-  vars:
-    helm_release: "{{ observability_tools_helm_releases.opensearch }}"
-
-- name: Import Ingress uninstallation tasks
-  ansible.builtin.import_tasks:
-    file: uninstall_ingress.yaml
-  vars:
-    helm_release: "{{ observability_tools_helm_releases.ingress }}"
-
-- name: Import Kubernetes Metrics Server uninstallation tasks
-  ansible.builtin.import_tasks:
-    file: uninstall_kubernetes_metrics_server.yaml
-  vars:
-    helm_release: "{{ observability_tools_helm_releases.kubernetes_metrics_server }}"
+    file: uninstall_stack.yaml

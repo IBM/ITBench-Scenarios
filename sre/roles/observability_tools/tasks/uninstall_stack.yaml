@@ -1,0 +1,58 @@
+---
+- name: Import OpenCost uninstallation tasks
+  ansible.builtin.import_tasks:
+    file: uninstall_opencost.yaml
+  vars:
+    helm_release: "{{ observability_tools_helm_releases.opencost }}"
+  when:
+    - observability_tools_enabled.stack.opencost
+
+- name: Import OpenTelemetry uninstallation tasks
+  ansible.builtin.import_tasks:
+    file: uninstall_opentelemetry.yaml
+  vars:
+    helm_releases:
+      collectors: "{{ observability_tools_helm_releases.opentelemetry_collectors }}"
+      operator: "{{ observability_tools_helm_releases.opentelemetry_operator }}"
+  when:
+    - observability_tools_enabled.stack.jaeger or observability_tools_enabled.stack.opentelemetry
+
+- name: Import Clickhouse installation tasks
+  ansible.builtin.import_tasks:
+    file: uninstall_clickhouse.yaml
+  vars:
+    helm_releases:
+      instance: "{{ observability_tools_helm_releases.clickhouse }}"
+      operator: "{{ observability_tools_helm_releases.clickhouse_operator }}"
+  when:
+    - observability_tools_enabled.stack.clickhouse
+
+- name: Import OpenSearch uninstallation tasks
+  ansible.builtin.import_tasks:
+    file: uninstall_opensearch.yaml
+  vars:
+    helm_release: "{{ observability_tools_helm_releases.opensearch }}"
+  when:
+    - observability_tools_enabled.stack.opensearch or observability_tools_enabled.stack.jaeger
+
+- name: Import Prometheus uninstallation tasks
+  ansible.builtin.import_tasks:
+    file: uninstall_prometheus.yaml
+  vars:
+    helm_release: "{{ observability_tools_helm_releases.prometheus }}"
+  when:
+    - observability_tools_enabled.stack.prometheus
+
+- name: Import Ingress uninstallation tasks
+  ansible.builtin.import_tasks:
+    file: uninstall_ingress.yaml
+  vars:
+    helm_release: "{{ observability_tools_helm_releases.ingress }}"
+  when:
+    - observability_tools_enabled.stack.ingress
+
+- name: Import Assertion JSON finalization tasks
+  ansible.builtin.import_tasks:
+    file: finalize_assertion_json.yaml
+  when:
+    - (sre_bench_runner | default(false))

@@ -3,6 +3,7 @@
   kubernetes.core.k8s_info:
     api_version: clickhouse.altinity.com/v1
     kind: ClickHouseInstallation
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     namespace: "{{ helm_releases.instance.namespace }}"
   register: clickhouse_installation_info
 
@@ -11,7 +12,7 @@
     api_version: clickhouse.altinity.com/v1
     delete_all: true
     kind: ClickHouseInstallation
-    kubeconfig: "{{ kubeconfig }}"
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     namespace: "{{ helm_releases.instance.namespace }}"
     state: absent
     wait: true
@@ -22,7 +23,8 @@
   kubernetes.core.k8s_info:
     api_version: clickhouse.altinity.com/v1
     kind: ClickHouseInstallationTemplate
-    namespace: "{{ helm_releases.instance.namespace }}"
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
+    namespace: "{{ observability_tools_cluster.helm_releases.instance.namespace }}"
   register: clickhouse_installation_template_info
 
 - name: Delete all installation template instances in the release namespace
@@ -30,7 +32,7 @@
     api_version: clickhouse.altinity.com/v1
     delete_all: true
     kind: ClickHouseInstallationTemplate
-    kubeconfig: "{{ kubeconfig }}"
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     namespace: "{{ helm_releases.instance.namespace }}"
     state: absent
     wait: true
@@ -39,7 +41,7 @@
 
 - name: Uninstall Clickhouse
   kubernetes.core.helm:
-    kubeconfig: "{{ kubeconfig }}"
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     release_name: "{{ helm_releases.instance.name }}"
     release_namespace: "{{ helm_releases.instance.namespace }}"
     release_state: absent
@@ -47,7 +49,7 @@
 
 - name: Uninstall Clickhouse Operator
   kubernetes.core.helm:
-    kubeconfig: "{{ kubeconfig }}"
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     release_name: "{{ helm_releases.operator.name }}"
     release_namespace: "{{ helm_releases.operator.namespace }}"
     release_state: absent
@@ -57,11 +59,12 @@
   kubernetes.core.k8s_info:
     api_version: apiextensions.k8s.io/v1
     kind: CustomResourceDefinition
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
   register: crd_info
 
 - name: Remove the Clickhouse Operator related CRDs from the cluster
   kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     resource_definition:
       api_version: apiextensions.k8s.io/v1
       kind: CustomResourceDefinition
@@ -80,7 +83,7 @@
 
 - name: Delete the release namespaces
   kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     resource_definition:
       api_version: v1
       kind: Namespace

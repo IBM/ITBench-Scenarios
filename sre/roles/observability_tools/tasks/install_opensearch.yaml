@@ -4,7 +4,7 @@
     chart_ref: opensearch
     chart_repo_url: https://opensearch-project.github.io/helm-charts
     chart_version: 2.32.0
-    kubeconfig: "{{ kubeconfig }}"
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     release_name: "{{ helm_release.name }}"
     release_namespace: "{{ helm_release.namespace }}"
     release_state: present

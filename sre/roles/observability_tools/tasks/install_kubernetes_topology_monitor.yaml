@@ -2,7 +2,7 @@
 - name: Install Kubernetes Topology Monitor
   kubernetes.core.helm:
     chart_ref: charts/kubernetes-topology-monitor
-    kubeconfig: "{{ kubeconfig }}"
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     release_name: "{{ helm_release.name }}"
     release_namespace: "{{ helm_release.namespace }}"
     release_state: present

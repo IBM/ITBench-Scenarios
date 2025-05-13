@@ -4,7 +4,7 @@
     chart_ref: opencost
     chart_repo_url: https://opencost.github.io/opencost-helm-chart
     chart_version: 2.0.1
-    kubeconfig: "{{ kubeconfig }}"
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     release_name: "{{ helm_release.name }}"
     release_namespace: "{{ helm_release.namespace }}"
     release_state: present

@@ -4,7 +4,7 @@
     chart_ref: altinity-clickhouse-operator
     chart_repo_url: https://docs.altinity.com/clickhouse-operator/
     chart_version: 0.24.5
-    kubeconfig: "{{ kubeconfig }}"
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     release_name: "{{ helm_releases.operator.name }}"
     release_namespace: "{{ helm_releases.operator.namespace }}"
     release_state: present
@@ -25,7 +25,7 @@
     chart_ref: clickhouse
     chart_repo_url: https://helm.altinity.com
     chart_version: 0.2.2
-    kubeconfig: "{{ kubeconfig }}"
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     release_name: "{{ helm_releases.instance.name }}"
     release_namespace: "{{ helm_releases.instance.namespace }}"
     release_state: present
@@ -46,9 +46,9 @@
   kubernetes.core.k8s_info:
     api_version: clickhouse.altinity.com/v1
     kind: ClickHouseInstallation
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     name: "{{ helm_releases.instance.name }}"
     namespace: "{{ helm_releases.instance.namespace }}"
-    kubeconfig: "{{ kubeconfig }}"
     wait: true
   register: clickhouse_installation_info
   until:
@@ -60,9 +60,9 @@
 - name: Get Clickhouse credentials from secret
   kubernetes.core.k8s_info:
     kind: Secret
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     name: "{{ helm_releases.instance.name }}-credentials"
     namespace: "{{ helm_releases.instance.namespace }}"
-    kubeconfig: "{{ kubeconfig }}"
     wait: true
   register: clickhouse_secrets_info
 

@@ -4,7 +4,7 @@
     chart_ref: opentelemetry-collector
     chart_repo_url: https://open-telemetry.github.io/opentelemetry-helm-charts
     chart_version: 0.122.5
-    kubeconfig: "{{ kubeconfig }}"
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     release_name: "{{ helm_releases.collectors.names.kubernetes_events }}"
     release_namespace: "{{ helm_releases.collectors.namespace }}"
     release_state: present
@@ -63,7 +63,7 @@
     chart_ref: opentelemetry-operator
     chart_repo_url: https://open-telemetry.github.io/opentelemetry-helm-charts
     chart_version: 0.85.0
-    kubeconfig: "{{ kubeconfig }}"
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     release_name: "{{ helm_releases.operator.name }}"
     release_namespace: "{{ helm_releases.operator.namespace }}"
     release_state: present
@@ -85,7 +85,7 @@
 
 - name: Install Jaeger
   kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     state: present
     resource_definition:
       apiVersion: opentelemetry.io/v1beta1
@@ -107,7 +107,7 @@
 
 - name: Wait for Jaeger Collector pods to be ready
   kubernetes.core.k8s_info:
-    kubeconfig: "{{ kubeconfig }}"
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     kind: Pod
     namespace: "{{ helm_releases.collectors.namespace }}"
     label_selectors:

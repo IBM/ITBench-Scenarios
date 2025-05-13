@@ -1,7 +1,7 @@
 ---
 - name: Uninstall OpenTelemetry Collector for Kubernetes Events
   kubernetes.core.helm:
-    kubeconfig: "{{ kubeconfig }}"
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     release_name: "{{ helm_releases.collectors.names.kubernetes_events }}"
     release_namespace: "{{ helm_releases.collectors.namespace }}"
     release_state: absent
@@ -13,6 +13,7 @@
   kubernetes.core.k8s_info:
     api_version: opentelemetry.io/v1beta1
     kind: OpenTelemetryCollector
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     namespace: "{{ helm_releases.collectors.namespace }}"
   register: opentelemetry_collector_info
 
@@ -21,7 +22,7 @@
     api_version: opentelemetry.io/v1beta1
     delete_all: true
     kind: OpenTelemetryCollector
-    kubeconfig: "{{ kubeconfig }}"
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     namespace: "{{ helm_releases.collectors.namespace }}"
     state: absent
     wait: true
@@ -31,7 +32,7 @@
 
 - name: Uninstall OpenTelemetry Operator
   kubernetes.core.helm:
-    kubeconfig: "{{ kubeconfig }}"
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     release_name: "{{ helm_releases.operator.name }}"
     release_namespace: "{{ helm_releases.operator.namespace }}"
     release_state: absent
@@ -41,7 +42,7 @@
 
 - name: Delete the release namespaces
   kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     resource_definition:
       api_version: v1
       kind: Namespace

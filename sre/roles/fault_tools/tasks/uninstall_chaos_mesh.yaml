@@ -1,7 +1,7 @@
 ---
 - name: Uninstall Chaos Mesh
   kubernetes.core.helm:
-    kubeconfig: "{{ kubeconfig }}"
+    kubeconfig: "{{ fault_tools_cluster.kubeconfig }}"
     release_name: "{{ helm_release.name }}"
     release_namespace: "{{ helm_release.namespace }}"
     release_state: absent
@@ -9,7 +9,7 @@
 
 - name: Delete the release namespace
   kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
+    kubeconfig: "{{ fault_tools_cluster.kubeconfig }}"
     resource_definition:
       api_version: v1
       kind: Namespace

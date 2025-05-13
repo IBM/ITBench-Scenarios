@@ -1,12 +1,38 @@
 ---
 argument_specs:
   main:
+    short_description: Main entry point for fault_tools role
+    description:
+      - This is the main entry point for the fault_tools role.
+      - This role is responsible for installing and uninstalling tools and services which facilitate the injection of a fault.
+    author:
+      - Gerard Vanloo
     options:
+      fault_tools_cluster:
+        default:
+          kubeconfig: ~/.kube/config
+          platform: kubernetes
+        required: false
+        type: dict
+        options:
+          kubeconfig:
+            required: true
+            type: str
+          platform:
+            choices:
+              - kubernetes
+              - openshift
+            required: true
+            type: str
       fault_tools_enabled:
         required: true
         type: dict
         options:
           chaos_mesh:
+            default: false
+            required: false
+            type: bool
+          kubernetes_metrics_server:
             default: false
             required: false
             type: bool

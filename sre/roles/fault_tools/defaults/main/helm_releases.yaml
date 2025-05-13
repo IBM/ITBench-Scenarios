@@ -1,7 +1,8 @@
+---
 fault_tools_helm_releases:
   chaos_mesh:
     name: chaos-mesh
     namespace: chaos-mesh
-  kubernetes_topology_mapper:
-    name: topology-mapper
-    namespace: kube-system
+  kubernetes_metrics_server:
+    name: metrics-server
+    namespace: metrics-server

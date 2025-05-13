@@ -4,9 +4,17 @@
     chart_ref: metrics-server
     chart_repo_url: https://kubernetes-sigs.github.io/metrics-server/
     chart_version: 3.12.2
-    kubeconfig: "{{ kubeconfig }}"
+    create_namespace: true
+    kubeconfig: "{{ fault_tools_cluster.kubeconfig }}"
     release_name: "{{ helm_release.name }}"
     release_namespace: "{{ helm_release.namespace }}"
     release_state: present
     timeout: 10m0s
+    values:
+      apiService:
+        insecureSkipTLSVerify: false
+      tls:
+        type: helm
+      serviceMonitor:
+        enabled: "{{ service_monitor_info.resources | length > 0 }}"
     wait: true

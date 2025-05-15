@@ -48,15 +48,6 @@
     helm_releases:
       collectors: "{{ observability_tools_helm_releases.opentelemetry_collectors }}"
       operator: "{{ observability_tools_helm_releases.opentelemetry_operator }}"
-    chart_values:
-      kubernetes_events_collector:
-        clickhouse:
-          user: "{{ clickhouse_user }}"
-          password: "{{ clickhouse_password }}"
-          internal_url: "{{ observability_tools_cluster_urls.clickhouse }}"
-      jaeger:
-        opensearch:
-          internal_url: "{{ observability_tools_cluster_urls.opensearch }}"
   when:
     - observability_tools_enabled.stack.opentelemetry or observability_tools_enabled.stack.jaeger
 

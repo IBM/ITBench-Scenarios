@@ -1,4 +1,4 @@
-name: Perform install smoke tests for fault tools
+name: Perform smoke tests for fault tools
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   chaos-mesh:
-    name: Attempt installation of Chaos Mesh
+    name: Chaos Mesh Smoke Tests
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -35,7 +35,7 @@ jobs:
           make -C sre/local_cluster create_cluster
       - name: Create group vars
         run: |
-          make group_vars
+          make -C sre group_vars
       - name: Run installation smoke test
         run: |
           ansible-playbook -i sre/inventory.yaml \
@@ -47,7 +47,7 @@ jobs:
             sre/manage_tools.yaml --tags "uninstall_tools" \
             --extra-vars '{"fault_tools": { "chaos_mesh": true }}'
   kubernetes_metrics_server:
-    name: Attempt installation of Kubernetes Metrics Server
+    name: Kubernetes Metrics Server Smoke Tests
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -73,7 +73,7 @@ jobs:
           make -C sre/local_cluster create_cluster
       - name: Create group vars
         run: |
-          make group_vars
+          make -C sre group_vars
       - name: Run installation smoke test
         run: |
           ansible-playbook -i sre/inventory.yaml \

@@ -19,7 +19,7 @@ extensions:
       traces_store:
         opensearch:
           server_urls:
-            - "{{ chart_values.jaeger.opensearch.internal_url }}"
+            - "{{ observability_tools_cluster_urls.opensearch }}"
 receivers:
   otlp:
     protocols:

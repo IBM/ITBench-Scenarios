@@ -75,7 +75,7 @@ metadata:
   labels:
     it-bench/monitoring: "true"
 {% endif %}
-{% if observability_tools_enabled.stack.prometheus %}
+{% if observability_tools_enabled.stack.prometheus or observability_tools_enabled.stack.opencost %}
 ---
 apiVersion: v1
 kind: Namespace

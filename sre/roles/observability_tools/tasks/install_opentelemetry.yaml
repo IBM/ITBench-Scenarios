@@ -36,9 +36,9 @@
       config:
         exporters:
           clickhouse:
-            username: "{{ chart_values.kubernetes_events_collector.clickhouse.user }}"
-            password: "{{ chart_values.kubernetes_events_collector.clickhouse.password }}"
-            endpoint: "{{ chart_values.kubernetes_events_collector.clickhouse.internal_url }}"
+            username: "{{ clickhouse_user }}"
+            password: "{{ clickhouse_password }}"
+            endpoint: "{{ observability_tools_cluster_urls.clickhouse }}"
             logs_table_name: otel_k8s_events_logs
         receivers:
           jaeger:

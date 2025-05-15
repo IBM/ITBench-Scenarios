@@ -13,5 +13,5 @@
   vars:
     helm_release: "{{ fault_tools_helm_releases.kubernetes_metrics_server }}"
   when:
-    - fault_tools_enabled.kubernetes.metrics_server
+    - fault_tools_enabled.kubernetes_metrics_server
     - fault_tools_cluster.platform == "kubernetes"

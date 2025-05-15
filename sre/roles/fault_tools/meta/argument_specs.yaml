@@ -9,23 +9,22 @@ argument_specs:
       - Gerard Vanloo
     options:
       fault_tools_cluster:
-        default:
-          kubeconfig: ~/.kube/config
-          platform: kubernetes
         required: false
         type: dict
         options:
           kubeconfig:
-            required: true
+            default: ~/.kube/config
+            required: false
             type: str
           platform:
             choices:
               - kubernetes
               - openshift
-            required: true
+            default: kubernetes
+            required: false
             type: str
       fault_tools_enabled:
-        required: true
+        required: false
         type: dict
         options:
           chaos_mesh:

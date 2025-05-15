@@ -18,6 +18,8 @@
       image:
         repository: otel/opentelemetry-collector-contrib
         tag: 0.123.0
+      podAnnotations:
+        openshift.io/required-scc: restricted-v2
       ports:
         jaeger-compact:
           enabled: false
@@ -72,6 +74,8 @@
       manager:
         collectorImage:
           repository: otel/opentelemetry-collector-k8s
+        podAnnotations:
+          openshift.io/required-scc: restricted-v2
         serviceMonitor:
           enabled: "{{ observability_tools_enabled.stack.prometheus }}"
       admissionWebhooks:
@@ -79,6 +83,8 @@
           enabled: false
         autoGenerateCert:
           enabled: true
+      securityContext:
+        fsGroup:
     wait: true
   when:
     - observability_tools_enabled.stack.jaeger
@@ -98,6 +104,8 @@
         observability:
           metrics:
             enableMetrics: true
+        podAnnotations:
+          openshift.io/required-scc: restricted-v2
         ports:
           - name: jaeger
             port: 16686

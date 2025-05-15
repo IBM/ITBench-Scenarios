@@ -16,6 +16,8 @@
             watch:
               namespaces:
                 - "{{ helm_releases.instance.namespace }}"
+      podAnnotations:
+        openshift.io/required-scc: restricted-v2
       serviceMonitor:
         enabled: "{{ observability_tools_enabled.stack.prometheus }}"
     wait: true
@@ -34,10 +36,20 @@
       clickhouse:
         defaultUser:
           allowExternalAccess: true
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
         podSecurityContext:
-          runAsUser: 101
-          runAsGroup: 101
           fsGroup: 101
+          runAsGroup: 101
+          runAsNonRoot: true
+          runAsUser: 101
+          seccompProfile:
+            type: "RuntimeDefault"
+      podAnnotations:
+        openshift.io/required-scc: restricted-v2
       operator:
         enabled: false
     wait: true

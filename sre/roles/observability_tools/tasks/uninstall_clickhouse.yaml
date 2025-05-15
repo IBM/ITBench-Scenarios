@@ -24,7 +24,7 @@
     api_version: clickhouse.altinity.com/v1
     kind: ClickHouseInstallationTemplate
     kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
-    namespace: "{{ observability_tools_cluster.helm_releases.instance.namespace }}"
+    namespace: "{{ helm_releases.instance.namespace }}"
   register: clickhouse_installation_template_info
 
 - name: Delete all installation template instances in the release namespace

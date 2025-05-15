@@ -16,21 +16,100 @@
           "X-Frame-Options": DENY
           "X-XSS-Protection": "0"
           "Strict-Transport-Security": max-age=31536000; includeSubDomains; preload
-          "Content-Security-Policy": "{{ observability_tools_content_security_policies | join('; ') }}"
+          "Content-Security-Policy": "img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; form-action 'none'; frame-ancestors 'none'"
           "Cross-Origin-Resource-Policy": same-origin
           "Referrer-Policy": strict-origin-when-cross-origin
         config:
           server-tokens: "false"
         service:
-          type: "{{ 'NodePort' if (cluster_type is defined and ((cluster_type == 'kind_local') or (cluster_type == 'openshift_crc_local'))) else 'LoadBalancer' }}"
+          type: LoadBalancer
+          # "{{ 'NodePort' if (cluster_type is defined and ((cluster_type == 'kind_local') or (cluster_type == 'openshift_crc_local'))) else 'LoadBalancer' }}"
         metrics:
           enabled: "{{ observability_tools_enabled.stack.prometheus }}"
           serviceMonitor:
             enabled: "{{ observability_tools_enabled.stack.prometheus }}"
     wait: true
+  when:
+    - observability_tools_cluster.platform == "kubernetes"
+
+# - name: Retrieve the default Ingress Controller
+#   kubernetes.core.k8s_info:
+#     api_version: operator.openshift.io/v1
+#     kind: IngressController
+#     kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
+#     name: default
+#     namespace: openshift-ingress-operator
+#   register: default_ingress_controller_info
+#   when:
+#     - observability_tools_cluster.platform == "openshift"
+
+# - name: Update the default Ingress Controller with header information
+#   kubernetes.core.k8s:
+#     kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
+#     resource_definition:
+#       apiVersion: operator.openshift.io/v1
+#       kind: IngressController
+#       metadata:
+#         name: default
+#         namespace: openshift-ingress-operator
+#       spec: |
+#         {{
+#           default_ingress_controller_info.resources[0].spec |
+#           combine(
+#             lookup(
+#               'ansible.builtin.template',
+#               'templates/ocp-ingress-controller-http-headers.j2'
+#             ) |
+#             from_yaml
+#           )
+#         }}
+#     state: patched
+#   when:
+#     - observability_tools_cluster.platform == "openshift"
 
 - name: Create Ingress objects for Observability Stack
   kubernetes.core.k8s:
     kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     state: present
     template: templates/stack-ingress.j2
+  when:
+    - observability_tools_cluster.platform == "kubernetes"
+
+- name: Create Route objects for Observability Stack
+  kubernetes.core.k8s:
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
+    resource_definition:
+      apiVersion: route.openshift.io/v1
+      kind: Route
+      metadata:
+        name: "{{ item.name }}"
+        namespace: "{{ item.namespace }}"
+      spec:
+        httpHeaders:
+          actions:
+            response: "{{ lookup('ansible.builtin.file', 'files/route-response-actions.yaml') | from_yaml }}"
+        port:
+          targetPort: "{{ item.port }}"
+        to:
+          kind: Service
+          name: "{{ item.service }}"
+    state: present
+  loop:
+    - enabled: "{{ observability_tools_enabled.stack.clickhouse }}"
+      name: "{{ observability_tools_helm_releases.clickhouse.name }}"
+      namespace: "{{ observability_tools_helm_releases.clickhouse.namespace }}"
+      port: 8123
+      service: "{{ observability_tools_helm_releases.clickhouse.name }}-clickhouse"
+    - enabled: "{{ observability_tools_enabled.stack.jaeger }}"
+      name: jaeger-collector
+      namespace: "{{ observability_tools_helm_releases.opentelemetry_collectors.namespace }}"
+      port: 16686
+      service: jaeger-collector
+    - enabled: "{{ observability_tools_enabled.stack.opencost }}"
+      name: "{{ observability_tools_helm_releases.opencost.name }}"
+      namespace: "{{ observability_tools_helm_releases.opencost.namespace }}"
+      port: 9090
+      service: "{{ observability_tools_helm_releases.opencost.name }}"
+  when:
+    - observability_tools_cluster.platform == "openshift"
+    - item.enabled

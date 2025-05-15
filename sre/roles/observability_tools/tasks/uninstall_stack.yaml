@@ -25,7 +25,7 @@
       instance: "{{ observability_tools_helm_releases.clickhouse }}"
       operator: "{{ observability_tools_helm_releases.clickhouse_operator }}"
   when:
-    - observability_tools_enabled.stack.clickhouse
+    - observability_tools_enabled.stack.clickhouse or observability_tools_enabled.stack.opentelemetry
 
 - name: Import OpenSearch uninstallation tasks
   ansible.builtin.import_tasks:

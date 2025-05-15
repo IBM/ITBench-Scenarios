@@ -23,4 +23,15 @@
       persistence:
         enabled: true
         enableInitChown: false
+      podAnnotations:
+        openshift.io/required-scc: restricted-v2
+      podSecurityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: "RuntimeDefault"
+      rbac:
+        create: "{{ observability_tools_cluster.platform == 'openshift' }}"
+        automountServiceAccountToken: true
+      securityContext:
+        allowPrivilegeEscalation: false
     wait: true

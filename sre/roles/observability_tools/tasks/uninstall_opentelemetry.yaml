@@ -16,6 +16,8 @@
     kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     namespace: "{{ helm_releases.collectors.namespace }}"
   register: opentelemetry_collector_info
+  when:
+    - observability_tools_enabled.stack.jaeger
 
 - name: Delete all collector instances in the release namespace
   kubernetes.core.k8s:

@@ -41,7 +41,7 @@
   vars:
     helm_release: "{{ observability_tools_helm_releases.prometheus }}"
   when:
-    - observability_tools_enabled.stack.prometheus
+    - observability_tools_enabled.stack.prometheus or observability_tools_enabled.stack.opencost
 
 - name: Import Ingress uninstallation tasks
   ansible.builtin.import_tasks:

@@ -60,7 +60,7 @@ spec:
                 port:
                   number: 9090
 {% endif %}
-{% if observability_tools_enabled.stack.prometheus %}
+{% if observability_tools_enabled.stack.prometheus or observability_tools_enabled.stack.opencost %}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress

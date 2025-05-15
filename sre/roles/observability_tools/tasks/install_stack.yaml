@@ -13,13 +13,6 @@
   when:
     - lookup('ansible.builtin.template', 'templates/stack-namespace.j2') != ""
 
-# - ansible.builtin.import_tasks:
-#     file: set_up_service_account_scc_for_openshift.yaml
-#   tags:
-#     - install_tools
-#   when:
-#     - observability_tools_cluster.platform == "openshift"
-
 - name: Import Prometheus installation tasks
   ansible.builtin.import_tasks:
     file: install_prometheus.yaml
@@ -28,7 +21,7 @@
     chart_values:
       node_exporter_enabled: "{{ false if (cluster_type is defined and ((cluster_type == 'openshift') or (cluster_type == 'openshift_crc_local'))) else true }}"
   when:
-    - observability_tools_enabled.stack.prometheus
+    - observability_tools_enabled.stack.prometheus or observability_tools_enabled.stack.opencost
 
 - name: Import Clickhouse installation tasks
   ansible.builtin.import_tasks:

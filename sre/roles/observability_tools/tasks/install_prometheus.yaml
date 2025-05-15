@@ -3,6 +3,7 @@
   ansible.builtin.copy:
     src: templates/prometheus-alerting-rules.j2
     dest: /tmp/prometheus-alerting-rules.j2
+    mode: "0644"
 
 - name: Create a temporary template with fake curly brackets for processing
   ansible.builtin.replace:
@@ -14,6 +15,7 @@
   ansible.builtin.copy:
     dest: /tmp/prometheus-required-alerting-rules.j2
     content: "{{ lookup('ansible.builtin.template', '/tmp/prometheus-alerting-rules.j2') }}"
+    mode: "0644"
 
 - name: Escape double curly brackets in alerting rules yaml file
   ansible.builtin.replace:
@@ -52,3 +54,61 @@
     wait: true
   when:
     - observability_tools_cluster.platform == "kubernetes"
+
+- name: Enable OpenShift user workload monitoring
+  kubernetes.core.k8s:
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
+    state: present
+    src: files/ocp-user-workload-monitoring.yaml
+  when:
+    - observability_tools_cluster.platform == "openshift"
+
+- name: Wait for Prometheus workload pods to start
+  kubernetes.core.k8s_info:
+    kind: Pod
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
+    label_selectors:
+      - app.kubernetes.io/component = prometheus
+      - app.kubernetes.io/instance = user-workload
+    namespace: openshift-user-workload-monitoring
+    wait: true
+    wait_condition:
+      type: Ready
+      status: "True"
+    wait_timeout: 300
+  when:
+    - observability_tools_cluster.platform == "openshift"
+
+- name: Create Prometheus Rule for recording rules
+  kubernetes.core.k8s:
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
+    resource_definition:
+      apiVersion: monitoring.coreos.com/v1
+      kind: PrometheusRule
+      metadata:
+        labels:
+          prometheus: k8s
+          role: alert-rules
+        name: it-bench-custom-recording-rules
+        namespace: "{{ helm_release.namespace }}"
+      spec: "{{ lookup('ansible.builtin.template', 'templates/prometheus-recording-rules.j2') | from_yaml }}"
+    state: present
+  when:
+    - observability_tools_cluster.platform == "openshift"
+
+- name: Create Prometheus Rule for alerting rules
+  kubernetes.core.k8s:
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
+    resource_definition:
+      apiVersion: monitoring.coreos.com/v1
+      kind: PrometheusRule
+      metadata:
+        labels:
+          prometheus: k8s
+          role: alert-rules
+        name: it-bench-custom-alerting-rules
+        namespace: "{{ helm_release.namespace }}"
+      spec: "{{ lookup('ansible.builtin.template', '/tmp/prometheus-required-alerting-rules.j2') | from_yaml }}"
+    state: present
+  when:
+    - observability_tools_cluster.platform == "openshift"

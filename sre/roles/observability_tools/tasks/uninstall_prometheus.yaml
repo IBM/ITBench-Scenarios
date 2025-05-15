@@ -6,6 +6,8 @@
     release_namespace: "{{ helm_release.namespace }}"
     release_state: absent
     wait: true
+  when:
+    - observability_tools_cluster.platform == "kubernetes"
 
 - name: Retrieve all CRDs
   kubernetes.core.k8s_info:
@@ -13,6 +15,8 @@
     kind: CustomResourceDefinition
     kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
   register: crd_info
+  when:
+    - observability_tools_cluster.platform == "kubernetes"
 
 - name: Remove the Prometheus Operator related CRDs from the cluster
   kubernetes.core.k8s:
@@ -30,6 +34,31 @@
       selectattr('spec.group', '==', 'monitoring.coreos.com') |
       community.general.json_query('[*].metadata.name')
     }}
+  when:
+    - observability_tools_cluster.platform == "kubernetes"
+
+- name: Retrieve all PrometheusRule instances in the release namespace
+  kubernetes.core.k8s_info:
+    api_version: monitoring.coreos.com/v1
+    kind: PrometheusRule
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
+    namespace: "{{ helm_release.namespace }}"
+  register: prometheus_rule_info
+  when:
+    - observability_tools_cluster.platform == "openshift"
+
+- name: Delete all PrometheusRule instances in the release namespace
+  kubernetes.core.k8s:
+    api_version: monitoring.coreos.com/v1
+    delete_all: true
+    kind: PrometheusRule
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
+    namespace: "{{ helm_release.namespace }}"
+    state: absent
+    wait: true
+  when:
+    - observability_tools_cluster.platform == "openshift"
+    - prometheus_rule_info.resources | length > 0
 
 - name: Delete the release namespace
   kubernetes.core.k8s:
@@ -41,3 +70,11 @@
         name: "{{ helm_release.namespace }}"
     state: absent
     wait: true
+
+- name: Disable OpenShift user workload monitoring
+  kubernetes.core.k8s:
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
+    state: absent
+    src: files/ocp-user-workload-monitoring.yaml
+  when:
+    - observability_tools_cluster.platform == "openshift"

@@ -1,12 +1,61 @@
 ---
-- name: Manage Observability and Fault Tool Stack
+- name: Manage SRE and FinOps Incident Environment Tool Stack
   hosts:
-    - localhost
+    - environment
   tasks:
+    - name: Check for OpenShift annotations on nodes
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ cluster.kubeconfig }}"
+        api_version: v1
+        kind: Node
+        label_selectors:
+          - node.openshift.io/os_id = rhcos
+      register: openshift_nodes_info
+      tags:
+        - always
+
+    - name: Set cluster platform as OpenShift
+      ansible.builtin.set_fact:
+        cluster_platform: openshift
+      tags:
+        - always
+      when:
+        - openshift_nodes_info.resources | length > 0
+
+    - name: Set cluster platform as Kubernetes
+      ansible.builtin.set_fact:
+        cluster_platform: kubernetes
+      tags:
+        - always
+      when:
+        - openshift_nodes_info.resources | length == 0
+
+    - name: Import observability tools role
+      ansible.builtin.import_role:
+        name: observability_tools
+      vars:
+        observability_tools_cluster:
+          kubeconfig: "{{ cluster.kubeconfig }}"
+          platform: "{{ cluster_platform }}"
+        observability_tools_enabled:
+          stack:
+            clickhouse: "{{ spec.observability_tools.clickhouse | default(false) }}"
+            ingress: "{{ spec.observability_tools.ingress | default(false) }}"
+            jaeger: "{{ spec.observability_tools.jaeger | default(false) }}"
+            opencost: "{{ spec.observability_tools.opencost | default(false) }}"
+            opensearch: "{{ spec.observability_tools.opensearch | default(false) }}"
+            opentelemetry: "{{ spec.observability_tools.opentelemetry | default(false) }}"
+            prometheus: "{{ spec.observability_tools.prometheus | default(false) }}"
+          kubernetes:
+            topology_monitor: "{{ spec.observability_tools.kubernetes_topology_monitor | default(false) }}"
+
     - name: Import fault tools role
       ansible.builtin.import_role:
         name: fault_tools
       vars:
+        fault_tools_cluster:
+          kubeconfig: "{{ cluster.kubeconfig }}"
+          platform: "{{ cluster_platform }}"
         fault_tools_enabled:
-          chaos_mesh: "{{ fault_tools.chaos_mesh | default(false) }}"
-          kubernetes_topology_mapper: "{{ fault_tools.kubernetes_topology_mapper | default(false) }}"
+          chaos_mesh: "{{ spec.fault_tools.chaos_mesh | default(false) }}"
+          kubernetes_metrics_server: "{{ spec.fault_tools.kubernetes_metrics_server | default(false) }}"

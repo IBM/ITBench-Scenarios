@@ -1,0 +1,201 @@
+name: Perform install smoke tests for observability tools
+
+on:
+  pull_request:
+    # branches:
+    #   - main
+    paths:
+      - sre/roles/observability_tools/*
+      - sre/charts/kubernetes-topology-monitor/*
+
+jobs:
+  clickhouse:
+    name: Attempt installation of Alinty Clickhouse
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: sre/local_cluster/go.mod
+      - name: Install Helm
+        run: |
+          curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+          sudo apt-get install apt-transport-https --yes
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+          sudo apt-get update
+          sudo apt-get install helm
+      - name: Install Python and Ansible dependencies
+        run: |
+          pip install -r sre/requirements.txt
+          ansible-galaxy install -r sre/requirements.yaml
+      - name: Create Kind cluster
+        run: |
+          make -C sre/local_cluster create_cluster
+      - name: Create group vars
+        run: |
+          make group_vars
+      - name: Run installation smoke test
+        run: |
+          ansible-playbook -i sre/inventory.yaml \
+            sre/manage_tools.yaml --tags "install_tools" \
+            --extra-vars '{"spec": {"observability_tools": { "clickhouse": true }}}'
+      - name: Run uninstallation smoke test
+        run: |
+          ansible-playbook -i sre/inventory.yaml \
+            sre/manage_tools.yaml --tags "uninstall_tools" \
+            --extra-vars '{"observability_tools": { "clickhouse": true }}'
+  jaeger-opensearch:
+    name: Attempt installation of Jaeger and OpenSearch
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: sre/local_cluster/go.mod
+      - name: Install Helm
+        run: |
+          curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+          sudo apt-get install apt-transport-https --yes
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+          sudo apt-get update
+          sudo apt-get install helm
+      - name: Install Python and Ansible dependencies
+        run: |
+          pip install -r sre/requirements.txt
+          ansible-galaxy install -r sre/requirements.yaml
+      - name: Create Kind cluster
+        run: |
+          make -C sre/local_cluster create_cluster
+      - name: Create group vars
+        run: |
+          make group_vars
+      - name: Run installation smoke test
+        run: |
+          ansible-playbook -i sre/inventory.yaml \
+            sre/manage_tools.yaml --tags "install_tools" \
+            --extra-vars '{"spec": {"observability_tools": { "jaeger": true }}}'
+      - name: Run uninstallation smoke test
+        run: |
+          ansible-playbook -i sre/inventory.yaml \
+            sre/manage_tools.yaml --tags "uninstall_tools" \
+            --extra-vars '{"observability_tools": { "jaeger": true }}'
+  kubernetes-topology-monitor:
+    name: Attempt installation of Kubernetes Topology Mapper
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: sre/local_cluster/go.mod
+      - name: Install Helm
+        run: |
+          curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+          sudo apt-get install apt-transport-https --yes
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+          sudo apt-get update
+          sudo apt-get install helm
+      - name: Install Python and Ansible dependencies
+        run: |
+          pip install -r sre/requirements.txt
+          ansible-galaxy install -r sre/requirements.yaml
+      - name: Create Kind cluster
+        run: |
+          make -C sre/local_cluster create_cluster
+      - name: Create group vars
+        run: |
+          make group_vars
+      - name: Run installation smoke test
+        run: |
+          ansible-playbook -i sre/inventory.yaml \
+            sre/manage_tools.yaml --tags "install_tools" \
+            --extra-vars '{"spec": {"observability_tools": { "kubernetes_topology_monitor": true }}}'
+      - name: Run uninstallation smoke test
+        run: |
+          ansible-playbook -i sre/inventory.yaml \
+            sre/manage_tools.yaml --tags "uninstall_tools" \
+            --extra-vars '{"observability_tools": { "kubernetes_topology_monitor": true }}'
+  opencost-prometheus:
+    name: Attempt installation of OpenCost and Prometheus
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: sre/local_cluster/go.mod
+      - name: Install Helm
+        run: |
+          curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+          sudo apt-get install apt-transport-https --yes
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+          sudo apt-get update
+          sudo apt-get install helm
+      - name: Install Python and Ansible dependencies
+        run: |
+          pip install -r sre/requirements.txt
+          ansible-galaxy install -r sre/requirements.yaml
+      - name: Create Kind cluster
+        run: |
+          make -C sre/local_cluster create_cluster
+      - name: Create group vars
+        run: |
+          make group_vars
+      - name: Run installation smoke test
+        run: |
+          ansible-playbook -i sre/inventory.yaml \
+            sre/manage_tools.yaml --tags "install_tools" \
+            --extra-vars '{"spec": {"observability_tools": { "opencost": true }}}'
+      - name: Run uninstallation smoke test
+        run: |
+          ansible-playbook -i sre/inventory.yaml \
+            sre/manage_tools.yaml --tags "uninstall_tools" \
+            --extra-vars '{"observability_tools": { "opencost": true }}'
+  clickhouse-opentelemtry:
+    name: Attempt installation of Alinity Clickhouse and OpenTelemetry Collector
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: sre/local_cluster/go.mod
+      - name: Install Helm
+        run: |
+          curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+          sudo apt-get install apt-transport-https --yes
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+          sudo apt-get update
+          sudo apt-get install helm
+      - name: Install Python and Ansible dependencies
+        run: |
+          pip install -r sre/requirements.txt
+          ansible-galaxy install -r sre/requirements.yaml
+      - name: Create Kind cluster
+        run: |
+          make -C sre/local_cluster create_cluster
+      - name: Create group vars
+        run: |
+          make group_vars
+      - name: Run installation smoke test
+        run: |
+          ansible-playbook -i sre/inventory.yaml \
+            sre/manage_tools.yaml --tags "install_tools" \
+            --extra-vars '{"spec": {"observability_tools": { "opentelemetry": true }}}'
+      - name: Run uninstallation smoke test
+        run: |
+          ansible-playbook -i sre/inventory.yaml \
+            sre/manage_tools.yaml --tags "uninstall_tools" \
+            --extra-vars '{"observability_tools": { "opentelemetry": true }}'

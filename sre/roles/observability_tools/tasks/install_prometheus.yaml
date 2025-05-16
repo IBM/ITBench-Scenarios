@@ -40,9 +40,6 @@
     release_state: present
     timeout: 10m0s
     values:
-      # additionalPrometheusRulesMap:
-      #   "incident-alerts": "{{ lookup('ansible.builtin.template', '/tmp/prometheus-required-alerting-rules.j2') | from_yaml }}"
-      #   "incident-rules": "{{ lookup('ansible.builtin.template', 'templates/prometheus-recording-rules.j2') | from_yaml }}"
       grafana:
         enabled: false
       prometheus:

@@ -244,3 +244,10 @@
             memory: 512Mi
       prometheus:
         enabled: false
+
+- name: Create Prometheus Rules for Alerting
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    namespace: "{{ otel_astronomy_app_namespace_project_name }}"
+    state: present
+    src: files/rules/otel-demo.yaml

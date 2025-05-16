@@ -22,8 +22,7 @@
         config:
           server-tokens: "false"
         service:
-          type: LoadBalancer
-          # "{{ 'NodePort' if (cluster_type is defined and ((cluster_type == 'kind_local') or (cluster_type == 'openshift_crc_local'))) else 'LoadBalancer' }}"
+          type: "{{ 'NodePort' if (observability_tools_cluster.provider == 'kind') else 'LoadBalancer' }}"
         metrics:
           enabled: "{{ observability_tools_enabled.stack.prometheus }}"
           serviceMonitor:
@@ -31,41 +30,6 @@
     wait: true
   when:
     - observability_tools_cluster.platform == "kubernetes"
-
-# - name: Retrieve the default Ingress Controller
-#   kubernetes.core.k8s_info:
-#     api_version: operator.openshift.io/v1
-#     kind: IngressController
-#     kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
-#     name: default
-#     namespace: openshift-ingress-operator
-#   register: default_ingress_controller_info
-#   when:
-#     - observability_tools_cluster.platform == "openshift"
-
-# - name: Update the default Ingress Controller with header information
-#   kubernetes.core.k8s:
-#     kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
-#     resource_definition:
-#       apiVersion: operator.openshift.io/v1
-#       kind: IngressController
-#       metadata:
-#         name: default
-#         namespace: openshift-ingress-operator
-#       spec: |
-#         {{
-#           default_ingress_controller_info.resources[0].spec |
-#           combine(
-#             lookup(
-#               'ansible.builtin.template',
-#               'templates/ocp-ingress-controller-http-headers.j2'
-#             ) |
-#             from_yaml
-#           )
-#         }}
-#     state: patched
-#   when:
-#     - observability_tools_cluster.platform == "openshift"
 
 - name: Create Ingress objects for Observability Stack
   kubernetes.core.k8s:

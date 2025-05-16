@@ -1,0 +1,3 @@
+fault_tools:
+  choas_mesh: true
+  kubernetes_metrics_server: true

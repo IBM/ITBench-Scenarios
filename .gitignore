@@ -6,7 +6,7 @@
 sre/group_vars/all.yaml
 sre/group_vars/e2e.yaml
 sre/group_vars/all/ansible.yaml
-sre/group_vars/environment/cluster.yaml
+sre/group_vars/environment/*.yaml
 
 # Files associated with the remote cluster setup
 sre/remote_cluster/playbooks/secret.yaml

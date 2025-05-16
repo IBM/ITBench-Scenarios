@@ -30,6 +30,9 @@
       when:
         - openshift_nodes_info.resources | length == 0
 
+    # - name: Load variables from incident
+    # - name: Overwrite variables using incident spec
+
     - name: Import observability tools role
       ansible.builtin.import_role:
         name: observability_tools
@@ -39,15 +42,15 @@
           platform: "{{ cluster_platform }}"
         observability_tools_enabled:
           stack:
-            clickhouse: "{{ spec.observability_tools.clickhouse | default(false) }}"
-            ingress: "{{ spec.observability_tools.ingress | default(false) }}"
-            jaeger: "{{ spec.observability_tools.jaeger | default(false) }}"
-            opencost: "{{ spec.observability_tools.opencost | default(false) }}"
-            opensearch: "{{ spec.observability_tools.opensearch | default(false) }}"
-            opentelemetry: "{{ spec.observability_tools.opentelemetry | default(false) }}"
-            prometheus: "{{ spec.observability_tools.prometheus | default(false) }}"
+            clickhouse: "{{ observability_tools.clickhouse | default(false) }}"
+            ingress: "{{ observability_tools.ingress | default(false) }}"
+            jaeger: "{{ observability_tools.jaeger | default(false) }}"
+            opencost: "{{ observability_tools.opencost | default(false) }}"
+            opensearch: "{{ observability_tools.opensearch | default(false) }}"
+            opentelemetry: "{{ observability_tools.opentelemetry | default(false) }}"
+            prometheus: "{{ observability_tools.prometheus | default(false) }}"
           kubernetes:
-            topology_monitor: "{{ spec.observability_tools.kubernetes_topology_monitor | default(false) }}"
+            topology_monitor: "{{ observability_tools.kubernetes_topology_monitor | default(false) }}"
 
     - name: Import fault tools role
       ansible.builtin.import_role:
@@ -57,5 +60,5 @@
           kubeconfig: "{{ cluster.kubeconfig }}"
           platform: "{{ cluster_platform }}"
         fault_tools_enabled:
-          chaos_mesh: "{{ spec.fault_tools.chaos_mesh | default(false) }}"
-          kubernetes_metrics_server: "{{ spec.fault_tools.kubernetes_metrics_server | default(false) }}"
+          chaos_mesh: "{{ fault_tools.chaos_mesh | default(false) }}"
+          kubernetes_metrics_server: "{{ fault_tools.kubernetes_metrics_server | default(false) }}"

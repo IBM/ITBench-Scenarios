@@ -1,12 +1,9 @@
 ---
-- name: Set additional template variables
-  ansible.builtin.set_fact:
-    enable_finops_rules: "{{ domain == 'finops' }}"
-
 - name: Copy alerting rules template into tmp directory for processing
   ansible.builtin.copy:
     src: templates/prometheus-alerting-rules.j2
     dest: /tmp/prometheus-alerting-rules.j2
+    mode: "0644"
 
 - name: Create a temporary template with fake curly brackets for processing
   ansible.builtin.replace:
@@ -18,6 +15,7 @@
   ansible.builtin.copy:
     dest: /tmp/prometheus-required-alerting-rules.j2
     content: "{{ lookup('ansible.builtin.template', '/tmp/prometheus-alerting-rules.j2') }}"
+    mode: "0644"
 
 - name: Escape double curly brackets in alerting rules yaml file
   ansible.builtin.replace:
@@ -31,61 +29,67 @@
     regexp: "\\\\"
     replace: ""
 
-- name: Deploy the Prometheus stack
+- name: Install Prometheus Operator and Prometheus
   kubernetes.core.helm:
-    name: "{{ prometheus_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    chart_ref: prometheus-community/prometheus
-    chart_version: "{{ prometheus_chart_version }}"
-    release_namespace: "{{ prometheus_namespace_project_name }}"
+    chart_ref: kube-prometheus-stack
+    chart_repo_url: https://prometheus-community.github.io/helm-charts
+    chart_version: 72.3.0
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
+    release_name: "{{ helm_release.name }}"
+    release_namespace: "{{ helm_release.namespace }}"
     release_state: present
-    wait: true
     timeout: 10m0s
     values:
-      alertmanager:
-      extraScrapeConfigs: "{{ lookup('ansible.builtin.template', 'templates/prometheus-scrape-configs.j2') | from_yaml | to_yaml }}"
-      server:
-        extraFlags:
-          - web.enable-lifecycle
-          - web.enable-otlp-receiver
-      serverFiles:
-        alerting_rules.yml: "{{ lookup('ansible.builtin.template', '/tmp/prometheus-required-alerting-rules.j2') | from_yaml }}"
-        recording_rules.yml: "{{ lookup('ansible.builtin.template', 'templates/prometheus-recording-rules.j2') | from_yaml }}"
-      prometheus-pushgateway:
+      grafana:
         enabled: false
-      prometheus-node-exporter:
-        enabled: "{{ false if (cluster_type is defined and ((cluster_type == 'openshift') or (cluster_type == 'openshift_crc_local'))) else true }}"
+      prometheus:
+        prometheusSpec:
+          ruleNamespaceSelector:
+            matchLabels:
+              it-bench/monitoring: "true"
+          ruleSelectorNilUsesHelmValues: false
+          serviceMonitorNamespaceSelector:
+            matchLabels:
+              it-bench/monitoring: "true"
+          serviceMonitorSelectorNilUsesHelmValues: false
+    wait: true
+  when:
+    - observability_tools_cluster.platform == "kubernetes"
 
-- name: Deploy Ingress for Prometheus and AlertManager frontends
+- name: Enable OpenShift user workload monitoring
   kubernetes.core.k8s:
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     state: present
-    kubeconfig: "{{ kubeconfig }}"
-    resource_definition:
-      apiVersion: networking.k8s.io/v1
-      kind: Ingress
-      metadata:
-        name: prometheus
-        namespace: "{{ prometheus_namespace_project_name }}"
-        annotations:
-          nginx.ingress.kubernetes.io/rewrite-target: /$2
-      spec:
-        ingressClassName: nginx
-        rules:
-          - http:
-              paths:
-                - pathType: ImplementationSpecific
-                  path: /prometheus(/|$)(.*)
-                  backend:
-                    service:
-                      name: "{{ prometheus_installation_name }}-server"
-                      port:
-                        number: 80
-          - http:
-              paths:
-                - pathType: ImplementationSpecific
-                  path: /alertmanager(/|$)(.*)
-                  backend:
-                    service:
-                      name: "{{ prometheus_installation_name }}-alertmanager"
-                      port:
-                        number: 9093
+    src: files/ocp/user-workload-monitoring-config.yaml
+  when:
+    - observability_tools_cluster.platform == "openshift"
+
+- name: Wait for Prometheus workload pods to start
+  kubernetes.core.k8s_info:
+    kind: Pod
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
+    label_selectors:
+      - app.kubernetes.io/component = prometheus
+      - app.kubernetes.io/instance = user-workload
+    namespace: openshift-user-workload-monitoring
+    wait: true
+    wait_condition:
+      type: Ready
+      status: "True"
+    wait_timeout: 300
+  when:
+    - observability_tools_cluster.platform == "openshift"
+
+- name: Create Prometheus Rules for workloads
+  kubernetes.core.k8s:
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
+    namespace: "{{ helm_release.namespace }}"
+    state: present
+    src: files/rules/workload.yaml
+
+- name: Create Prometheus Rules for cluster
+  kubernetes.core.k8s:
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
+    namespace: "{{ helm_release.namespace }}"
+    state: present
+    src: files/rules/cluster.yaml

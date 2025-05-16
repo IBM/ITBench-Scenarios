@@ -64,3 +64,10 @@
           defaultJaegerEnabled: false
           otelAddress: "otel-collector-{{ deathstarbench_hotelreservation_app_installation_name }}.{{ deathstarbench_hotelreservation_app_namespace_project_name }}.svc.cluster.local"
         nameOverride: "{{ deathstarbench_hotelreservation_app_installation_name }}"
+
+- name: Create Prometheus Rules for Alerting
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    namespace: "{{ deathstarbench_hotelreservation_app_namespace_project_name }}"
+    state: present
+    src: files/rules/hotel-reservation.yaml

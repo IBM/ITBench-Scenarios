@@ -1,30 +1,66 @@
 ---
-- name: Deploy Clickhouse Operator and Clickhouse
+- name: Install Clickhouse Operator
   kubernetes.core.helm:
-    name: "{{ clickhouse_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
-    chart_ref: altinity/clickhouse
-    chart_version: "{{ clickhouse_chart_version }}"
-    release_namespace: "{{ clickhouse_namespace_project_name }}"
+    chart_ref: altinity-clickhouse-operator
+    chart_repo_url: https://docs.altinity.com/clickhouse-operator/
+    chart_version: 0.24.5
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
+    release_name: "{{ helm_releases.operator.name }}"
+    release_namespace: "{{ helm_releases.operator.namespace }}"
     release_state: present
     timeout: 10m0s
+    values:
+      configs:
+        files:
+          config.yaml:
+            watch:
+              namespaces:
+                - "{{ helm_releases.instance.namespace }}"
+      podAnnotations:
+        openshift.io/required-scc: restricted-v2
+      serviceMonitor:
+        enabled: "{{ observability_tools_enabled.stack.prometheus }}"
     wait: true
+
+- name: Install Clickhouse
+  kubernetes.core.helm:
+    chart_ref: clickhouse
+    chart_repo_url: https://helm.altinity.com
+    chart_version: 0.2.2
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
+    release_name: "{{ helm_releases.instance.name }}"
+    release_namespace: "{{ helm_releases.instance.namespace }}"
+    release_state: present
+    timeout: 10m0s
     values:
       clickhouse:
         defaultUser:
           allowExternalAccess: true
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
         podSecurityContext:
-          runAsUser: 101
-          runAsGroup: 101
           fsGroup: 101
+          runAsGroup: 101
+          runAsNonRoot: true
+          runAsUser: 101
+          seccompProfile:
+            type: "RuntimeDefault"
+      podAnnotations:
+        openshift.io/required-scc: restricted-v2
+      operator:
+        enabled: false
+    wait: true
 
 - name: Wait for Clickhouse install to complete
   kubernetes.core.k8s_info:
     api_version: clickhouse.altinity.com/v1
     kind: ClickHouseInstallation
-    name: "{{ clickhouse_installation_name }}"
-    namespace: "{{ clickhouse_namespace_project_name }}"
-    kubeconfig: "{{ kubeconfig }}"
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
+    name: "{{ helm_releases.instance.name }}"
+    namespace: "{{ helm_releases.instance.namespace }}"
     wait: true
   register: clickhouse_installation_info
   until:
@@ -36,9 +72,9 @@
 - name: Get Clickhouse credentials from secret
   kubernetes.core.k8s_info:
     kind: Secret
-    name: clickhouse-credentials
-    namespace: "{{ clickhouse_namespace_project_name }}"
-    kubeconfig: "{{ kubeconfig }}"
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
+    name: "{{ helm_releases.instance.name }}-credentials"
+    namespace: "{{ helm_releases.instance.namespace }}"
     wait: true
   register: clickhouse_secrets_info
 
@@ -46,28 +82,3 @@
   ansible.builtin.set_fact:
     clickhouse_user: "{{ clickhouse_secrets_info.resources[0].data.user | b64decode }}"
     clickhouse_password: "{{ clickhouse_secrets_info.resources[0].data.password | b64decode }}"
-
-- name: Deploy Ingress for Clickhouse
-  kubernetes.core.k8s:
-    state: present
-    kubeconfig: "{{ kubeconfig }}"
-    resource_definition:
-      apiVersion: networking.k8s.io/v1
-      kind: Ingress
-      metadata:
-        name: clickhouse
-        namespace: "{{ clickhouse_namespace_project_name }}"
-        annotations:
-          nginx.ingress.kubernetes.io/rewrite-target: /$2
-      spec:
-        ingressClassName: nginx
-        rules:
-          - http:
-              paths:
-                - pathType: ImplementationSpecific
-                  path: /clickhouse(/|$)(.*)
-                  backend:
-                    service:
-                      name: "{{ clickhouse_installation_name }}-clickhouse"
-                      port:
-                        number: 8123

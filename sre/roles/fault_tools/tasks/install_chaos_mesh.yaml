@@ -1,0 +1,41 @@
+---
+- name: Create release namespace
+  kubernetes.core.k8s:
+    kubeconfig: "{{ fault_tools_cluster.kubeconfig }}"
+    resource_definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ helm_release.namespace }}"
+        labels:
+          it-bench/monitoring: "true"
+          pod-security.kubernetes.io/audit: privileged
+          pod-security.kubernetes.io/enforce: privileged
+          pod-security.kubernetes.io/warn: privileged
+    state: present
+
+- name: Install Chaos Mesh
+  kubernetes.core.helm:
+    chart_ref: chaos-mesh
+    chart_repo_url: https://charts.chaos-mesh.org
+    chart_version: 2.7.1
+    create_namespace: true
+    kubeconfig: "{{ fault_tools_cluster.kubeconfig }}"
+    release_name: "{{ helm_release.name }}"
+    release_namespace: "{{ helm_release.namespace }}"
+    release_state: present
+    values:
+      controllerManager:
+        podAnnotations:
+          openshift.io/required-scc: restricted-v2
+      chaosDaemon:
+        podAnnotations:
+          openshift.io/required-scc: priveleged
+        runtime: containerd
+        socketPath: /run/containerd/containerd.sock
+      dashboard:
+        podAnnotations:
+          openshift.io/required-scc: restricted-v2
+      dnsServer:
+        create: false
+    wait: true

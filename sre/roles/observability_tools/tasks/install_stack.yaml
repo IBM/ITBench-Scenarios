@@ -11,15 +11,13 @@
     state: present
     template: templates/stack-namespace.j2
   when:
-    - lookup('ansible.builtin.template', 'templates/stack-namespace.j2') != ""
+    - (lookup('ansible.builtin.template', 'templates/stack-namespace.j2') | trim) != ""
 
 - name: Import Prometheus installation tasks
   ansible.builtin.import_tasks:
     file: install_prometheus.yaml
   vars:
     helm_release: "{{ observability_tools_helm_releases.prometheus }}"
-    chart_values:
-      node_exporter_enabled: "{{ false if (cluster_type is defined and ((cluster_type == 'openshift') or (cluster_type == 'openshift_crc_local'))) else true }}"
   when:
     - observability_tools_enabled.stack.prometheus or observability_tools_enabled.stack.opencost
 

@@ -75,6 +75,6 @@
   kubernetes.core.k8s:
     kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     state: absent
-    src: files/ocp-user-workload-monitoring.yaml
+    src: files/ocp/user-workload-monitoring-config.yaml
   when:
     - observability_tools_cluster.platform == "openshift"

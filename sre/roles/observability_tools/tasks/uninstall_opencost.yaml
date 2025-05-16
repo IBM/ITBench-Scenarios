@@ -1,4 +1,12 @@
 ---
+- name: Remove Prometheus rules for OpenCost
+  kubernetes.core.k8s:
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
+    namespace: "{{ helm_release.namespace }}"
+    state: absent
+    src: files/rules/opencost.yaml
+    wiat: true
+
 - name: Uninstall OpenCost
   kubernetes.core.helm:
     kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"

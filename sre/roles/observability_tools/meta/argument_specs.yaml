@@ -23,6 +23,10 @@ argument_specs:
             default: kubernetes
             required: false
             type: str
+          provider:
+            default: aws
+            required: false
+            type: str
       obervability_tools_enabled:
         default:
         required: false

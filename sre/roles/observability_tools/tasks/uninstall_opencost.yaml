@@ -5,7 +5,7 @@
     namespace: "{{ helm_release.namespace }}"
     state: absent
     src: files/rules/opencost.yaml
-    wiat: true
+    wait: true
 
 - name: Uninstall OpenCost
   kubernetes.core.helm:

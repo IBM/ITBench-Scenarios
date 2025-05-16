@@ -38,6 +38,7 @@
     template: templates/stack-ingress.j2
   when:
     - observability_tools_cluster.platform == "kubernetes"
+    - (lookup('ansible.builtin.template', 'templates/stack-ingress.j2') | trim) != ""
 
 - name: Create Route objects for Observability Stack
   kubernetes.core.k8s:

@@ -85,7 +85,7 @@ jobs:
         run: |
           make -C sre undeploy_environment_tools
   kubernetes-topology-monitor:
-    name: Kubernetes Topology Mapper Smoke Tests
+    name: Kubernetes Topology Monitor Smoke Tests
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4

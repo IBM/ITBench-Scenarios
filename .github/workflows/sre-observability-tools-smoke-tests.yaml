@@ -2,8 +2,8 @@ name: Perform smoke tests for observability tools
 
 on:
   pull_request:
-    # branches:
-    #   - main
+    branches:
+      - main
     paths:
       - sre/manage_tools.yaml
       - sre/roles/observability_tools/*

@@ -2,3 +2,4 @@
 fault_tools_cluster:
   kubeconfig: ~/.kube/config
   platform: kubernetes
+  provider: kind

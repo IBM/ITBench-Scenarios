@@ -53,7 +53,7 @@
             internetNetworkEgress: 1.00
         exporter:
           extraEnv:
-            INSECURE_SKIP_VERIFY: true
+            INSECURE_SKIP_VERIFY: "{{ observability_tools_cluster.platform == 'openshift' }}"
             USE_CUSTOM_PROVIDER: true
         metrics:
           serviceMonitor:

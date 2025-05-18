@@ -93,6 +93,7 @@
         fault_tools_cluster:
           kubeconfig: "{{ cluster.kubeconfig }}"
           platform: "{{ cluster_platform }}"
+          provider: "{{ cluster_provider }}"
         fault_tools_enabled:
           chaos_mesh: "{{ fault_tools.chaos_mesh | default(false) }}"
           kubernetes_metrics_server: "{{ fault_tools.kubernetes_metrics_server | default(false) }}"

@@ -23,6 +23,10 @@ argument_specs:
             default: kubernetes
             required: false
             type: str
+          provider:
+            default: kind
+            required: false
+            type: str
       fault_tools_enabled:
         required: false
         type: dict

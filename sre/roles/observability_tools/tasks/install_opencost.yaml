@@ -1,19 +1,40 @@
 ---
+- name: Create bearer token
+  ansible.builtin.command:
+    cmd: oc whoami -t
+  register: oc_whoami_output
+  changed_when: false
+  when:
+    - observability_tools_cluster.platform == "openshift"
+
+- name: Retrieve Prometheus route
+  kubernetes.core.k8s_info:
+    api_version: route.openshift.io/v1
+    kind: Route
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
+    name: prometheus-k8s
+    namespace: openshift-monitoring
+  register: prometheus_k8s_route_info
+  when:
+    - observability_tools_cluster.platform == "openshift"
+
+- name: Parse Prometheus hostname
+  ansible.builtin.set_fact:
+    prometheus_url: https://{{ prometheus_k8s_route_info.resources[0].spec.host }}
+  when:
+    - observability_tools_cluster.platform == "openshift"
+
 - name: Install OpenCost
   kubernetes.core.helm:
     chart_ref: opencost
     chart_repo_url: https://opencost.github.io/opencost-helm-chart
-    chart_version: 2.0.1
+    chart_version: 2.1.2
     kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     release_name: "{{ helm_release.name }}"
     release_namespace: "{{ helm_release.namespace }}"
     release_state: present
     timeout: 10m0s
     values:
-      networkPolicies:
-        enabled: true
-        prometheus:
-          namespace: "{{ prometheus.namespace }}"
       opencost:
         customPricing:
           enabled: true
@@ -32,14 +53,31 @@
             internetNetworkEgress: 1.00
         exporter:
           extraEnv:
+            INSECURE_SKIP_VERIFY: true
             USE_CUSTOM_PROVIDER: true
         metrics:
           serviceMonitor:
-            enabled: "{{ prometheus.enabled }}"
+            enabled: true
+        platforms:
+          openshift:
+            enabled: "{{ observability_tools_cluster.platform == 'openshift' }}"
         prometheus:
+          bearer_token: "{{ oc_whoami_output.stdout if observability_tools_cluster.platform == 'openshift' else omit }}"
           external:
-            enabled: "{{ prometheus.enabled }}"
-            url: "{{ prometheus.url }}"
+            enabled: "{{ observability_tools_cluster.platform == 'openshift' }}"
+            url: "{{ prometheus_url if prometheus_url is defined else omit }}"
           internal:
-            enabled: false
+            enabled: "{{ observability_tools_cluster.platform == 'kubernetes' }}"
+            serviceName: "{{ observability_tools_helm_releases.prometheus.name }}-kube-prometheus-prometheus"
+            namespaceName: "{{ observability_tools_helm_releases.prometheus.namespace }}"
+            port: 9090
+      podAnnotations:
+        openshift.io/required-scc: "restricted-v2"
     wait: true
+
+- name: Create Prometheus rules for OpenCost
+  kubernetes.core.k8s:
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
+    namespace: "{{ helm_release.namespace }}"
+    state: present
+    src: files/rules/opencost.yaml

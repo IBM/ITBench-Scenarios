@@ -10,6 +10,8 @@ spec:
       app: topology-monitor
   template:
     metadata:
+      annotations:
+        openshift.io/required-scc: "restricted-v2"
       labels:
         app: topology-monitor
     spec:

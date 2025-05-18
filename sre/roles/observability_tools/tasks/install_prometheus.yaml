@@ -1,34 +1,4 @@
 ---
-- name: Copy alerting rules template into tmp directory for processing
-  ansible.builtin.copy:
-    src: templates/prometheus-alerting-rules.j2
-    dest: /tmp/prometheus-alerting-rules.j2
-    mode: "0644"
-
-- name: Create a temporary template with fake curly brackets for processing
-  ansible.builtin.replace:
-    path: /tmp/prometheus-alerting-rules.j2
-    regexp: "\\{\\{([a-zA-Z\\.$_ ]*)\\}\\}"
-    replace: "<<\\1>>"
-
-- name: Create new alerting rules template from proccesed template
-  ansible.builtin.copy:
-    dest: /tmp/prometheus-required-alerting-rules.j2
-    content: "{{ lookup('ansible.builtin.template', '/tmp/prometheus-alerting-rules.j2') }}"
-    mode: "0644"
-
-- name: Escape double curly brackets in alerting rules yaml file
-  ansible.builtin.replace:
-    path: /tmp/prometheus-required-alerting-rules.j2
-    regexp: "<<([a-zA-Z\\.$_ ]*)>>"
-    replace: "\\{\\{\"\\{\\{\"\\}\\}\\1\\{\\{\"\\}\\}\"\\}\\}"
-
-- name: Remove double backslash in alerting rules yaml file
-  ansible.builtin.replace:
-    path: /tmp/prometheus-required-alerting-rules.j2
-    regexp: "\\\\"
-    replace: ""
-
 - name: Install Prometheus Operator and Prometheus
   kubernetes.core.helm:
     chart_ref: kube-prometheus-stack
@@ -79,17 +49,3 @@
     wait_timeout: 300
   when:
     - observability_tools_cluster.platform == "openshift"
-
-- name: Create Prometheus Rules for workloads
-  kubernetes.core.k8s:
-    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
-    namespace: "{{ helm_release.namespace }}"
-    state: present
-    src: files/rules/workload.yaml
-
-- name: Create Prometheus Rules for cluster
-  kubernetes.core.k8s:
-    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
-    namespace: "{{ helm_release.namespace }}"
-    state: present
-    src: files/rules/cluster.yaml

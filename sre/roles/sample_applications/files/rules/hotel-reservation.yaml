@@ -4,6 +4,21 @@ metadata:
   name: hotel-reservation-alerting-rules
 spec:
   groups:
+    - name: ClusterAlerts
+      interval: 1m
+      rules:
+        - alert: FailedPodsDetected
+          expr: sum by(namespace) (kube_pod_status_phase{namespace="hotel-reservation", phase="Failed"}) > 0
+          labels:
+            severity: critical
+          annotations:
+            description: 'Pods in failed state in namespace {{ $labels.namespace }} is above 0 (current value: {{ $value }})'
+        - alert: PendingPodsDetected
+          expr: sum by(namespace) (kube_pod_status_phase{namespace="hotel-reservation", phase="Pending"}) > 0
+          labels:
+            severity: critical
+          annotations:
+            description: 'Pods in pending state in namespace {{ $labels.namespace }} above 0 (current value: {{ $value }})'
     - name: CostAlerts
       interval: 1m
       rules:

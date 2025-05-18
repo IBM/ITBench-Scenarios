@@ -245,9 +245,35 @@
       prometheus:
         enabled: false
 
+- name: Create Prometheus Rules for Workloads
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    namespace: "{{ otel_astronomy_app_namespace_project_name }}"
+    state: present
+    src: files/rules/workload.yaml
+
 - name: Create Prometheus Rules for Alerting
   kubernetes.core.k8s:
     kubeconfig: "{{ kubeconfig }}"
     namespace: "{{ otel_astronomy_app_namespace_project_name }}"
     state: present
     src: files/rules/otel-demo.yaml
+
+- name: Service monitor to get metrics for the otel-collector pod
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    resource_definition:
+      apiVersion: monitoring.coreos.com/v1
+      kind: ServiceMonitor
+      metadata:
+        name: "otel-collector-metrics-to-prometheus"
+        namespace: "{{ otel_astronomy_app_namespace_project_name }}"
+      spec:
+        endpoints:
+        - interval: 10s
+          path: /metrics
+          port: metrics
+        selector:
+          matchLabels:
+            "component": "standalone-collector"
+    state: present

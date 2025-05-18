@@ -68,17 +68,3 @@
     - clickhouse_installation_info.resources[0].status.status == 'Completed'
   retries: 10
   delay: 30
-
-- name: Get Clickhouse credentials from secret
-  kubernetes.core.k8s_info:
-    kind: Secret
-    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
-    name: "{{ helm_releases.instance.name }}-credentials"
-    namespace: "{{ helm_releases.instance.namespace }}"
-    wait: true
-  register: clickhouse_secrets_info
-
-- name: Extract Clickhouse credentials from secret data
-  ansible.builtin.set_fact:
-    clickhouse_user: "{{ clickhouse_secrets_info.resources[0].data.user | b64decode }}"
-    clickhouse_password: "{{ clickhouse_secrets_info.resources[0].data.password | b64decode }}"

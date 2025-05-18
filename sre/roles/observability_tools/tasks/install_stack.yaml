@@ -44,8 +44,10 @@
     file: install_opentelemetry.yaml
   vars:
     helm_releases:
+      clickhouse: "{{ observability_tools_helm_releases.clickhouse }}"
       collectors: "{{ observability_tools_helm_releases.opentelemetry_collectors }}"
       operator: "{{ observability_tools_helm_releases.opentelemetry_operator }}"
+      opensearch: "{{ observability_tools_helm_releases.opensearch }}"
   when:
     - observability_tools_enabled.stack.opentelemetry or observability_tools_enabled.stack.jaeger
 
@@ -54,10 +56,6 @@
     file: install_opencost.yaml
   vars:
     helm_release: "{{ observability_tools_helm_releases.opencost }}"
-    prometheus:
-      enabled: "{{ observability_tools_enabled.stack.prometheus }}"
-      namespace: "{{ observability_tools_helm_releases.prometheus.namespace }}"
-      url: "{{ observability_tools_cluster_urls.prometheus }}"
   when:
     - observability_tools_enabled.stack.opencost
 

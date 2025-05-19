@@ -1,4 +1,18 @@
 ---
+- name: Create the release namespace
+  kubernetes.core.k8s:
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
+    resource_definition:
+      api_version: v1
+      kind: Namespace
+      metadata:
+        name: "{{ helm_release.namespace }}"
+        labels:
+          it-bench/monitoring: "true"
+    state: present
+  when:
+    - observability_tools_cluster.platform == "kubernetes"
+
 - name: Install Prometheus Operator and Prometheus
   kubernetes.core.helm:
     chart_ref: kube-prometheus-stack

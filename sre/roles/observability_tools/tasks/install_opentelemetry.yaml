@@ -1,4 +1,16 @@
 ---
+- name: Create the release namespace for OpenTelemetry Collectors
+  kubernetes.core.k8s:
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
+    resource_definition:
+      api_version: v1
+      kind: Namespace
+      metadata:
+        name: "{{ helm_releases.collectors.namespace }}"
+        labels:
+          it-bench/monitoring: "true"
+    state: present
+
 - name: Get Clickhouse credentials from secret
   kubernetes.core.k8s_info:
     kind: Secret
@@ -70,6 +82,24 @@
     wait: true
   when:
     - observability_tools_enabled.stack.opentelemetry
+
+- name: Create the release namespace for OpenTelemetry Operator
+  kubernetes.core.k8s:
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
+    resource_definition:
+      api_version: v1
+      kind: Namespace
+      metadata:
+        name: "{{ helm_releases.collectors.namespace }}"
+        annotations:
+          openshift.io/sa.scc.mcs: s0:c29,c9
+          openshift.io/sa.scc.supplemental-groups: 65532/10000
+          openshift.io/sa.scc.uid-range: 65000/10000
+        labels:
+          it-bench/monitoring: "true"
+    state: present
+  when:
+    - observability_tools_enabled.stack.jaeger
 
 - name: Install OpenTelemetry Operator
   kubernetes.core.helm:

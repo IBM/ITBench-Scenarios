@@ -1,4 +1,16 @@
 ---
+- name: Create the release namespace for Clickhouse Operator
+  kubernetes.core.k8s:
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
+    resource_definition:
+      api_version: v1
+      kind: Namespace
+      metadata:
+        name: "{{ helm_releases.operator.namespace }}"
+        labels:
+          it-bench/monitoring: "true"
+    state: present
+
 - name: Install Clickhouse Operator
   kubernetes.core.helm:
     chart_ref: altinity-clickhouse-operator
@@ -21,6 +33,22 @@
       serviceMonitor:
         enabled: "{{ observability_tools_enabled.stack.prometheus }}"
     wait: true
+
+- name: Create the release namespace for Clickhouse
+  kubernetes.core.k8s:
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
+    resource_definition:
+      api_version: v1
+      kind: Namespace
+      metadata:
+        name: "{{ helm_releases.instance.namespace }}"
+        annotations:
+          openshift.io/sa.scc.mcs: s0:c30,c10
+          openshift.io/sa.scc.uid-range: 100/100
+          openshift.io/sa.scc.supplemental-groups: 101/100
+        labels:
+          it-bench/monitoring: "true"
+    state: present
 
 - name: Install Clickhouse
   kubernetes.core.helm:

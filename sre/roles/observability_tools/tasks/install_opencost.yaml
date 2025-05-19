@@ -1,4 +1,20 @@
 ---
+- name: Create the release namespace
+  kubernetes.core.k8s:
+    kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
+    resource_definition:
+      api_version: v1
+      kind: Namespace
+      metadata:
+        name: "{{ helm_release.namespace }}"
+        annotations:
+          openshift.io/sa.scc.mcs: s0:c36,c15
+          openshift.io/sa.scc.supplemental-groups: 1001/1000
+          openshift.io/sa.scc.uid-range: 1000/10000
+        labels:
+          it-bench/monitoring: "true"
+    state: present
+
 - name: Create bearer token
   ansible.builtin.command:
     cmd: oc whoami -t

@@ -3,7 +3,7 @@
   kubernetes.core.k8s:
     kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     resource_definition:
-      api_version: v1
+      apiVersion: v1
       kind: Namespace
       metadata:
         name: "{{ helm_releases.operator.namespace }}"
@@ -38,7 +38,7 @@
   kubernetes.core.k8s:
     kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
     resource_definition:
-      api_version: v1
+      apiVersion: v1
       kind: Namespace
       metadata:
         name: "{{ helm_releases.instance.namespace }}"

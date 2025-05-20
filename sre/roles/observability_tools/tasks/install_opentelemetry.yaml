@@ -177,20 +177,17 @@
   when:
     - observability_tools_enabled.stack.jaeger
 
-- name: Wait for Jaeger Collector pods to be ready
+- name: Wait for Jaeger deployment to complete
   kubernetes.core.k8s_info:
+    api_version: opentelemetry.io/v1beta1
+    kind: OpenTelemetryCollector
     kubeconfig: "{{ observability_tools_cluster.kubeconfig }}"
-    kind: Pod
+    name: jaeger
     namespace: "{{ helm_releases.collectors.namespace }}"
-    label_selectors:
-      - "app.kubernetes.io/name=jaeger-collector"
-      - "app.kubernetes.io/instance=opentelemetry-collectors.jaeger"
-      - "app.kubernetes.io/managed-by=opentelemetry-operator"
     wait: true
-    wait_sleep: 30
-    wait_timeout: 600
-    wait_condition:
-      type: Ready
-      status: "True"
-  when:
-    - observability_tools_enabled.stack.jaeger
+  register: jaeger_collector_info
+  until:
+    - jaeger_collector_info.resources[0].status.scale is defined
+    - jaeger_collector_info.resources[0].status.scale.statusReplicas.split('/') | unique | length == 1
+  retries: 10
+  delay: 30

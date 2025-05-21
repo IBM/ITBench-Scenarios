@@ -1,0 +1,25 @@
+---
+- name: Include Helm Release variables from Observability Tools role
+  ansible.builtin.include_vars:
+    file: ../observability_tools/defaults/main/helm_releases.yaml
+
+- name: Import OpenTelemetry Demo installation tasks
+  ansible.builtin.import_tasks:
+    file: install_otel_demo.yaml
+  vars:
+    helm_releases:
+      clickhouse: "{{ tools_helm_releases.clickhouse }}"
+      collectors: "{{ tools_helm_releases.opentelemetry_collectors }}"
+      otel_demo: "{{ sample_applications_helm_releases.otel_demo }}"
+  when:
+    - sample_applications_enabled.otel_demo
+
+- name: Import Deployment Time tasks
+  ansible.builtin.import_tasks:
+    file: register_deployment_time.yaml
+
+- name: Import Deployment Failure tasks
+  ansible.builtin.import_tasks:
+    file: register_deployment_failure.yaml
+  when:
+    - (sre_bench_runner | default(false))

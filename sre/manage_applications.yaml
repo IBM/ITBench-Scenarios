@@ -1,0 +1,78 @@
+---
+- name: Manage SRE and FinOps Incident Environment Sample Application Stack
+  hosts:
+    - environment
+  tasks:
+    - name: Check for OpenShift CLI
+      ansible.builtin.command:
+        cmd: which oc
+      register: system_oc_path
+      changed_when: false
+      failed_when: false
+      tags:
+        - always
+
+    - name: Set platform to Kubernetes by assumption
+      ansible.builtin.set_fact:
+        cluster_platform: kubernetes
+      tags:
+        - always
+      when:
+        - system_oc_path.rc != 0
+
+    - name: Attempt retrieval of OpenShift version via oc
+      ansible.builtin.command:
+        cmd: "{{ system_oc_path.stdout }} version -o json"
+      register: oc_version_output
+      changed_when: false
+      tags:
+        - always
+      when:
+        - system_oc_path.rc == 0
+
+    - name: Parse OpenShift version output
+      ansible.builtin.set_fact:
+        oc_version: "{{ oc_version_output.stdout | from_json }}"
+      tags:
+        - always
+      when:
+        - system_oc_path.rc == 0
+
+    - name: Set platform based on oc output
+      ansible.builtin.set_fact:
+        cluster_platform: "{{ 'openshift' if oc_version.openshiftVersion is defined else 'kubernetes' }}"
+      tags:
+        - always
+      when:
+        - system_oc_path.rc == 0
+
+    - name: Retrieve all control nodes
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ cluster.kubeconfig }}"
+        api_version: v1
+        kind: Node
+        label_selectors:
+          - node-role.kubernetes.io/control-plane =
+      register: control_nodes_info
+      tags:
+        - always
+
+    - name: Set provider
+      ansible.builtin.set_fact:
+        cluster_provider: "{{ control_nodes_info.resources[0].spec.providerID.split(':')[0] }}"
+      tags:
+        - always
+
+    # - name: Load variables from incident
+    # - name: Overwrite variables using incident spec
+
+    - name: Import sample applications role
+      ansible.builtin.import_role:
+        name: sample_applications
+      vars:
+        sample_applications_cluster:
+          kubeconfig: "{{ cluster.kubeconfig }}"
+          platform: "{{ cluster_platform }}"
+          provider: "{{ cluster_provider }}"
+        sample_applications_enabled:
+          otel_demo: "{{ sample_applications.otel_demo | default(false) }}"

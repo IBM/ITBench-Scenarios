@@ -14,7 +14,7 @@
     helm_release: "{{ tools_helm_releases.kubernetes_metrics_server }}"
   when:
     - tools_enabled.kubernetes_metrics_server
-    - fault_tools_cluster.platform == "kubernetes"
+    - tools_cluster.platform == "kubernetes"
 
 - name: Import Kubernetes Topology Monitor uninstallation tasks
   ansible.builtin.import_tasks:

@@ -29,8 +29,7 @@ group_vars: ## Generates the group variables
 	mkdir group_vars/all
 	echo "ansible_python_interpreter: $(shell which python)" > group_vars/all/ansible.yaml
 	cp group_vars/environment/cluster.yaml.example group_vars/environment/cluster.yaml
-	cp group_vars/environment/fault_tools.yaml.example group_vars/environment/fault_tools.yaml
-	cp group_vars/environment/observability_tools.yaml.example group_vars/environment/observability_tools.yaml
+	cp group_vars/environment/tools.yaml.example group_vars/environment/tools.yaml
 
 .PHONY: deploy_environment_tools
 deploy_environment_tools: ## Deploys the observability and fault tools to cluster

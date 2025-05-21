@@ -11,7 +11,7 @@
   vars:
     helm_release: "{{ tools_helm_releases.prometheus }}"
   when:
-    - tools_enabled.stack.prometheus or tools_enabled.stack.opencost
+    - tools_enabled.prometheus or tools_enabled.opencost
 
 - name: Import Clickhouse installation tasks
   ansible.builtin.import_tasks:
@@ -21,7 +21,7 @@
       instance: "{{ tools_helm_releases.clickhouse }}"
       operator: "{{ tools_helm_releases.clickhouse_operator }}"
   when:
-    - tools_enabled.stack.clickhouse or tools_enabled.stack.opentelemetry
+    - tools_enabled.clickhouse or tools_enabled.opentelemetry
 
 - name: Import OpenSearch installation tasks
   ansible.builtin.import_tasks:
@@ -29,7 +29,7 @@
   vars:
     helm_release: "{{ tools_helm_releases.opensearch }}"
   when:
-    - tools_enabled.stack.opensearch or tools_enabled.stack.jaeger
+    - tools_enabled.opensearch or tools_enabled.jaeger
 
 - name: Import OpenTelemetry installation tasks
   ansible.builtin.import_tasks:
@@ -41,7 +41,7 @@
       operator: "{{ tools_helm_releases.opentelemetry_operator }}"
       opensearch: "{{ tools_helm_releases.opensearch }}"
   when:
-    - tools_enabled.stack.opentelemetry or tools_enabled.stack.jaeger
+    - tools_enabled.opentelemetry or tools_enabled.jaeger
 
 - name: Import OpenCost installation tasks
   ansible.builtin.import_tasks:
@@ -49,7 +49,7 @@
   vars:
     helm_release: "{{ tools_helm_releases.opencost }}"
   when:
-    - tools_enabled.stack.opencost
+    - tools_enabled.opencost
 
 - name: Import Ingress installation tasks
   ansible.builtin.import_tasks:
@@ -57,7 +57,7 @@
   vars:
     helm_release: "{{ tools_helm_releases.ingress }}"
   when:
-    - tools_enabled.stack.ingress
+    - tools_enabled.ingress
 
 - name: Import Chaos Mesh installation tasks
   ansible.builtin.import_tasks:
@@ -84,4 +84,4 @@
   vars:
     helm_release: "{{ tools_helm_releases.kubernetes_topology_monitor }}"
   when:
-    - tools_enabled.kubernetes.topology_monitor
+    - tools_enabled.kubernetes_topology_monitor

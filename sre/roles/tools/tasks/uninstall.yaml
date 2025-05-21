@@ -22,7 +22,7 @@
   vars:
     helm_release: "{{ tools_helm_releases.kubernetes_topology_monitor }}"
   when:
-    - tools_enabled.kubernetes.topology_monitor
+    - tools_enabled.kubernetes_topology_monitor
 
 - name: Import OpenCost uninstallation tasks
   ansible.builtin.import_tasks:

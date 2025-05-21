@@ -27,5 +27,5 @@
       tls:
         type: helm
       serviceMonitor:
-        enabled: "{{ service_monitor_info.resources | length > 0 }}"
+        enabled: "{{ tools_enabled.prometheus }}"
     wait: true

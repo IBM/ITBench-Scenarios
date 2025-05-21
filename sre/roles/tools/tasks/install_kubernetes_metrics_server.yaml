@@ -1,7 +1,7 @@
 ---
 - name: Create release namespace
   kubernetes.core.k8s:
-    kubeconfig: "{{ fault_tools_cluster.kubeconfig }}"
+    kubeconfig: "{{ tools_cluster.kubeconfig }}"
     resource_definition:
       apiVersion: v1
       kind: Namespace
@@ -16,7 +16,7 @@
     chart_ref: metrics-server
     chart_repo_url: https://kubernetes-sigs.github.io/metrics-server/
     chart_version: 3.12.2
-    kubeconfig: "{{ fault_tools_cluster.kubeconfig }}"
+    kubeconfig: "{{ tools_cluster.kubeconfig }}"
     release_name: "{{ helm_release.name }}"
     release_namespace: "{{ helm_release.namespace }}"
     release_state: present

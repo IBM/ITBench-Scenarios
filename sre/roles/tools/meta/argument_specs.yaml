@@ -12,6 +12,10 @@ argument_specs:
         required: false
         type: dict
         options:
+          cloud_provider:
+            default: kind
+            required: false
+            type: str
           kubeconfig:
             default: ~/.kube/config
             required: false
@@ -21,10 +25,6 @@ argument_specs:
               - kubernetes
               - openshift
             default: kubernetes
-            required: false
-            type: str
-          provider:
-            default: kind
             required: false
             type: str
       tools_enabled:

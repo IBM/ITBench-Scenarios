@@ -71,9 +71,9 @@
         name: tools
       vars:
         tools_cluster:
+          cloud_provider: "{{ cluster_provider }}"
           kubeconfig: "{{ cluster.kubeconfig }}"
           platform: "{{ cluster_platform }}"
-          provider: "{{ cluster_provider }}"
         tools_enabled:
           chaos_mesh: "{{ tools.chaos_mesh | default(false) }}"
           clickhouse: "{{ tools.clickhouse | default(false) }}"

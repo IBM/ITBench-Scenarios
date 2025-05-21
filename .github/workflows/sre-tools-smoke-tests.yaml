@@ -1,0 +1,264 @@
+name: Perform smoke tests for tools
+
+on:
+  pull_request:
+    # branches:
+    #   - main
+    paths:
+      - sre/manage_tools.yaml
+      - sre/roles/tools/*
+      - sre/tools/kubernetes-topology-monitor/charts/kubernetes-topology-monitor/*
+
+jobs:
+  ingress:
+    name: Ingress Smoke Tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: sre/local_cluster/go.mod
+          cache-dependency-path: sre/local_cluster/go.sum
+      - name: Install Helm
+        run: |
+          curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+          sudo apt-get install apt-transport-https --yes
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+          sudo apt-get update
+          sudo apt-get install helm
+      - name: Install Python and Ansible dependencies
+        run: |
+          pip install -r sre/requirements.txt
+          ansible-galaxy install -r sre/requirements.yaml
+      - name: Create Kind cluster
+        run: |
+          make -C sre/local_cluster create_cluster
+      - name: Create group vars
+        run: |
+          make -C sre group_vars
+          echo "tools: { ingress: true }" > sre/group_vars/environment/tools.yaml
+      - name: Run installation smoke test
+        run: |
+          make -C sre deploy_environment_tools
+      - name: Run uninstallation smoke test
+        run: |
+          make -C sre undeploy_environment_tools
+  jaeger-opensearch:
+    name: Jaeger and OpenSearch Smoke Tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: sre/local_cluster/go.mod
+          cache-dependency-path: sre/local_cluster/go.sum
+      - name: Install Helm
+        run: |
+          curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+          sudo apt-get install apt-transport-https --yes
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+          sudo apt-get update
+          sudo apt-get install helm
+      - name: Install Python and Ansible dependencies
+        run: |
+          pip install -r sre/requirements.txt
+          ansible-galaxy install -r sre/requirements.yaml
+      - name: Create Kind cluster
+        run: |
+          make -C sre/local_cluster create_cluster
+      - name: Create group vars
+        run: |
+          make -C sre group_vars
+          echo "tools: { jaeger: true, opensearch: true }" > sre/group_vars/environment/tools.yaml
+      - name: Run installation smoke test
+        run: |
+          make -C sre deploy_environment_tools
+      - name: Run uninstallation smoke test
+        run: |
+          make -C sre undeploy_environment_tools
+  kubernetes-topology-monitor:
+    name: Kubernetes Topology Monitor Smoke Tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: sre/local_cluster/go.mod
+          cache-dependency-path: sre/local_cluster/go.sum
+      - name: Install Helm
+        run: |
+          curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+          sudo apt-get install apt-transport-https --yes
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+          sudo apt-get update
+          sudo apt-get install helm
+      - name: Install Python and Ansible dependencies
+        run: |
+          pip install -r sre/requirements.txt
+          ansible-galaxy install -r sre/requirements.yaml
+      - name: Create Kind cluster
+        run: |
+          make -C sre/local_cluster create_cluster
+      - name: Create group vars
+        run: |
+          make -C sre group_vars
+          echo "tools: { kubernetes_topology_monitor: true }" > sre/group_vars/environment/tools.yaml
+      - name: Run installation smoke test
+        run: |
+          make -C sre deploy_environment_tools
+      - name: Run uninstallation smoke test
+        run: |
+          make -C sre undeploy_environment_tools
+  opencost-prometheus:
+    name: OpenCost and Prometheus Smoke Tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: sre/local_cluster/go.mod
+          cache-dependency-path: sre/local_cluster/go.sum
+      - name: Install Helm
+        run: |
+          curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+          sudo apt-get install apt-transport-https --yes
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+          sudo apt-get update
+          sudo apt-get install helm
+      - name: Install Python and Ansible dependencies
+        run: |
+          pip install -r sre/requirements.txt
+          ansible-galaxy install -r sre/requirements.yaml
+      - name: Create Kind cluster
+        run: |
+          make -C sre/local_cluster create_cluster
+      - name: Create group vars
+        run: |
+          make -C sre group_vars
+          echo "tools: { opencost: true,  prometheus: true }" > sre/group_vars/environment/tools.yaml
+      - name: Run installation smoke test
+        run: |
+          make -C sre deploy_environment_tools
+      - name: Run uninstallation smoke test
+        run: |
+          make -C sre undeploy_environment_tools
+  clickhouse-opentelemtry:
+    name: Alinity Clickhouse and OpenTelemetry Collector Smoke Tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: sre/local_cluster/go.mod
+          cache-dependency-path: sre/local_cluster/go.sum
+      - name: Install Helm
+        run: |
+          curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+          sudo apt-get install apt-transport-https --yes
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+          sudo apt-get update
+          sudo apt-get install helm
+      - name: Install Python and Ansible dependencies
+        run: |
+          pip install -r sre/requirements.txt
+          ansible-galaxy install -r sre/requirements.yaml
+      - name: Create Kind cluster
+        run: |
+          make -C sre/local_cluster create_cluster
+      - name: Create group vars
+        run: |
+          make -C sre group_vars
+          echo "tools: { clickhouse: true,  opentelemetry: true }" > sre/group_vars/environment/tools.yaml
+      - name: Run installation smoke test
+        run: |
+          make -C sre deploy_environment_tools
+      - name: Run uninstallation smoke test
+        run: |
+          make -C sre undeploy_environment_tools
+  chaos-mesh:
+    name: Chaos Mesh Smoke Tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: sre/local_cluster/go.mod
+          cache-dependency-path: sre/local_cluster/go.sum
+      - name: Install Helm
+        run: |
+          curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+          sudo apt-get install apt-transport-https --yes
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+          sudo apt-get update
+          sudo apt-get install helm
+      - name: Install Python and Ansible dependencies
+        run: |
+          pip install -r sre/requirements.txt
+          ansible-galaxy install -r sre/requirements.yaml
+      - name: Create Kind cluster
+        run: |
+          make -C sre/local_cluster create_cluster
+      - name: Create group vars
+        run: |
+          make -C sre group_vars
+          echo "tools: { chaos_mesh: true }" > sre/group_vars/environment/tools.yaml
+      - name: Run installation smoke test
+        run: |
+          make -C sre deploy_environment_tools
+      - name: Run uninstallation smoke test
+        run: |
+          make -C sre undeploy_environment_tools
+  kubernetes_metrics_server:
+    name: Kubernetes Metrics Server Smoke Tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: sre/local_cluster/go.mod
+          cache-dependency-path: sre/local_cluster/go.sum
+      - name: Install Helm
+        run: |
+          curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+          sudo apt-get install apt-transport-https --yes
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+          sudo apt-get update
+          sudo apt-get install helm
+      - name: Install Python and Ansible dependencies
+        run: |
+          pip install -r sre/requirements.txt
+          ansible-galaxy install -r sre/requirements.yaml
+      - name: Create Kind cluster
+        run: |
+          make -C sre/local_cluster create_cluster
+      - name: Create group vars
+        run: |
+          make -C sre group_vars
+          echo "tools: { kubernetes_metrics_server: true }" > sre/group_vars/environment/tools.yaml
+      - name: Run installation smoke test
+        run: |
+          make -C sre deploy_environment_tools
+      - name: Run uninstallation smoke test
+        run: |
+          make -C sre undeploy_environment_tools

@@ -66,34 +66,22 @@
     # - name: Load variables from incident
     # - name: Overwrite variables using incident spec
 
-    - name: Import observability tools role
+    - name: Import tools role
       ansible.builtin.import_role:
-        name: observability_tools
+        name: tools
       vars:
-        observability_tools_cluster:
+        tools_cluster:
           kubeconfig: "{{ cluster.kubeconfig }}"
           platform: "{{ cluster_platform }}"
           provider: "{{ cluster_provider }}"
-        observability_tools_enabled:
-          stack:
-            clickhouse: "{{ observability_tools.clickhouse | default(false) }}"
-            ingress: "{{ observability_tools.ingress | default(false) }}"
-            jaeger: "{{ observability_tools.jaeger | default(false) }}"
-            opencost: "{{ observability_tools.opencost | default(false) }}"
-            opensearch: "{{ observability_tools.opensearch | default(false) }}"
-            opentelemetry: "{{ observability_tools.opentelemetry | default(false) }}"
-            prometheus: "{{ observability_tools.prometheus | default(false) }}"
-          kubernetes:
-            topology_monitor: "{{ observability_tools.kubernetes_topology_monitor | default(false) }}"
-
-    - name: Import fault tools role
-      ansible.builtin.import_role:
-        name: fault_tools
-      vars:
-        fault_tools_cluster:
-          kubeconfig: "{{ cluster.kubeconfig }}"
-          platform: "{{ cluster_platform }}"
-          provider: "{{ cluster_provider }}"
-        fault_tools_enabled:
-          chaos_mesh: "{{ fault_tools.chaos_mesh | default(false) }}"
-          kubernetes_metrics_server: "{{ fault_tools.kubernetes_metrics_server | default(false) }}"
+        tools_enabled:
+          chaos_mesh: "{{ tools.chaos_mesh | default(false) }}"
+          clickhouse: "{{ tools.clickhouse | default(false) }}"
+          ingress: "{{ tools.ingress | default(false) }}"
+          jaeger: "{{ tools.jaeger | default(false) }}"
+          kubernetes_metrics_server: "{{ tools.kubernetes_metrics_server | default(false) }}"
+          kubernetes_topology_monitor: "{{ tools.kubernetes_topology_monitor | default(false) }}"
+          opencost: "{{ tools.opencost | default(false) }}"
+          opensearch: "{{ tools.opensearch | default(false) }}"
+          opentelemetry: "{{ tools.opentelemetry | default(false) }}"
+          prometheus: "{{ tools.prometheus | default(false) }}"

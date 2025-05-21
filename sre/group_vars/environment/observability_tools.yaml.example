@@ -1,9 +1,0 @@
-observability_tools:
-  clickhouse: true
-  ingress: false
-  jaeger: true
-  opencost: true
-  opensearch: true
-  opentelemetry: true
-  prometheus: true
-  kubernetes_topology_monitor: false

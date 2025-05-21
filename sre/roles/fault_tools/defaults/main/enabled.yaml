@@ -1,4 +1,0 @@
----
-fault_tools_enabled:
-  chaos_mesh: false
-  kubernetes_metrics_server: false

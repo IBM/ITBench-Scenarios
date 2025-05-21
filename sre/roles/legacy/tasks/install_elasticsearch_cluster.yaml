@@ -4,7 +4,7 @@
     name: elastic
     kubeconfig_path: "{{ kubeconfig }}"
     repo_url: https://helm.elastic.co
-  
+
 - name: Update Helm repo
   kubernetes.core.helm:
     name: dummy
@@ -26,22 +26,22 @@
     values:
       replicas: 2
       node:
-        roles: 
+        roles:
           - master
           - data
           - ingest
       volumeClaimTemplate:
-        accessModes: 
+        accessModes:
           - ReadWriteOnce
         resources:
           requests:
             storage: 10Gi
       esJavaOpts: "-Xms512m -Xmx512m"
       discovery:
-        seed_hosts: 
+        seed_hosts:
           - elasticsearch-incident-headless
       cluster:
-        initial_master_nodes: 
+        initial_master_nodes:
           - elasticsearch-incident-0
           - elasticsearch-incident-1
       network:

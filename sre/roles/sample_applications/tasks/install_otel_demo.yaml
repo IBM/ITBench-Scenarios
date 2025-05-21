@@ -1,0 +1,253 @@
+---
+- name: Create the release namespace
+  kubernetes.core.k8s:
+    kubeconfig: "{{ sample_applications_cluster.kubeconfig }}"
+    resource_definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ helm_releases.otel_demo.namespace }}"
+        annotations:
+          openshift.io/sa.scc.mcs: s0:c30,c10
+          openshift.io/sa.scc.uid-range: 0/2000
+          openshift.io/sa.scc.supplemental-groups: 1/1000
+        labels:
+          it-bench/monitoring: "true"
+    state: present
+
+- name: Get Clickhouse credentials from secret
+  kubernetes.core.k8s_info:
+    kind: Secret
+    kubeconfig: "{{ sample_applications_cluster.kubeconfig }}"
+    name: "{{ helm_releases.clickhouse.name }}-credentials"
+    namespace: "{{ helm_releases.clickhouse.namespace }}"
+    wait: true
+  register: clickhouse_secrets_info
+
+- name: Install OpenTelemetry Demo (Astronomy Shop)
+  kubernetes.core.helm:
+    chart_ref: opentelemetry-demo
+    chart_repo_url: https://open-telemetry.github.io/opentelemetry-helm-charts
+    chart_version: 0.36.4
+    kubeconfig: "{{ sample_applications_cluster.kubeconfig }}"
+    release_name: "{{ helm_releases.otel_demo.name }}"
+    release_namespace: "{{ helm_releases.otel_demo.namespace }}"
+    release_state: present
+    values:
+      components:
+        accounting:
+          podAnnotations:
+            openshift.io/required-scc: restricted-v2
+          podSecurityContext:
+            runAsNonRoot: true
+            runAsUser: 1654
+          resources:
+            requests:
+              cpu: 10m
+              memory: 100Mi
+            limits:
+              memory: 256Mi
+        ad:
+          podAnnotations:
+            openshift.io/required-scc: restricted-v2
+          resources:
+            requests:
+              cpu: 10m
+              memory: 250Mi
+            limits:
+              memory: 512Mi
+        cart:
+          podAnnotations:
+            openshift.io/required-scc: restricted-v2
+          resources:
+            requests:
+              cpu: 25m
+              memory: 100Mi
+        checkout:
+          podAnnotations:
+            openshift.io/required-scc: restricted-v2
+          resources:
+            requests:
+              cpu: 10m
+              memory: 15Mi
+            limits:
+              memory: 32Mi
+        currency:
+          podAnnotations:
+            openshift.io/required-scc: restricted-v2
+          resources:
+            requests:
+              cpu: 25m
+              memory: 10Mi
+        email:
+          podAnnotations:
+            openshift.io/required-scc: restricted-v2
+          resources:
+            requests:
+              cpu: 10m
+              memory: 75Mi
+        flagd:
+          podAnnotations:
+            openshift.io/required-scc: restricted-v2
+          resources:
+            requests:
+              cpu: 15m
+              memory: 75Mi
+            limits:
+              memory: 512Mi
+        fraud-detection:
+          podAnnotations:
+            openshift.io/required-scc: restricted-v2
+          resources:
+            requests:
+              cpu: 25m
+              memory: 300Mi
+            limits:
+              memory: 512Mi
+        frontend:
+          podAnnotations:
+            openshift.io/required-scc: restricted-v2
+          resources:
+            requests:
+              cpu: 300m
+              memory: 125Mi
+        frontend-proxy:
+          podAnnotations:
+            openshift.io/required-scc: restricted-v2
+          resources:
+            requests:
+              cpu: 75m
+              memory: 25Mi
+            limits:
+              memory: 75Mi
+        image-provider:
+          podAnnotations:
+            openshift.io/required-scc: restricted-v2
+          podSecurityContext:
+            runAsUser: 0
+          resources:
+            requests:
+              cpu: 10m
+              memory: 25Mi
+        kafka:
+          podAnnotations:
+            openshift.io/required-scc: restricted-v2
+          resources:
+            requests:
+              cpu: 25m
+              memory: 550Mi
+            limits:
+              memory: 800Mi
+        load-generator:
+          envOverrides:
+            - name: LOCUST_BROWSER_TRAFFIC_ENABLED
+              value: "false"
+          podAnnotations:
+            openshift.io/required-scc: restricted-v2
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+        payment:
+          podAnnotations:
+            openshift.io/required-scc: restricted-v2
+          resources:
+            requests:
+              cpu: 10m
+              memory: 100Mi
+        product-catalog:
+          podAnnotations:
+            openshift.io/required-scc: restricted-v2
+          resources:
+            requests:
+              cpu: 50m
+              memory: 15Mi
+            limits:
+              memory: 32Mi
+        quote:
+          podAnnotations:
+            openshift.io/required-scc: restricted-v2
+          resources:
+            requests:
+              cpu: 10m
+              memory: 25Mi
+        recommendation:
+          podAnnotations:
+            openshift.io/required-scc: restricted-v2
+          resources:
+            requests:
+              cpu: 50m
+              memory: 100Mi
+        shipping:
+          podAnnotations:
+            openshift.io/required-scc: restricted-v2
+          resources:
+            requests:
+              cpu: 10m
+              memory: 10Mi
+        valkey-cart:
+          podAnnotations:
+            openshift.io/required-scc: restricted-v2
+          resources:
+            requests:
+              cpu: 10m
+              memory: 10Mi
+      grafana:
+        enabled: false
+      jaeger:
+        enabled: false
+      opensearch:
+        enabled: false
+      opentelemetry-collector:
+        config:
+          connectors:
+            spanmetrics:
+              dimensions:
+                - name: namespace
+                  default: "{{ helm_releases.otel_demo.namespace }}"
+          exporters:
+            clickhouse:
+              username: "{{ clickhouse_secrets_info.resources[0].data.user | b64decode }}"
+              password: "{{ clickhouse_secrets_info.resources[0].data.password | b64decode }}"
+              endpoint: http://{{ helm_releases.clickhouse.name }}-clickhouse.{{ helm_releases.clickhouse.namespace }}.svc.cluster.local:8123
+              logs_table_name: otel_demo_logs
+            opensearch: null
+            otlp:
+              endpoint: http://jaeger-collector.{{ helm_releases.collectors.namespace }}.svc.cluster.local:4317
+            otlphttp/prometheus: null
+          service:
+            pipelines:
+              logs:
+                exporters:
+                  - clickhouse
+                  - debug
+              metrics:
+                exporters:
+                  - debug
+        serviceMonitor:
+          enabled: true
+        podAnnotations:
+            openshift.io/required-scc: restricted-v2
+        resources:
+          requests:
+            cpu: 100m
+            memory: 150Mi
+          limits:
+            memory: 512Mi
+      prometheus:
+        enabled: false
+    wait: true
+
+- name: Create Recording Prometheus Rules
+  kubernetes.core.k8s:
+    kubeconfig: "{{ sample_applications_cluster.kubeconfig }}"
+    namespace: "{{ helm_release.otel_demo.namespace }}"
+    state: present
+    src: files/rules/workload.yaml
+
+- name: Create Alerting Prometheus Rules
+  kubernetes.core.k8s:
+    kubeconfig: "{{ sample_applications_cluster.kubeconfig }}"
+    namespace: "{{ helm_releases.otel_demo.namespace }}"
+    state: present
+    src: files/rules/otel-demo.yaml

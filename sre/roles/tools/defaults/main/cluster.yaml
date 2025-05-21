@@ -1,5 +1,0 @@
----
-tools_cluster:
-  cloud_provider: kind
-  kubeconfig: ~/.kube/config
-  platform: kubernetes

@@ -1,0 +1,23 @@
+---
+- name: Run kops get clusters to list all clusters
+  ansible.builtin.command:
+    argv:
+      - kops
+      - get
+      - clusters
+      - --state
+      - "{{ state_store }}"
+  register: clusters_output
+  changed_when: false
+
+- name: Format as output table
+  ansible.builtin.shell:
+    cmd: |
+      set -o pipefail
+      echo "{{ clusters_output.stdout.split("\n") | join('\n') }}" | column -t
+  register: formatted_output
+  changed_when: false
+
+- name: Show all clusters in formatted table
+  ansible.builtin.debug:
+    msg: "{{ formatted_output.stdout_lines }}"

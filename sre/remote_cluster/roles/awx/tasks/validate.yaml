@@ -1,0 +1,15 @@
+---
+- name: Validate awx kops cluster count
+  ansible.builtin.assert:
+    that:
+      - awx_stack.runners.count > 0
+      - awx_stack.runners.count < 100
+    fail_msg: Invalid number of kops clusters set. Must be between the range of 0 > x < 100.
+    success_msg: Valid number of kops clusters configured.
+
+- name: Import KOps role validation tasks
+  ansible.builtin.import_role:
+    name: kops
+    tasks_from: validate.yaml
+  vars:
+    kops_cluster: "{{ awx_cluster }}"

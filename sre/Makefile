@@ -152,10 +152,6 @@ start_incident: deploy_scenario_tools deploy_scenario_application inject_inciden
 .PHONY: stop_incident
 stop_incident: remove_incident_fault undeploy_scenario_application undeploy_scenario_tools ## Stops an incident by undeploying a stack, application, and fault for an incident
 
-.PHONY: awx_setup
-awx_setup:
-	ansible-playbook -v base.yaml --tags "awx_setup"
-
 .PHONY: awx_configure_init
 awx_configure_init:
 	ansible-playbook -vvv base.yaml --tags "awx_configuration" --extra-vars "state=present"

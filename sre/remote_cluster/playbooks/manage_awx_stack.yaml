@@ -1,0 +1,29 @@
+---
+- name: AWX End-to-End Cluster Management
+  hosts:
+    - development
+  pre_tasks:
+    - name: Import AWX role validation tasks
+      ansible.builtin.import_role:
+        name: awx
+        tasks_from: validate
+      vars:
+        awx_cluster: "{{ cluster }}"
+        awx_stack: "{{ stack }}"
+      tags:
+        - always
+  tasks:
+    - name: Create bucket if it doesn't exist
+      amazon.aws.s3_bucket:
+        name: "{{ cluster.s3.bucket_name }}"
+        region: "{{ cluster.aws.region }}"
+        state: present
+      tags:
+        - create
+
+    - name: Import AWX role
+      ansible.builtin.import_role:
+        name: awx
+      vars:
+        awx_cluster: "{{ cluster }}"
+        awx_stack: "{{ stack }}"

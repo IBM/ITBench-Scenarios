@@ -10,6 +10,9 @@ sre/group_vars/e2e.yaml
 sre/remote_cluster/playbooks/secret.yaml
 sre/remote_cluster/playbooks/variables.yaml
 sre/remote_cluster/playbooks/batch_variables.yaml
+sre/remote_cluster/group_vars/all/ansible.yaml
+sre/remote_cluster/group_vars/development/awx_stack.yaml
+sre/remote_cluster/group_vars/development/kops_cluster.yaml
 
 # Sample application downloads
 sre/roles/sample_applications/DeathStarBench/

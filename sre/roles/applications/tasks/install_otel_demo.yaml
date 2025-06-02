@@ -9,20 +9,34 @@
         name: "{{ helm_releases.otel_demo.namespace }}"
         annotations:
           openshift.io/sa.scc.mcs: s0:c30,c10
-          openshift.io/sa.scc.uid-range: 0/2000
+          openshift.io/sa.scc.uid-range: 1/2000
           openshift.io/sa.scc.supplemental-groups: 1/1000
         labels:
           it-bench/monitoring: "true"
     state: present
 
-- name: Get Clickhouse credentials from secret
+- name: Retrieve Prometheus route
   kubernetes.core.k8s_info:
-    kind: Secret
+    api_version: route.openshift.io/v1
+    kind: Route
     kubeconfig: "{{ applications_cluster.kubeconfig }}"
-    name: "{{ helm_releases.clickhouse.name }}-credentials"
-    namespace: "{{ helm_releases.clickhouse.namespace }}"
-    wait: true
-  register: clickhouse_secrets_info
+    name: prometheus-k8s
+    namespace: openshift-monitoring
+  register: prometheus_k8s_route_info
+  when:
+    - applications_cluster.platform == "openshift"
+
+- name: Parse Prometheus hostname
+  ansible.builtin.set_fact:
+    prometheus_url: https://{{ prometheus_k8s_route_info.resources[0].spec.host }}
+  when:
+    - applications_cluster.platform == "openshift"
+
+- name: Set Prometheus internal service url
+  ansible.builtin.set_fact:
+    prometheus_url: http://{{ helm_releases.prometheus.name }}-kube-prometheus-prometheus.{{ helm_releases.prometheus.namespace }}.svc.cluster.local:9090
+  when:
+    - applications_cluster.platform == "kubernetes"
 
 - name: Install OpenTelemetry Demo (Astronomy Shop)
   kubernetes.core.helm:
@@ -124,7 +138,8 @@
           podAnnotations:
             openshift.io/required-scc: restricted-v2
           podSecurityContext:
-            runAsUser: 0
+            runAsNonRoot: true
+            runAsUser: 101
           resources:
             requests:
               cpu: 10m
@@ -206,28 +221,17 @@
                 - name: namespace
                   default: "{{ helm_releases.otel_demo.namespace }}"
           exporters:
-            clickhouse:
-              username: "{{ clickhouse_secrets_info.resources[0].data.user | b64decode }}"
-              password: "{{ clickhouse_secrets_info.resources[0].data.password | b64decode }}"
-              endpoint: http://{{ helm_releases.clickhouse.name }}-clickhouse.{{ helm_releases.clickhouse.namespace }}.svc.cluster.local:8123
-              logs_table_name: otel_demo_logs
-            opensearch: null
+            opensearch:
+              http:
+                endpoint: http://{{ helm_releases.opensearch.name }}-master.{{ helm_releases.opensearch.namespace }}.svc.cluster.local:9200
             otlp:
               endpoint: http://jaeger-collector.{{ helm_releases.collectors.namespace }}.svc.cluster.local:4317
-            otlphttp/prometheus: null
-          service:
-            pipelines:
-              logs:
-                exporters:
-                  - clickhouse
-                  - debug
-              metrics:
-                exporters:
-                  - debug
+            otlphttp/prometheus:
+              endpoint: "{{ prometheus_url }}/api/v1/otlp"
         serviceMonitor:
           enabled: true
         podAnnotations:
-            openshift.io/required-scc: restricted-v2
+          openshift.io/required-scc: restricted-v2
         resources:
           requests:
             cpu: 100m

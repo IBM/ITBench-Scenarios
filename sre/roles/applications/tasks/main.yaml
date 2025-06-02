@@ -3,10 +3,10 @@
   ansible.builtin.import_tasks:
     file: install.yaml
   tags:
-    - install_sample_applications
+    - install_applications
 
 - name: Import uninstallation tasks
   ansible.builtin.import_tasks:
     file: uninstall.yaml
   tags:
-    - uninstall_sample_applications
+    - uninstall_applications

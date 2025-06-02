@@ -3,6 +3,6 @@
   ansible.builtin.import_tasks:
     file: uninstall_otel_demo.yaml
   vars:
-    helm_release: "{{ sample_applications_helm_releases.otel_demo }}"
+    helm_release: "{{ applications_helm_releases.otel_demo }}"
   when:
-    - sample_applications_enabled.otel_demo
+    - applications_enabled.otel_demo

@@ -1,5 +1,5 @@
 ---
-sample_applications_helm_releases:
+applications_helm_releases:
   otel_demo:
     name: otel-demo
     namespace: otel-demo

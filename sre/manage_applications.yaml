@@ -66,13 +66,13 @@
     # - name: Load variables from incident
     # - name: Overwrite variables using incident spec
 
-    - name: Import sample applications role
+    - name: Import applications role
       ansible.builtin.import_role:
-        name: sample_applications
+        name: applications
       vars:
-        sample_applications_cluster:
+        applications_cluster:
           kubeconfig: "{{ cluster.kubeconfig }}"
           platform: "{{ cluster_platform }}"
           provider: "{{ cluster_provider }}"
-        sample_applications_enabled:
-          otel_demo: "{{ sample_applications.otel_demo | default(false) }}"
+        applications_enabled:
+          otel_demo: "{{ applications.otel_demo | default(false) }}"

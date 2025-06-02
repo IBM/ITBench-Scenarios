@@ -10,9 +10,9 @@
     helm_releases:
       clickhouse: "{{ tools_helm_releases.clickhouse }}"
       collectors: "{{ tools_helm_releases.opentelemetry_collectors }}"
-      otel_demo: "{{ sample_applications_helm_releases.otel_demo }}"
+      otel_demo: "{{ applications_helm_releases.otel_demo }}"
   when:
-    - sample_applications_enabled.otel_demo
+    - applications_enabled.otel_demo
 
 - name: Import Deployment Time tasks
   ansible.builtin.import_tasks:

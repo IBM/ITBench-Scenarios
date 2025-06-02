@@ -1,7 +1,7 @@
 ---
 - name: Create the release namespace
   kubernetes.core.k8s:
-    kubeconfig: "{{ sample_applications_cluster.kubeconfig }}"
+    kubeconfig: "{{ applications_cluster.kubeconfig }}"
     resource_definition:
       apiVersion: v1
       kind: Namespace
@@ -18,7 +18,7 @@
 - name: Get Clickhouse credentials from secret
   kubernetes.core.k8s_info:
     kind: Secret
-    kubeconfig: "{{ sample_applications_cluster.kubeconfig }}"
+    kubeconfig: "{{ applications_cluster.kubeconfig }}"
     name: "{{ helm_releases.clickhouse.name }}-credentials"
     namespace: "{{ helm_releases.clickhouse.namespace }}"
     wait: true
@@ -29,7 +29,7 @@
     chart_ref: opentelemetry-demo
     chart_repo_url: https://open-telemetry.github.io/opentelemetry-helm-charts
     chart_version: 0.36.4
-    kubeconfig: "{{ sample_applications_cluster.kubeconfig }}"
+    kubeconfig: "{{ applications_cluster.kubeconfig }}"
     release_name: "{{ helm_releases.otel_demo.name }}"
     release_namespace: "{{ helm_releases.otel_demo.namespace }}"
     release_state: present
@@ -240,14 +240,14 @@
 
 - name: Create Recording Prometheus Rules
   kubernetes.core.k8s:
-    kubeconfig: "{{ sample_applications_cluster.kubeconfig }}"
+    kubeconfig: "{{ applications_cluster.kubeconfig }}"
     namespace: "{{ helm_release.otel_demo.namespace }}"
     state: present
     src: files/rules/workload.yaml
 
 - name: Create Alerting Prometheus Rules
   kubernetes.core.k8s:
-    kubeconfig: "{{ sample_applications_cluster.kubeconfig }}"
+    kubeconfig: "{{ applications_cluster.kubeconfig }}"
     namespace: "{{ helm_releases.otel_demo.namespace }}"
     state: present
     src: files/rules/otel-demo.yaml

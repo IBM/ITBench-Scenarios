@@ -1,2 +1,2 @@
-sample_applications:
+applications:
   otel_demo: true

@@ -5,11 +5,6 @@ delay_between_faults: 10
 # OpenTelemetry Astronomy Shop FlagD-based fault-injection and load_generation
 is_native: false
 
-# ChaosMesh configuration
-chaos_mesh_installation_name: "chaos-mesh"
-chaos_mesh_namespace_project_name: "chaos-mesh"
-chaos_mesh_chart_version: 2.7.1
-
 # Default fault injection-removal values
 is_fault_injection: false
 is_fault_removal: false
@@ -38,7 +33,7 @@ is_valkey_memory_disruption: false
 is_image_unsupported: false
 is_request_body_tamper_chaos: false
 is_es_decommission: false
-is_es_password: false
+is_es_password: false # pragma: allowlist secret
 is_bin_misuse: false
 is_missing_storage_class: false
 is_storage_user_unregistered: false

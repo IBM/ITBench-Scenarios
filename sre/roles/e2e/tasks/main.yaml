@@ -1,5 +1,4 @@
 ---
-- import_tasks: setup_awx.yaml
 - import_tasks: configure_awx.yaml
 - import_tasks: job_template_setup.yaml
 - import_tasks: workflow_setup.yaml

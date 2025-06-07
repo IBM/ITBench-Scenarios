@@ -35,6 +35,10 @@ group_vars: ## Generates the group variables
 deploy_environment_tools: ## Deploys the observability and fault tools to cluster
 	ansible-playbook -i inventory.yaml manage_tools.yaml --tags "install_tools"
 
+.PHONY: reinit_environment_tools
+reinit_environment_tools: ## Re-initialize observability and fault tools to cluster
+	ansible-playbook -i inventory.yaml manage_tools.yaml --tags "reinit_tools"
+
 .PHONY: undeploy_environment_tools
 undeploy_environment_tools: ## Undeploys the observability and fault tools to cluster
 	ansible-playbook -i inventory.yaml manage_tools.yaml --tags "uninstall_tools"

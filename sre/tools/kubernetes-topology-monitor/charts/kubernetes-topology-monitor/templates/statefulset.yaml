@@ -1,5 +1,5 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: topology-monitor
   namespace: kube-system
@@ -43,7 +43,14 @@ spec:
           limits:
             memory: "768Mi"
             cpu: "500m"
-      volumes:
-      - name: topology-data
-        persistentVolumeClaim:
-          claimName: topology-data-pvc
+  persistentVolumeClaimRetentionPolicy:
+     whenDeleted: "Delete"
+     whenScaled: "Delete"
+  volumeClaimTemplates:
+  - metadata:
+      name: topology-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 200Mi

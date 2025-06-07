@@ -5,6 +5,12 @@
   tags:
     - install_tools
 
+- name: Import reinitialization tasks
+  ansible.builtin.import_tasks:
+    file: reinit.yaml
+  tags:
+    - reinit_tools
+
 - name: Import uninstallation tasks
   ansible.builtin.import_tasks:
     file: uninstall.yaml

@@ -89,6 +89,11 @@
       namespace: "{{ tools_helm_releases.opencost.namespace }}"
       port: 9090
       service: "{{ tools_helm_releases.opencost.name }}"
+    - enabled: "{{ tools_enabled.opensearch }}"
+      name: "{{ tools_helm_releases.opensearch.name }}"
+      namespace: "{{ tools_helm_releases.opensearch.namespace }}"
+      port: 9200
+      service: opensearch-cluster-master
   when:
     - tools_cluster.platform == "openshift"
     - item.enabled

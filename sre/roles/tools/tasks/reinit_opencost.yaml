@@ -1,0 +1,4 @@
+---
+# NOTE: Not needed as OpenCost-related metrics are pushed to Prometheus
+# and housekept as a part of the Prometheus reinitialization
+# - name: Import OpenCost reinitialization tasks

@@ -1,0 +1,16 @@
+---
+- name: Empty-drain-truncate relevant ClickHouse tables
+  kubernetes.core.k8s_exec:
+    kubeconfig: "{{ tools_cluster.kubeconfig }}"
+    namespace: "{{ helm_releases.instance.namespace }}"
+    pod: "chi-clickhouse-clickhouse-0-0-0"
+    command: |
+      clickhouse-client --query="
+      TRUNCATE TABLE {{ item }};
+      "
+  loop:
+    - "default.kubernetes_events"
+    - "default.otel_demo_logs"
+    - "default.otel_demo_traces"
+    - "default.otel_demo_traces_trace_id_ts"
+    - "default.otel_demo_traces_trace_id_ts_mv"

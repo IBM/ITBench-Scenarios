@@ -1,0 +1,9 @@
+---
+- name: Delete existing chaos-mesh experiments
+  ansible.builtin.shell: >
+    set -o pipefail;
+    for i in $(KUBECONFIG={{ tools_cluster.kubeconfig }} kubectl api-resources | grep chaos-mesh | awk '{print $1}');
+    do KUBECONFIG={{ tools_cluster.kubeconfig }} kubectl delete $i --all -A; done
+  register: delete_chaos_mesh_experiments_result
+  changed_when: "'deleted' in delete_chaos_mesh_experiments_result.stdout"
+  failed_when: false

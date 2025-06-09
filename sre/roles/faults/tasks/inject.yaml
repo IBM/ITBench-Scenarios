@@ -1,0 +1,10 @@
+---
+- name: Import Chaos Mesh fault injection tasks
+  ansible.builtin.import_tasks:
+    file: inject_chaos_mesh.yaml
+  vars:
+    fault: {}
+
+- name: Import custom fault injection tasks
+  ansible.builtin.import_tasks:
+    file: inject_custom.yaml

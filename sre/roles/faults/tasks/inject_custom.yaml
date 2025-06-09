@@ -1,0 +1,4 @@
+---
+- name: Import unsupported image injection tasks
+  ansible.builtin.import_tasks:
+    file: inject_custom_unsupported_image.yaml

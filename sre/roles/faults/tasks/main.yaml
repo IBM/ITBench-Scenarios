@@ -1,0 +1,12 @@
+---
+- name: Import injection tasks
+  ansible.builtin.import_tasks:
+    file: inject.yaml
+  tags:
+    - inject_faults
+
+- name: Import removal tasks
+  ansible.builtin.import_tasks:
+    file: remove.yaml
+  tags:
+    - remove_faults

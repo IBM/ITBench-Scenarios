@@ -1,0 +1,6 @@
+---
+- name: Import unsupported image removal tasks
+  ansible.builtin.import_tasks:
+    file: remove_custom_unsupported_image.yaml
+  vars:
+    fault: {}

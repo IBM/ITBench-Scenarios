@@ -1,0 +1,10 @@
+---
+- name: Import Chaos Mesh fault removal tasks
+  ansible.builtin.import_tasks:
+    file: remove_chaos_mesh.yaml
+  vars:
+    fault: {}
+
+- name: Import custom fault removal tasks
+  ansible.builtin.import_tasks:
+    file: remove_custom.yaml

@@ -1,0 +1,10 @@
+---
+- name: Attempt fault removal (unsupported image)
+  ansible.builtin.command:
+    cmd: kubectl rollout undo {{ item.k8s_object.kind | lower }}/{{ item.k8s_object_name }} -n {{ item.k8s_object.namespace }}
+  environment:
+    KUBECONFIG: "{{ faults.kubeconfig }}"
+  loop: "{{ faults.targets }}"
+  when:
+    - item.k8s_object is defined
+    - item.k8s_object.kind == "Deployment" or item.k8s_object.kind == "StatefulSet"

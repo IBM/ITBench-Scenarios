@@ -4,6 +4,8 @@
     cmd: kubectl rollout undo {{ item.kind | lower }}/{{ item.name }} -n {{ item.namespace }}
   environment:
     KUBECONFIG: "{{ faults.kubeconfig }}"
+  register: rollout_undo_output
+  changed_when: rollout_undo_output.rc == 0
   loop: "{{ fault.targets }}"
   loop_control:
     label: "{{ item.kind | lower }}/{{ item.name }}"

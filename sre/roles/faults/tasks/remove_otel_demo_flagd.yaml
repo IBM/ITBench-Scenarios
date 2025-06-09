@@ -1,0 +1,47 @@
+---
+- name: Include Helm Release variables from applications role
+  ansible.builtin.include_vars:
+    file: ../applications/defaults/main/helm_releases.yaml
+
+- name: Retrieve the ConfigMap for flagd deployment
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: ConfigMap
+    kubeconfig: "{{ faults.kubeconfig }}"
+    namespace: "{{ applications_helm_releases.otel_demo.namespace }}"
+    name: flagd-config
+  register: configmap_info
+
+- name: Retrieve flagd json config from ConfigMap data
+  ansible.builtin.set_fact:
+    flagd_config_json: "{{ configmap_info.resources[0].data['demo.flagd.json'] | from_json }}"
+
+- name: Generate partial config with disabled flags
+  ansible.builtin.set_fact:
+    disabled_config: |
+      {{
+        (disabled_config | default({})) |
+        combine({ item: { 'defaultVariant': 'off' } }, recursive=true)
+      }}
+  loop: "{{ fault.flags }}"
+
+- name: Replace the flagd config with the modified config (remove fault)
+  kubernetes.core.k8s_json_patch:
+    api_version: v1
+    kind: ConfigMap
+    kubeconfig: "{{ faults.kubeconfig }}"
+    name: flagd-config
+    namespace: "{{ applications_helm_releases.otel_demo.namespace }}"
+    patch:
+      - op: replace
+        path: /data/0/
+        value: "{{ flagd_config_json | combine({ 'flags': disabled_config }, recursive=true) | to_json }}"
+
+- name: Restart flagd deployment to enable changes
+  ansible.built.command:
+    ansible.builtin.command:
+    cmd: kubectl rollout restart deployment/flagd -n {{ applications_helm_releases.otel_demo.namespace }}
+  environment:
+    KUBECONFIG: "{{ faults.kubeconfig }}"
+  register: rollout_restart_output
+  changed_when: rollout_restart_output.rc == 0

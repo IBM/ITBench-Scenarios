@@ -5,8 +5,7 @@ on:
     branches:
       - main
     paths:
-      - sre/tools/kubernetes-topology-mapper/*
-      - sre/tools/astronomy-shop-checkout-service/*
+      - sre/tools/**/*
 
 jobs:
   topology-monitor:
@@ -24,12 +23,12 @@ jobs:
         uses: docker/setup-qemu-action@v3.6.0
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3.10.0
-      - name: Build and push Kubernetes Topology Mapper
+      - name: Build and push Kubernetes Topology Monitor
         uses: docker/build-push-action@v6.18.0
         env:
           DOCKER_BUILD_RECORD_UPLOAD: false
         with:
-          context: sre/tools/kubernetes-topology-mapper
+          context: sre/tools/kubernetes-topology-monitor
           platforms: |
             linux/amd64
             linux/arm64
@@ -37,7 +36,7 @@ jobs:
           tags: |
             quay.io/it-bench/topology-monitor:0.0.4
             quay.io/it-bench/topology-monitor:latest
-  unsupported-checkout-service:
+  hello-bench:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout codebase
@@ -52,27 +51,27 @@ jobs:
         uses: docker/setup-qemu-action@v3.6.0
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3.10.0
-      - name: Build and push Unsupported Astronomy Shop Checkout Service image (amd)
+      - name: Build and push Hello Bench image (amd)
         uses: docker/build-push-action@v6.18.0
         env:
           DOCKER_BUILD_RECORD_UPLOAD: false
         with:
-          context: sre/tools/astronomy-shop-checkout-service
+          context: sre/tools/hello-bench
           platforms: |
             linux/amd64
           push: true
           tags: |
-            quay.io/it-bench/unsupported-checkout-service-amd64:0.0.4
-            quay.io/it-bench/unsupported-checkout-service-amd64:latest
-      - name: Build and push Unsupported Astronomy Shop Checkout Service image (arm)
+            quay.io/it-bench/hello-bench-amd64:1.0.0
+            quay.io/it-bench/hello-bench-amd64:latest
+      - name: Build and push Hello Bench image (arm)
         uses: docker/build-push-action@v6.18.0
         env:
           DOCKER_BUILD_RECORD_UPLOAD: false
         with:
-          context: sre/tools/astronomy-shop-checkout-service
+          context: sre/tools/hello-bench
           platforms: |
             linux/arm64
           push: true
           tags: |
-            quay.io/it-bench/unsupported-checkout-service-arm64:0.0.4
-            quay.io/it-bench/unsupported-checkout-service-arm64:latest
+            quay.io/it-bench/hello-bench-arm64:1.0.0
+            quay.io/it-bench/hello-bench-arm64:latest

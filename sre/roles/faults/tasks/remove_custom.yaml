@@ -1,4 +1,10 @@
 ---
+- name: Import insuffiencient namespace resources removal tasks
+  ansible.builtin.import_tasks:
+    file: remove_custom_insufficient_namespace_resources.yaml
+  vars:
+    fault: {}
+
 - name: Import unsupported image removal tasks
   ansible.builtin.import_tasks:
     file: remove_custom_unsupported_image.yaml

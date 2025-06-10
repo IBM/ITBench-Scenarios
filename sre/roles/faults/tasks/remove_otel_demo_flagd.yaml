@@ -34,12 +34,11 @@
     namespace: "{{ applications_helm_releases.otel_demo.namespace }}"
     patch:
       - op: replace
-        path: /data/0/
-        value: "{{ flagd_config_json | combine({ 'flags': disabled_config }, recursive=true) | to_json }}"
+        path: /data/demo.flagd.json/
+        value: "{{ flagd_config_json | combine({'flags': disabled_config}, recursive=true) | to_json }}"
 
 - name: Restart flagd deployment to enable changes
-  ansible.built.command:
-    ansible.builtin.command:
+  ansible.builtin.command:
     cmd: kubectl rollout restart deployment/flagd -n {{ applications_helm_releases.otel_demo.namespace }}
   environment:
     KUBECONFIG: "{{ faults.kubeconfig }}"

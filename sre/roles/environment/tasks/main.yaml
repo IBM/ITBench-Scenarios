@@ -12,6 +12,6 @@
   ansible.builtin.import_tasks:
     file: modify.yaml
   tags:
-    - modify_objects
+    - always
   when:
     - environment_actions.modify is defined

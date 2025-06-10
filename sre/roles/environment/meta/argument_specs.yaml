@@ -62,7 +62,7 @@ argument_specs:
           memory:
             required: true
             type: str
-  scale_replicas:
+  modify_replicas:
     short_description: Sets a new replica count for a Kubernetes resource replica
     description:
       - This set of tasks executes a kubectl scale command.

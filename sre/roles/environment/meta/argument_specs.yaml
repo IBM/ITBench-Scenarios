@@ -1,5 +1,23 @@
 ---
 argument_specs:
+  manage_resource_quotas:
+    short_description: Manages the lifecycle of a ResourceQuota object
+    description:
+      - Creates or deletes a ResourceQuota object.
+    author:
+      - Gerard Vanloo
+    options:
+      namespaces:
+        required: true
+        type: list
+        elements: dict
+        options:
+          namespace:
+            required: true
+            type: str
+          memory:
+            required: true
+            type: str
   scale_replicas:
     short_description: Sets a new replica count for a Kubernetes resource replica
     description:

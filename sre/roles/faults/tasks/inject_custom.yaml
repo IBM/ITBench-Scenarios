@@ -1,10 +1,4 @@
 ---
-- name: Import insuffiencient namespace resources injection tasks
-  ansible.builtin.import_tasks:
-    file: inject_custom_insufficient_namespace_resources.yaml
-  vars:
-    fault: {}
-
 - name: Import unsupported image injection tasks
   ansible.builtin.import_tasks:
     file: inject_custom_unsupported_image.yaml

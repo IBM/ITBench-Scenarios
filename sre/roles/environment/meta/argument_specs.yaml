@@ -44,6 +44,40 @@ argument_specs:
                 required: false
                 type: list
                 elements: dict
+  manage_horizontal_pod_autoscalers:
+    short_description: Manages the lifecycle of a HorizontalPodAutoscaler object
+    description:
+      - Creates or deletes a HorizontalPodAutoscaler object.
+    author:
+      - Gerard Vanloo
+    options:
+      horizontal_pod_autoscalers:
+        required: true
+        type: list
+        elements: dict
+        options:
+          name:
+            required: true
+            type: str
+          namespace:
+            required: true
+            type: str
+          max_replicas:
+            required: true
+            type: int
+          target:
+            required: true
+            type: dict
+            options:
+              kind:
+                choices:
+                  - Deployment
+                  - StatefulSet
+                required: true
+                type: str
+              name:
+                required: true
+                type: str
   manage_resource_quotas:
     short_description: Manages the lifecycle of a ResourceQuota object
     description:

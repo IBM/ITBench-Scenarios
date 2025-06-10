@@ -16,7 +16,7 @@
     label: "{{ resource_quota.namespace }}"
     loop_var: resource_quota
   tags:
-    - create
+    - create_objects
 
 - name: Delete ResourceQuota
   kubernetes.core.k8s:
@@ -28,9 +28,10 @@
         name: "{{ resource_quota.namespace }}-resource-quota"
         namespace: "{{ resource_quota.namespace }}"
     state: absent
+    wait: true
   loop: "{{ resource_quotas }}"
   loop_control:
     label: "{{ resource_quota.namespace }}"
     loop_var: resource_quota
   tags:
-    - delete
+    - delete_objects

@@ -1,0 +1,31 @@
+---
+argument_specs:
+  scale_replicas:
+    short_description: Sets a new replica count for a Kubernetes resource replica
+    description:
+      - This set of tasks executes a kubectl scale command.
+    author:
+      - Gerard Vanloo
+    options:
+      resources:
+        required: true
+        type: list
+        elements: dict
+        options:
+          kind:
+            choices:
+              - ReplicationController
+              - Deployment
+              - ReplicaSet
+              - StatefulSet
+            required: true
+            type: str
+          name:
+            required: true
+            type: str
+          namespace:
+            required: true
+            type: str
+          replicas:
+            required: true
+            type: int

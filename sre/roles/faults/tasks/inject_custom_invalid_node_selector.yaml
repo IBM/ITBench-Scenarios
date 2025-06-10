@@ -1,0 +1,15 @@
+---
+- name: Inject fault (node selector)
+  kubernetes.core.k8s_json_patch:
+    api_version: apps/v1
+    kind: "{{ item.kind }}"
+    kubeconfig: "{{ faults.kubeconfig }}"
+    name: "{{ item.name }}"
+    namespace: "{{ item.namespace }}"
+    patch:
+      - op: replace
+        path: /spec/template/spec/nodeSelector
+        value: "{{ {'kubernetes.io/hostname': 'invalid-node'} | to_json }}"
+  loop: "{{ fault.targets }}"
+  loop_control:
+    label: "{{ item.kind | lower }}/{{ item.name }}"

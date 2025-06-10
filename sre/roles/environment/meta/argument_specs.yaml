@@ -1,5 +1,67 @@
 ---
 argument_specs:
+  main:
+    short_description: Main entry point for environment role
+    description:
+      - This is the main entry point for the environment role.
+      - This role is responsible for modifying the environment before fault injection
+        and after fault removal.
+    author:
+      - Gerard Vanloo
+    options:
+      environment_cluster:
+        required: true
+        type: dict
+        options:
+          kubeconfig:
+            default: ~/.kube/config
+            required: false
+            type: str
+          platform:
+            choices:
+              - kubernetes
+              - openshift
+            default: kubernetes
+            required: false
+            type: str
+      environment_actions:
+        required: true
+        type: dict
+        options:
+          manage:
+            required: false
+            type: dict
+            options:
+              resource_quotas:
+                required: false
+                type: list
+                elements: dict
+          modify:
+            required: false
+            type: dict
+            options:
+              scaling:
+                required: false
+                type: list
+                elements: dict
+  manage_resource_quotas:
+    short_description: Manages the lifecycle of a ResourceQuota object
+    description:
+      - Creates or deletes a ResourceQuota object.
+    author:
+      - Gerard Vanloo
+    options:
+      namespaces:
+        required: true
+        type: list
+        elements: dict
+        options:
+          namespace:
+            required: true
+            type: str
+          memory:
+            required: true
+            type: str
   scale_replicas:
     short_description: Sets a new replica count for a Kubernetes resource replica
     description:

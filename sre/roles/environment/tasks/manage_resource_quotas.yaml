@@ -1,0 +1,36 @@
+- name: Create ResourceQuota with hard memory limits
+  kubernetes.core.k8s:
+    kubeconfig: "{{ environment_cluster.kubeconfig }}"
+    resource_definition:
+      apiVersion: v1
+      kind: ResourceQuota
+      metadata:
+        name: "{{ resource_quota.namespace }}-resource-quota"
+        namespace: "{{ resource_quota.namespace }}"
+      spec:
+        hard:
+          memory: "{{ resource_quota.memory }}"
+    state: present
+  loop: "{{ resource_quotas }}"
+  loop_control:
+    label: "{{ resource_quota.namespace }}"
+    loop_var: resource_quota
+  tags:
+    - create
+
+- name: Delete ResourceQuota
+  kubernetes.core.k8s:
+    kubeconfig: "{{ environment_cluster.kubeconfig }}"
+    resource_definition:
+      apiVersion: v1
+      kind: ResourceQuota
+      metadata:
+        name: "{{ resource_quota.namespace }}-resource-quota"
+        namespace: "{{ resource_quota.namespace }}"
+    state: absent
+  loop: "{{ resource_quotas }}"
+  loop_control:
+    label: "{{ resource_quota.namespace }}"
+    loop_var: resource_quota
+  tags:
+    - delete

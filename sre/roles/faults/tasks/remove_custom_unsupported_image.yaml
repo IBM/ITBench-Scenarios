@@ -10,4 +10,4 @@
   loop_control:
     label: "{{ item.kind | lower }}/{{ item.name }}"
   when:
-    - item.kind == "Deployment" or item.kind == "StatefulSet"
+    - item.kind == "Deployment" or item.kind == "StatefulSet" or item.kind == "DaemonSet"

@@ -1,0 +1,21 @@
+---
+- name: Delete Resource Quota with hard memory limits on the namespace
+  kubernetes.core.k8s:
+    kubeconfig: "{{ faults.kubeconfig }}"
+    resource_definition:
+      apiVersion: v1
+      kind: ResourceQuota
+      metadata:
+        name: "{{ item.namespace }}-resource-quota"
+        namespace: "{{ item.namespace }}"
+    state: absent
+  loop: "{{ fault.targets }}"
+
+# - name: Restart deployments
+#   ansible.builtin.command:
+#     cmd: kubectl rollout restart deployment/{{ item.name }} -n {{ item.namespace }}
+#   environment:
+#     KUBECONFIG: "{{ faults.kubeconfig }}"
+#   register: rollout_restart_output
+#   changed_when: rollout_restart_output.rc == 0
+#   loop: "{{ fault.deployment }}"

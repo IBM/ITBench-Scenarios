@@ -26,7 +26,7 @@
   kubernetes.core.k8s_json_patch:
     api_version: apps/v1
     kind: "{{ item.kind }}"
-    kubeconfig: "{{ kubeconfig }}"
+    kubeconfig: "{{ faults.kubeconfig }}"
     name: "{{ item.name }}"
     namespace: "{{ item.namespace }}"
     patch:
@@ -36,5 +36,3 @@
   loop: "{{ fault.targets }}"
   loop_control:
     label: "{{ item.kind | lower }}/{{ item.name }}"
-  when:
-    - item.k8s_object is defined

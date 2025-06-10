@@ -1,7 +1,7 @@
 ---
 - name: Import scaling tasks
   ansible.builtin.import_tasks:
-    file: scale_replicas.yaml
+    file: modify_replicas.yaml
   vars:
     resources: "{{ environment_actions.modify.scaling }}"
   when:

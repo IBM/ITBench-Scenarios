@@ -4,7 +4,7 @@
     api_version: apps/v1
     kind: Deployment
     kubeconfig: "{{ tools_cluster.kubeconfig }}"
-    name: "metrics-server"
+    name: metrics-server
     namespace: "{{ helm_release.namespace }}"
     resource_definition:
       spec:
@@ -16,7 +16,7 @@
     api_version: apps/v1
     kind: Deployment
     kubeconfig: "{{ tools_cluster.kubeconfig }}"
-    name: "metrics-server"
+    name: metrics-server
     namespace: "{{ helm_release.namespace }}"
     resource_definition:
       spec:

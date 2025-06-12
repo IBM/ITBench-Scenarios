@@ -1,48 +1,48 @@
 ---
 - name: Scale down jaeger-collector deployment
-  kubernetes.core.k8s:
+  kubernetes.core.k8s_scale:
     api_version: apps/v1
     kind: Deployment
     kubeconfig: "{{ tools_cluster.kubeconfig }}"
-    name: "jaeger-collector"
+    name: jaeger-collector
     namespace: "{{ helm_releases.collectors.namespace }}"
-    resource_definition:
-      spec:
-        replicas: 0
+    replicas: 0
     wait: true
+  when:
+    - tools_enabled.jaeger
 
 - name: Scale down kubenetes-events-opentelemetry-collector deployment
-  kubernetes.core.k8s:
+  kubernetes.core.k8s_scale:
     api_version: apps/v1
     kind: Deployment
     kubeconfig: "{{ tools_cluster.kubeconfig }}"
-    name: "kubenetes-events-opentelemetry-collector"
+    name: kubenetes-events-opentelemetry-collector
     namespace: "{{ helm_releases.collectors.namespace }}"
-    resource_definition:
-      spec:
-        replicas: 0
+    replicas: 0
     wait: true
+  when:
+    - tools_enabled.opentelemetry
 
 - name: Scale up jaeger-collector deployment
-  kubernetes.core.k8s:
+  kubernetes.core.k8s_scale:
     api_version: apps/v1
     kind: Deployment
     kubeconfig: "{{ tools_cluster.kubeconfig }}"
-    name: "jaeger-collector"
+    name: jaeger-collector
     namespace: "{{ helm_releases.collectors.namespace }}"
-    resource_definition:
-      spec:
-        replicas: 1
+    replicas: 1
     wait: true
+  when:
+    - tools_enabled.jaeger
 
 - name: Scale up kubenetes-events-opentelemetry-collector deployment
-  kubernetes.core.k8s:
+  kubernetes.core.k8s_scale:
     api_version: apps/v1
     kind: Deployment
     kubeconfig: "{{ tools_cluster.kubeconfig }}"
-    name: "kubenetes-events-opentelemetry-collector"
+    name: kubenetes-events-opentelemetry-collector
     namespace: "{{ helm_releases.collectors.namespace }}"
-    resource_definition:
-      spec:
-        replicas: 1
+    replicas: 1
     wait: true
+  when:
+    - tools_enabled.opentelemetry

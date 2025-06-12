@@ -40,7 +40,7 @@ spec:
                 port:
                   number: 16686
 {% endif %}
-{% if tools_enabled.opensearch %}
+{% if tools_enabled.opensearch or tools_enabled.jaeger %}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress

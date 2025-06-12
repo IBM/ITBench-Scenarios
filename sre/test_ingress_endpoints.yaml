@@ -1,0 +1,80 @@
+---
+- name: Test Environment Tool Stack Ingress
+  hosts:
+    - environment
+  vars:
+    tests:
+      - enabled: "{{ tools.clickhouse | default(false) }}"
+        endpoint: http://{{ tools_helm_releases.clickhouse.name }}-clickhouse:8123/play
+        name: "{{ tools_helm_releases.clickhouse.name }}"
+        namespace: "{{ tools_helm_releases.clickhouse.namespace }}"
+      - enabled: "{{ tools.jaeger | default(false) }}"
+        endpoint: http://jaeger-collector:16686/jaeger
+        name: jaeger
+        namespace: "{{ tools_helm_releases.opentelemetry_collectors.namespace }}"
+      - enabled: "{{ tools.prometheus | default(false) }}"
+        endpoint: http://{{ tools_helm_releases.prometheus.name }}-kube-prometheus-prometheus:9090/query
+        name: "{{ tools_helm_releases.prometheus.name }}"
+        namespace: "{{ tools_helm_releases.prometheus.namespace }}"
+      - enabled: "{{ tools.prometheus | default(false) }}"
+        endpoint: http://{{ tools_helm_releases.prometheus.name }}-kube-prometheus-alertmanager:9093
+        name: "{{ tools_helm_releases.prometheus.name }}"
+        namespace: "{{ tools_helm_releases.prometheus.namespace }}"
+      - enabled: "{{ tools.opencost | default(false) }}"
+        endpoint: http://{{ tools_helm_releases.opencost.name }}:9090
+        name: "{{ tools_helm_releases.opencost.name }}"
+        namespace: "{{ tools_helm_releases.opencost.namespace }}"
+  pre_tasks:
+    - name: Include Helm Release variables from Observability Tools role
+      ansible.builtin.include_vars:
+        file: roles/tools/defaults/main/helm_releases.yaml
+  tasks:
+    - name: Create job to query service
+      kubernetes.core.k8s:
+        kubeconfig: "{{ cluster.kubeconfig }}"
+        resource_definition:
+          apiVersion: batch/v1
+          kind: Job
+          metadata:
+            name: "{{ item.name }}-frontend-test"
+            namespace: "{{ item.namespace }}"
+          spec:
+            backoffLimit: 1
+            template:
+              spec:
+                containers:
+                  - name: frontend-test
+                    image: docker.io/library/alpine:3.21
+                    command:
+                      - curl
+                      - -v
+                      - --fail-with-body
+                      - "{{ item.endpoint }}"
+                restartPolicy: Never
+            ttlSecondsAfterFinished: 150
+      loop: "{{ tests }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when:
+        - item.enabled
+
+    - name: Get all deployed jobs
+      kubernetes.core.k8s_info:
+        api_version: batch/v1
+        kind: Job
+        kubeconfig: "{{ cluster.kubeconfig }}"
+        name: "{{ item.name }}-frontend-test"
+        namespace: "{{ item.namespace }}"
+      register: job_info
+      loop: "{{ tests }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when:
+        - item.enabled
+      retries: 4
+      delay: 15
+      until:
+        - job_info.resources[0].status.succeeded is defined
+
+    - ansible.builtin.debug:
+        var: job_info.results

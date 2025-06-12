@@ -12,7 +12,7 @@
 
 - name: Delete OpenSearch indices
   ansible.builtin.uri:
-    url: http:/{{ ingress_hostname }}/{{ item }}
+    url: http://{{ ingress_hostname }}/{{ item }}
     method: DELETE
     status_code: [200, 404]
   loop:

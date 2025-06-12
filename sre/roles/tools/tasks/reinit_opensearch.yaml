@@ -1,0 +1,22 @@
+---
+- name: Import common role
+  ansible.builtin.import_role:
+    name: common
+    tasks_from: fetch_ingress_hostname
+  vars:
+    common_cluster:
+      kubeconfig: "{{ tools_cluster.kubeconfig }}"
+    common_ingress:
+      name: opensearch
+      namespace: "{{ helm_release.namespace }}"
+
+- name: Delete OpenSearch indices
+  ansible.builtin.uri:
+    url: http://{{ ingress_hostname }}/{{ item }}
+    method: DELETE
+    status_code: [200, 404]
+  loop:
+    - otel
+    - jaeger-service-*
+    - jaeger-span-*
+    - top_queries-*

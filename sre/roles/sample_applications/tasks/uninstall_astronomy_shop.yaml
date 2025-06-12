@@ -1,4 +1,11 @@
 ---
+- name: Remove Prometheus Rules for Alerting
+  kubernetes.core.k8s:
+    kubeconfig: "{{ kubeconfig }}"
+    namespace: "{{ otel_astronomy_app_namespace_project_name }}"
+    state: absent
+    src: files/rules/hotel-reservation.yaml
+
 - name: Uninstall / remove OpenTelemetry's Astronomy Shop Demo
   kubernetes.core.helm:
     name: "{{ otel_astronomy_app_installation_name }}"

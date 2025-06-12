@@ -32,6 +32,7 @@ The playbook run is configured using variables defined in `group\_vars`.
 - [Python3](https://www.python.org/downloads/) (v3.12.Z)
 - [Helm](https://helm.sh/docs/intro/install/) (v3.16+)
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/)
+- [OpenShift CLI](https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/cli_tools/openshift-cli-oc) (Required Only for OpenShift)
 
 ### Installing Required Software via Homebrew (for MacOS)
 
@@ -41,6 +42,7 @@ The playbook run is configured using variables defined in `group\_vars`.
 brew install helm
 brew install kubectl
 brew install python@3.12
+brew install openshift-cli
 ```
 
 ### Installing Required Software (for Red Hat Enterprise Linux -- RHEL)
@@ -51,6 +53,7 @@ brew install python@3.12
 ```bash
 sudo dnf install python3.12
 ```
+4. Install the OpenShift CLI by following the instructions [here](https://docs.redhat.com/en/documentation/openshift_container_platform/4.18/html/cli_tools/openshift-cli-oc#cli-installing-cli_cli-developer-commands)
 
 ## Getting Started – Deploying an Incident Scenario
 

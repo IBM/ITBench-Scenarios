@@ -1,0 +1,32 @@
+---
+- name: Uninstall Chaos Mesh
+  kubernetes.core.helm:
+    kubeconfig: "{{ tools_cluster.kubeconfig }}"
+    release_name: "{{ helm_release.name }}"
+    release_namespace: "{{ helm_release.namespace }}"
+    release_state: absent
+    wait: true
+
+- name: Delete the release namespace
+  kubernetes.core.k8s:
+    kubeconfig: "{{ tools_cluster.kubeconfig }}"
+    resource_definition:
+      api_version: v1
+      kind: Namespace
+      metadata:
+        name: "{{ helm_release.namespace }}"
+    state: absent
+    wait: true
+
+- name: Delete SCC for Chaos Mesh
+  kubernetes.core.k8s:
+    kubeconfig: "{{ tools_cluster.kubeconfig }}"
+    resource_definition:
+      apiVersion: security.openshift.io/v1
+      kind: SecurityContextConstraints
+      metadata:
+        name: it-bench-chaos-daemon-restricted
+    state: absent
+    wait: true
+  when:
+    - tools_cluster.platform == "openshift"

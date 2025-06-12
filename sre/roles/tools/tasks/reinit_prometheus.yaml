@@ -11,8 +11,8 @@
         replicas: 0
     wait: true
   loop:
-    - "alertmanager-prometheus-kube-prometheus-alertmanager"
-    - "prometheus-prometheus-kube-prometheus-prometheus"
+    - alertmanager-prometheus-kube-prometheus-alertmanager
+    - prometheus-prometheus-kube-prometheus-prometheus
   when:
     - tools_cluster.platform == "kubernetes"
 
@@ -31,8 +31,8 @@
         replicas: 0
     wait: true
   loop:
-    - "prometheus-k8s"
-    - "alertmanager-main"
+    - prometheus-k8s
+    - alertmanager-main
   when:
     - tools_cluster.platform == "openshift"
 
@@ -48,9 +48,9 @@
         replicas: 0
     wait: true
   loop:
-    - "prometheus-user-workload"
-    - "alertmanager-user-workload"
-    - "thanos-ruler-user-workload"
+    - prometheus-user-workload
+    - alertmanager-user-workload
+    - thanos-ruler-user-workload
   when:
     - tools_cluster.platform == "openshift"
 

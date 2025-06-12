@@ -3,7 +3,7 @@
   kubernetes.core.k8s_exec:
     kubeconfig: "{{ tools_cluster.kubeconfig }}"
     namespace: "{{ helm_releases.instance.namespace }}"
-    pod: "chi-clickhouse-clickhouse-0-0-0"
+    pod: chi-clickhouse-clickhouse-0-0-0
     command: clickhouse-client --query="SHOW TABLES FROM default FORMAT TSV"
   register: clickhouse_default_tables_result
 
@@ -15,7 +15,7 @@
   kubernetes.core.k8s_exec:
     kubeconfig: "{{ tools_cluster.kubeconfig }}"
     namespace: "{{ helm_releases.instance.namespace }}"
-    pod: "chi-clickhouse-clickhouse-0-0-0"
+    pod: chi-clickhouse-clickhouse-0-0-0
     command: |
       clickhouse-client --query="
       TRUNCATE TABLE default.{{ item }};

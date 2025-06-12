@@ -14,6 +14,7 @@
     helm_release: "{{ tools_helm_releases.opensearch }}"
   when:
     - tools_enabled.opensearch or tools_enabled.jaeger
+    - tools_enabled.ingress
 
 - name: Import OpenTelemetry reinitialization tasks
   ansible.builtin.import_tasks:

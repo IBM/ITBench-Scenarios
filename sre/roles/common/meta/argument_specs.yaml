@@ -1,0 +1,24 @@
+---
+argument_specs:
+  fetch_ingress_hostname:
+    short_description: Task for getting Ingress hostnames
+    author:
+      - Gerard Vanloo
+    options:
+      common_cluster:
+        required: true
+        type: dict
+        options:
+          kubeconfig:
+            required: true
+            type: str
+      common_ingress:
+        required: true
+        type: dict
+        options:
+          name:
+            required: true
+            type: str
+          namespace:
+            required: true
+            type: str

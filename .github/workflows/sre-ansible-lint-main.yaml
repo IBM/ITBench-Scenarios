@@ -10,6 +10,24 @@ on:
       - sre/base.yaml
 
 jobs:
+  lint-applications:
+    name: Lint applications playbook and role
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-python@v5.6.0
+        with:
+          python-version: '3.12'
+      - name: Install Python dependencies
+        run: |
+          pip install -r sre/requirements.txt
+      - name: Run ansible-lint
+        uses: ansible/ansible-lint@v25.5.0
+        with:
+          args: manage_applications.yaml roles/applications
+          setup_python: "false"
+          working_directory: sre
+          requirements_file: requirements.yaml
   lint-tools:
     name: Lint tools playbook and role
     runs-on: ubuntu-24.04

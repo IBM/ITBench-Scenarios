@@ -20,3 +20,12 @@
     - ingress_info.resources[0].status.loadBalancer.ingress is defined
     - ingress_info.resources[0].status.loadBalancer.ingress | length > 0
     - ingress_info.resources[0].status.loadBalancer.ingress[0].hostname is defined
+
+- name: Extract the Ingress IP information
+  ansible.builtin.set_fact:
+    ingress_hostname: "{{ ingress_info.resources[0].status.loadBalancer.ingress[0].ip }}"
+  when:
+    - ingress_info.resources[0].status.loadBalancer.ingress is defined
+    - ingress_info.resources[0].status.loadBalancer.ingress | length > 0
+    - ingress_info.resources[0].status.loadBalancer.ingress[0].hostname is undefined
+    - ingress_info.resources[0].status.loadBalancer.ingress[0].ip is defined

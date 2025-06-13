@@ -1,0 +1,60 @@
+---
+- name: Create HorizontalPodAutoscaler
+  kubernetes.core.k8s:
+    kubeconfig: "{{ environment_cluster.kubeconfig }}"
+    resource_definition:
+      apiVersion: autoscaling/v2
+      kind: HorizontalPodAutoscaler
+      metadata:
+        name: "{{ autoscaler.name }}"
+        namespace: "{{ autoscaler.namespace }}"
+      spec:
+        scaleTargetRef:
+          apiVersion: apps/v1
+          kind: "{{ autoscaler.target.kind }}"
+          name: "{{ autoscaler.target.name }}"
+        minReplicas: 1
+        maxReplicas: "{{ autoscaler.max_replicas }}"
+        metrics:
+          - type: Resource
+            resource:
+              name: cpu
+              target:
+                type: Utilization
+                averageUtilization: 75
+          - type: Resource
+            resource:
+              name: memory
+              target:
+                type: Utilization
+                averageUtilization: 60
+    state: present
+    wait: true
+    wait_condition:
+      reason: ReadyForNewScale
+      status: "True"
+      type: AbleToScale
+  loop: "{{ horizontal_pod_autoscalers }}"
+  loop_control:
+    label: "{{ autoscaler.name }}"
+    loop_var: autoscaler
+  tags:
+    - create_objects
+
+- name: Delete HorizontalPodAutoscaler
+  kubernetes.core.k8s:
+    kubeconfig: "{{ environment_cluster.kubeconfig }}"
+    resource_definition:
+      apiVersion: autoscaling/v2
+      kind: HorizontalPodAutoscaler
+      metadata:
+        name: "{{ autoscaler.name }}"
+        namespace: "{{ autoscaler.namespace }}"
+    state: absent
+    wait: true
+  loop: "{{ horizontal_pod_autoscalers }}"
+  loop_control:
+    label: "{{ autoscaler.name }}"
+    loop_var: autoscaler
+  tags:
+    - delete_objects

@@ -136,11 +136,16 @@
         podAnnotations:
           openshift.io/required-scc: restricted-v2
         ports:
-          - name: jaeger
+          - name: otlp-grpc
+            port: 4317
+          - name: otlp-http
+            port: 4318
+          - name: http-query
             port: 16686
         config:
           service:
             extensions:
+              - healthcheckv2
               - jaeger_storage
               - jaeger_query
             pipelines:
@@ -151,6 +156,10 @@
                   - debug
                   - jaeger_storage_exporter
           extensions:
+            healthcheckv2:
+              use_v2: true
+              http:
+                endpoint: 0.0.0.0:13133
             jaeger_query:
               base_path: /jaeger
               storage:
@@ -160,7 +169,7 @@
                 traces_store:
                   opensearch:
                     server_urls:
-                      - http://{{ helm_releases.opensearch.name }}-cluster-master.{{ helm_releases.opensearch.namespace }}.svc.cluster.local:9200
+                      - http://opensearch-cluster-master.{{ helm_releases.opensearch.namespace }}.svc.cluster.local:9200
           receivers:
             otlp:
               protocols:

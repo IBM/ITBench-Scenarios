@@ -1,0 +1,154 @@
+name: Perform frontend endpoint reachability tests for tools
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - sre/roles/tools/tasks/*
+
+jobs:
+  jaeger-opensearch:
+    name: Jaeger and OpenSearch Smoke Tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-python@v5.6.0
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-go@v5.5.0
+        with:
+          go-version-file: sre/local_cluster/go.mod
+          cache-dependency-path: sre/local_cluster/go.sum
+      - name: Install Helm
+        run: |
+          curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+          sudo apt-get install apt-transport-https --yes
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+          sudo apt-get update
+          sudo apt-get install helm
+      - name: Install Python and Ansible dependencies
+        run: |
+          pip install -r sre/requirements.txt
+          ansible-galaxy install -r sre/requirements.yaml
+      - name: Create Kind cluster
+        run: |
+          make -C sre/local_cluster create_cluster
+      - name: Create group vars
+        run: |
+          make -C sre group_vars
+          echo "tools: { jaeger: true, opensearch: true }" > sre/group_vars/environment/tools.yaml
+      - name: Install tools
+        run: |
+          make -C sre deploy_environment_tools
+      - name: Run Ingress endpoint test
+        run: |
+          ansible-playbook -i sre/inventory.yaml sre/test_ingress_endpoints.yaml
+  # kubernetes-topology-monitor:
+  #   name: Kubernetes Topology Monitor Smoke Tests
+  #   runs-on: ubuntu-24.04
+  #   steps:
+  #     - uses: actions/checkout@v4.2.2
+  #     - uses: actions/setup-python@v5.6.0
+  #       with:
+  #         python-version: '3.12'
+  #     - uses: actions/setup-go@v5.5.0
+  #       with:
+  #         go-version-file: sre/local_cluster/go.mod
+  #         cache-dependency-path: sre/local_cluster/go.sum
+  #     - name: Install Helm
+  #       run: |
+  #         curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+  #         sudo apt-get install apt-transport-https --yes
+  #         echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+  #         sudo apt-get update
+  #         sudo apt-get install helm
+  #     - name: Install Python and Ansible dependencies
+  #       run: |
+  #         pip install -r sre/requirements.txt
+  #         ansible-galaxy install -r sre/requirements.yaml
+  #     - name: Create Kind cluster
+  #       run: |
+  #         make -C sre/local_cluster create_cluster
+  #     - name: Create group vars
+  #       run: |
+  #         make -C sre group_vars
+  #         echo "tools: { kubernetes_topology_monitor: true }" > sre/group_vars/environment/tools.yaml
+  #     - name: Install tools
+  #       run: |
+  #         make -C sre deploy_environment_tools
+  #     - name: Run Ingress endpoint test
+  #       run: |
+  #         ansible-playbook -i sre/inventory.yaml sre/test_ingress_endpoints.yaml
+  opencost-prometheus:
+    name: OpenCost and Prometheus Smoke Tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-python@v5.6.0
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-go@v5.5.0
+        with:
+          go-version-file: sre/local_cluster/go.mod
+          cache-dependency-path: sre/local_cluster/go.sum
+      - name: Install Helm
+        run: |
+          curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+          sudo apt-get install apt-transport-https --yes
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+          sudo apt-get update
+          sudo apt-get install helm
+      - name: Install Python and Ansible dependencies
+        run: |
+          pip install -r sre/requirements.txt
+          ansible-galaxy install -r sre/requirements.yaml
+      - name: Create Kind cluster
+        run: |
+          make -C sre/local_cluster create_cluster
+      - name: Create group vars
+        run: |
+          make -C sre group_vars
+          echo "tools: { opencost: true,  prometheus: true }" > sre/group_vars/environment/tools.yaml
+      - name: Install tools
+        run: |
+          make -C sre deploy_environment_tools
+      - name: Run Ingress endpoint test
+        run: |
+          ansible-playbook -i sre/inventory.yaml sre/test_ingress_endpoints.yaml
+  clickhouse-opentelemtry:
+    name: Alinity Clickhouse and OpenTelemetry Collector Smoke Tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-python@v5.6.0
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-go@v5.5.0
+        with:
+          go-version-file: sre/local_cluster/go.mod
+          cache-dependency-path: sre/local_cluster/go.sum
+      - name: Install Helm
+        run: |
+          curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+          sudo apt-get install apt-transport-https --yes
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+          sudo apt-get update
+          sudo apt-get install helm
+      - name: Install Python and Ansible dependencies
+        run: |
+          pip install -r sre/requirements.txt
+          ansible-galaxy install -r sre/requirements.yaml
+      - name: Create Kind cluster
+        run: |
+          make -C sre/local_cluster create_cluster
+      - name: Create group vars
+        run: |
+          make -C sre group_vars
+          echo "tools: { clickhouse: true, opentelemetry: true }" > sre/group_vars/environment/tools.yaml
+      - name: Install tools
+        run: |
+          make -C sre deploy_environment_tools
+      - name: Run Ingress endpoint test
+        run: |
+          ansible-playbook -i sre/inventory.yaml sre/test_ingress_endpoints.yaml

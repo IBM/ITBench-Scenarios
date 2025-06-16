@@ -24,7 +24,6 @@
         - SYS_ADMIN
         - SYS_CHROOT
         - SYS_PTRACE
-      defaultAddCapabilities: null
       fsGroup:
         type: MustRunAs
       runAsUser:

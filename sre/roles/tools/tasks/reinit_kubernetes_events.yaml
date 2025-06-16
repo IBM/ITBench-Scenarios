@@ -1,0 +1,8 @@
+---
+- name: Delete events across namespaces
+  ansible.builtin.command: "kubectl delete events --all-namespaces --all --ignore-not-found=true"
+  environment:
+    KUBECONFIG: "{{ tools_cluster.kubeconfig }}"
+  register: delete_events_result
+  changed_when: delete_events_result.rc == 0
+  failed_when: delete_events_result.rc not in [0, 1]

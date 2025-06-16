@@ -62,7 +62,7 @@
         template:
           spec:
             containers:
-              - name: "{{ deployment_info.result.spec.template.spec.containers[0].name }}" 
+              - name: "{{ deployment_info.result.spec.template.spec.containers[0].name }}"
                 env: "{{ updated_env_vars }}"
   tags: incident_29
   when: is_jvm_return_chaos and is_fault_injection

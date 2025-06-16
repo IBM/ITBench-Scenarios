@@ -1,0 +1,49 @@
+name: Lint SRE remote cluster playbooks
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - sre/remote_cluster/playbooks/*
+      - sre/remote_cluster/roles/*
+
+jobs:
+  lint-awx:
+    name: Lint awx playbook and role
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-python@v5.6.0
+        with:
+          python-version: '3.12'
+      - name: Install Python dependencies
+        run: |
+          pip install -r sre/requirements.txt
+          pip install -r sre/remote_cluster/requirements-dev.txt
+      - name: Run ansible-lint
+        uses: ansible/ansible-lint@v25.5.0
+        with:
+          args: playbooks/manage_awx_stack.yaml roles/awx
+          setup_python: "false"
+          working_directory: sre/remote_cluster
+          requirements_file: ../requirements.yaml
+  lint-kops:
+    name: Lint kops playbook and role
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-python@v5.6.0
+        with:
+          python-version: '3.12'
+      - name: Install Python dependencies
+        run: |
+          pip install -r sre/requirements.txt
+          pip install -r sre/remote_cluster/requirements-dev.txt
+      - name: Run ansible-lint
+        uses: ansible/ansible-lint@v25.5.0
+        with:
+          args: playbooks/manage_kops_cluster.yaml roles/kops
+          setup_python: "false"
+          working_directory: sre/remote_cluster
+          requirements_file: ../requirements.yaml

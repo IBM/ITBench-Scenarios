@@ -1,0 +1,87 @@
+---
+- name: Manage SRE and FinOps Incident Environment Tool Stack
+  hosts:
+    - environment
+  tasks:
+    - name: Check for OpenShift CLI
+      ansible.builtin.command:
+        cmd: which oc
+      register: system_oc_path
+      changed_when: false
+      failed_when: false
+      tags:
+        - always
+
+    - name: Set platform to Kubernetes by assumption
+      ansible.builtin.set_fact:
+        cluster_platform: kubernetes
+      tags:
+        - always
+      when:
+        - system_oc_path.rc != 0
+
+    - name: Attempt retrieval of OpenShift version via oc
+      ansible.builtin.command:
+        cmd: "{{ system_oc_path.stdout }} version -o json"
+      register: oc_version_output
+      changed_when: false
+      tags:
+        - always
+      when:
+        - system_oc_path.rc == 0
+
+    - name: Parse OpenShift version output
+      ansible.builtin.set_fact:
+        oc_version: "{{ oc_version_output.stdout | from_json }}"
+      tags:
+        - always
+      when:
+        - system_oc_path.rc == 0
+
+    - name: Set platform based on oc output
+      ansible.builtin.set_fact:
+        cluster_platform: "{{ 'openshift' if oc_version.openshiftVersion is defined else 'kubernetes' }}"
+      tags:
+        - always
+      when:
+        - system_oc_path.rc == 0
+
+    - name: Retrieve all control nodes
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ cluster.kubeconfig }}"
+        api_version: v1
+        kind: Node
+        label_selectors:
+          - node-role.kubernetes.io/control-plane =
+      register: control_nodes_info
+      tags:
+        - always
+
+    - name: Set provider
+      ansible.builtin.set_fact:
+        cluster_provider: "{{ control_nodes_info.resources[0].spec.providerID.split(':')[0] }}"
+      tags:
+        - always
+
+    # - name: Load variables from incident
+    # - name: Overwrite variables using incident spec
+
+    - name: Import tools role
+      ansible.builtin.import_role:
+        name: tools
+      vars:
+        tools_cluster:
+          cloud_provider: "{{ cluster_provider }}"
+          kubeconfig: "{{ cluster.kubeconfig }}"
+          platform: "{{ cluster_platform }}"
+        tools_enabled:
+          chaos_mesh: "{{ tools.chaos_mesh | default(false) }}"
+          clickhouse: "{{ tools.clickhouse | default(false) }}"
+          ingress: "{{ tools.ingress | default(false) }}"
+          jaeger: "{{ tools.jaeger | default(false) }}"
+          kubernetes_metrics_server: "{{ tools.kubernetes_metrics_server | default(false) }}"
+          kubernetes_topology_monitor: "{{ tools.kubernetes_topology_monitor | default(false) }}"
+          opencost: "{{ tools.opencost | default(false) }}"
+          opensearch: "{{ tools.opensearch | default(false) }}"
+          opentelemetry: "{{ tools.opentelemetry | default(false) }}"
+          prometheus: "{{ tools.prometheus | default(false) }}"

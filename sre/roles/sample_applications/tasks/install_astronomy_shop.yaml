@@ -2,13 +2,13 @@
 - name: Add Helm chart repo from the OpenTelemetry community
   kubernetes.core.helm_repository:
     name: open-telemetry
-    kubeconfig_path: "{{ kubeconfig }}"
+    kubeconfig_path: "{{ cluster.kubeconfig }}"
     repo_url: "https://open-telemetry.github.io/opentelemetry-helm-charts"
 
 - name: Update Helm repo
   kubernetes.core.helm:
     name: dummy
-    kubeconfig_path: "{{ kubeconfig }}"
+    kubeconfig_path: "{{ cluster.kubeconfig }}"
     state: absent
     release_namespace: "{{ otel_astronomy_app_namespace_project_name }}"
     update_repo_cache: true
@@ -17,8 +17,8 @@
   kubernetes.core.k8s_info:
     kind: Secret
     name: clickhouse-credentials
-    namespace: "{{ clickhouse_namespace_project_name }}"
-    kubeconfig: "{{ kubeconfig }}"
+    namespace: "{{ tools_helm_releases.clickhouse.namespace }}"
+    kubeconfig: "{{ cluster.kubeconfig }}"
     wait: true
   register: clickhouse_secrets_info
 
@@ -29,7 +29,7 @@
 
 - name: Create custom Security Context Constraint (SCC) for OpenTelemetry's Astronomy Shop
   kubernetes.core.k8s:
-    kubeconfig: "{{ kubeconfig }}"
+    kubeconfig: "{{ cluster.kubeconfig }}"
     state: present
     resource_definition:
       apiVersion: security.openshift.io/v1
@@ -61,7 +61,7 @@
     cmd: >
       oc adm policy add-scc-to-group otel-astronomy-shop-scc system:serviceaccounts:{{ otel_astronomy_app_namespace_project_name }}
   environment:
-    KUBECONFIG: "{{ kubeconfig }}"
+    KUBECONFIG: "{{ cluster.kubeconfig }}"
   when:
     - cluster_type is defined
     - cluster_type == "openshift" or cluster_type == "openshift_crc_local"
@@ -69,7 +69,7 @@
 - name: Deploy OpenTelemetry's Astronomy Shop Demo
   kubernetes.core.helm:
     name: "{{ otel_astronomy_app_installation_name }}"
-    kubeconfig_path: "{{ kubeconfig }}"
+    kubeconfig_path: "{{ cluster.kubeconfig }}"
     chart_ref: open-telemetry/opentelemetry-demo
     chart_version: "{{ otel_astronomy_app_chart_version }}"
     release_namespace: "{{ otel_astronomy_app_namespace_project_name }}"
@@ -220,16 +220,16 @@
             clickhouse:
               username: "{{ clickhouse_user }}"
               password: "{{ clickhouse_password }}"
-              endpoint: tcp://{{ clickhouse_installation_name }}-clickhouse.{{ clickhouse_namespace_project_name }}.svc.cluster.local:9000
+              endpoint: "tcp://{{ tools_helm_releases.clickhouse.name }}-clickhouse.{{ tools_helm_releases.clickhouse.namespace }}.svc.cluster.local:9000"
               logs_table_name: otel_demo_logs
               traces_table_name: otel_demo_traces
             opensearch:
               http:
-                endpoint: "http://opensearch-cluster-master.{{ opensearch_namespace_project_name }}.svc.cluster.local:9200"
+                endpoint: "http://opensearch-cluster-master.{{ tools_helm_releases.opensearch.namespace }}.svc.cluster.local:9200"
             otlp:
-              endpoint: "{{ opentelemetry_operator_collector_jaeger_name }}-collector.{{ opentelemetry_operator_collectors_namespace }}.svc.cluster.local:4317"
+              endpoint: "jaeger-collector.{{ tools_helm_releases.opentelemetry_collectors.namespace }}.svc.cluster.local:4317"
             otlphttp/prometheus:
-              endpoint: http://{{ prometheus_service_name }}.{{ prometheus_namespace_project_name }}.svc.cluster.local:80/api/v1/otlp
+              endpoint: "http://prometheus-kube-prometheus-prometheus.{{ tools_helm_releases.prometheus.namespace }}.svc.cluster.local:9090/api/v1/otlp"
           service:
             pipelines:
               traces:
@@ -244,3 +244,36 @@
             memory: 512Mi
       prometheus:
         enabled: false
+
+- name: Create Prometheus Rules for Workloads
+  kubernetes.core.k8s:
+    kubeconfig: "{{ cluster.kubeconfig }}"
+    namespace: "{{ otel_astronomy_app_namespace_project_name }}"
+    state: present
+    src: files/rules/workload.yaml
+
+- name: Create Prometheus Rules for Alerting
+  kubernetes.core.k8s:
+    kubeconfig: "{{ cluster.kubeconfig }}"
+    namespace: "{{ otel_astronomy_app_namespace_project_name }}"
+    state: present
+    src: files/rules/otel-demo.yaml
+
+- name: Service monitor to get metrics for the otel-collector pod
+  kubernetes.core.k8s:
+    kubeconfig: "{{ cluster.kubeconfig }}"
+    resource_definition:
+      apiVersion: monitoring.coreos.com/v1
+      kind: ServiceMonitor
+      metadata:
+        name: "otel-collector-metrics-to-prometheus"
+        namespace: "{{ otel_astronomy_app_namespace_project_name }}"
+      spec:
+        endpoints:
+        - interval: 10s
+          path: /metrics
+          port: metrics
+        selector:
+          matchLabels:
+            "component": "standalone-collector"
+    state: present

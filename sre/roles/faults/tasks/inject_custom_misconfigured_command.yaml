@@ -1,5 +1,5 @@
 ---
-- name: Remove fault (node selector)
+- name: Inject fault (misconfigured command)
   kubernetes.core.k8s_json_patch:
     api_version: apps/v1
     kind: "{{ item.kind }}"
@@ -7,8 +7,9 @@
     name: "{{ item.name }}"
     namespace: "{{ item.namespace }}"
     patch:
-      - op: remove
-        path: /spec/template/spec/nodeSelector
+      - op: replace
+        path: /spec/template/spec/containers/0/command
+        value: invalid-command
   loop: "{{ fault.targets }}"
   loop_control:
     label: "{{ item.kind | lower }}/{{ item.name }}"

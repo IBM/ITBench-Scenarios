@@ -5,7 +5,7 @@
 
 - name: Delete schedule containing Chaos Mesh experiment
   kubernetes.core.k8s:
-    kubeconfig: "{{ faults.kubeconfig }}"
+    kubeconfig: "{{ faults_cluster.kubeconfig }}"
     resource_definition:
       apiVersion: chaos-mesh.org/v1alpha1
       kind: Schedule

@@ -1,5 +1,5 @@
 ---
-- name: Attempt fault removal (unsupported image)
+- name: Attempt fault removal (misconfigured command)
   ansible.builtin.command:
     cmd: kubectl rollout undo {{ item.kind | lower }}/{{ item.name }} -n {{ item.namespace }}
   environment:

@@ -3,7 +3,7 @@
   kubernetes.core.k8s_json_patch:
     api_version: apps/v1
     kind: "{{ item.kind }}"
-    kubeconfig: "{{ faults.kubeconfig }}"
+    kubeconfig: "{{ faults_cluster.kubeconfig }}"
     name: "{{ item.name }}"
     namespace: "{{ item.namespace }}"
     patch:

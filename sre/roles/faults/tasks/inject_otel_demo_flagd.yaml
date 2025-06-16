@@ -7,7 +7,7 @@
   kubernetes.core.k8s_info:
     api_version: v1
     kind: ConfigMap
-    kubeconfig: "{{ faults.kubeconfig }}"
+    kubeconfig: "{{ faults_cluster.kubeconfig }}"
     namespace: "{{ applications_helm_releases.otel_demo.namespace }}"
     name: flagd-config
   register: configmap_info
@@ -29,7 +29,7 @@
   kubernetes.core.k8s_json_patch:
     api_version: v1
     kind: ConfigMap
-    kubeconfig: "{{ faults.kubeconfig }}"
+    kubeconfig: "{{ faults_cluster.kubeconfig }}"
     name: flagd-config
     namespace: "{{ applications_helm_releases.otel_demo.namespace }}"
     patch:
@@ -41,6 +41,6 @@
   ansible.builtin.command:
     cmd: kubectl rollout restart deployment -n {{ applications_helm_releases.otel_demo.namespace }}
   environment:
-    KUBECONFIG: "{{ faults.kubeconfig }}"
+    KUBECONFIG: "{{ faults_cluster.kubeconfig }}"
   register: rollout_restart_output
   changed_when: rollout_restart_output.rc == 0

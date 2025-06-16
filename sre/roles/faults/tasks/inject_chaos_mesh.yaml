@@ -1,7 +1,7 @@
 ---
 - name: Include Helm Release variables from Observability Tools role
   ansible.builtin.include_vars:
-    file: ../observability_tools/defaults/main/helm_releases.yaml
+    file: ../tools/defaults/main/helm_releases.yaml
 
 - name: Create schedule containing Chaos Mesh experiment
   kubernetes.core.k8s:
@@ -11,7 +11,7 @@
       kind: Schedule
       metadata:
         name: "{{ item.name }}"
-        namespace: "{{ observability_tools.helm_releases.chaos_mesh.namespace }}"
+        namespace: "{{ tools_helm_releases.chaos_mesh.namespace }}"
       spec: "{{ item.spec }}"
     state: present
   loop: "{{ fault.experiments }}"

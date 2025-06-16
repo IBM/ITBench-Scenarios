@@ -90,6 +90,59 @@
     state: present
   when:
     - tools_enabled.jaeger
+    - tools_cluster.platform == "kubernetes"
+
+- name: Create the project for RH build of OpenTelemetry Operator
+  kubernetes.core.k8s:
+    kubeconfig: "{{ tools_cluster.kubeconfig }}"
+    resource_definition:
+      apiVersion: project.openshift.io/v1
+      kind: Project
+      metadata:
+        name: openshift-opentelemetry-operator
+        labels:
+          kubernetes.io/metadata.name: openshift-opentelemetry-operator
+          openshift.io/cluster-monitoring: "true"
+    state: present
+  when:
+    - tools_enabled.jaeger
+    - tools_cluster.platform == "openshift"
+
+- name: Create the operator group for RH build of OpenTelemetry Operator
+  kubernetes.core.k8s:
+    kubeconfig: "{{ tools_cluster.kubeconfig }}"
+    resource_definition:
+      apiVersion: operators.coreos.com/v1
+      kind: OperatorGroup
+      metadata:
+        name: openshift-opentelemetry-operator
+        namespace: openshift-opentelemetry-operator
+      spec:
+        upgradeStrategy: Default
+    state: present
+  when:
+    - tools_enabled.jaeger
+    - tools_cluster.platform == "openshift"
+
+- name: Create the subscription for RH build of OpenTelemetry Operator
+  kubernetes.core.k8s:
+    kubeconfig: "{{ tools_cluster.kubeconfig }}"
+    resource_definition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: Subscription
+      metadata:
+        name: opentelemetry-product
+        namespace: openshift-opentelemetry-operator
+      spec:
+        channel: stable
+        installPlanApproval: Automatic
+        name: opentelemetry-product
+        source: redhat-operators
+        sourceNamespace: openshift-marketplace
+    state: present
+  when:
+    - tools_enabled.jaeger
+    - tools_cluster.platform == "openshift"
 
 - name: Install OpenTelemetry Operator
   kubernetes.core.helm:
@@ -117,11 +170,27 @@
     wait: true
   when:
     - tools_enabled.jaeger
+    - tools_cluster.platform == "kubernetes"
+
+- name: Wait for RH build of OpenTelemetry Operator
+  kubernetes.core.k8s_info:
+    api_version: operators.coreos.com/v1alpha1
+    kind: ClusterServiceVersion
+    kubeconfig: "{{ tools_cluster.kubeconfig }}"
+    namespace: openshift-opentelemetry-operator
+    wait: true
+  register: csv_info
+  until:
+    - csv_info.resources | community.general.json_query('[*].status.phase') | difference(['Succeeded']) | length == 0
+  retries: 10
+  delay: 30
+  when:
+    - tools_enabled.jaeger
+    - tools_cluster.platform == "openshift"
 
 - name: Install Jaeger
   kubernetes.core.k8s:
     kubeconfig: "{{ tools_cluster.kubeconfig }}"
-    state: present
     resource_definition:
       apiVersion: opentelemetry.io/v1beta1
       kind: OpenTelemetryCollector
@@ -130,6 +199,7 @@
         namespace: "{{ helm_releases.collectors.namespace }}"
       spec:
         image: jaegertracing/jaeger:2.6.0
+        mode: deployment
         observability:
           metrics:
             enableMetrics: true
@@ -172,6 +242,7 @@
             debug: {}
             jaeger_storage_exporter:
               trace_storage: traces_store
+    state: present
   when:
     - tools_enabled.jaeger
 

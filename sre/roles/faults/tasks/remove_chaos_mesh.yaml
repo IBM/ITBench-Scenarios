@@ -13,6 +13,6 @@
         name: "{{ item.name }}"
         namespace: "{{ tools.helm_releases.chaos_mesh.namespace }}"
     state: absent
-  loop: "{{ fault.experiments }}"
+  loop: "{{ experiments }}"
   loop_control:
     label: "{{ item.name }}"

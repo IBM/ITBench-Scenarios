@@ -1,4 +1,4 @@
-name: Perform smoke tests for tools
+name: Run smoke tests for SRE environment tools
 
 on:
   pull_request:

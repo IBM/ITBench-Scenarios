@@ -5,16 +5,15 @@
       apiVersion: v1
       kind: ResourceQuota
       metadata:
-        name: "{{ resource_quota.namespace }}-resource-quota"
-        namespace: "{{ resource_quota.namespace }}"
+        name: "{{ item.namespace }}-resource-quota"
+        namespace: "{{ item.namespace }}"
       spec:
         hard:
-          memory: "{{ resource_quota.memory }}"
+          memory: "{{ item.memory }}"
     state: present
   loop: "{{ resource_quotas }}"
   loop_control:
-    label: "{{ resource_quota.namespace }}"
-    loop_var: resource_quota
+    label: "{{ item.namespace }}"
   tags:
     - create_objects
 
@@ -25,13 +24,12 @@
       apiVersion: v1
       kind: ResourceQuota
       metadata:
-        name: "{{ resource_quota.namespace }}-resource-quota"
-        namespace: "{{ resource_quota.namespace }}"
+        name: "{{ item.namespace }}-resource-quota"
+        namespace: "{{ item.namespace }}"
     state: absent
     wait: true
   loop: "{{ resource_quotas }}"
   loop_control:
-    label: "{{ resource_quota.namespace }}"
-    loop_var: resource_quota
+    label: "{{ item.namespace }}"
   tags:
     - delete_objects

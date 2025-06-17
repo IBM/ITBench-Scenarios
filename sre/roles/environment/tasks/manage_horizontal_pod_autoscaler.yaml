@@ -6,15 +6,15 @@
       apiVersion: autoscaling/v2
       kind: HorizontalPodAutoscaler
       metadata:
-        name: "{{ autoscaler.name }}"
-        namespace: "{{ autoscaler.namespace }}"
+        name: "{{ item.name }}"
+        namespace: "{{ item.namespace }}"
       spec:
         scaleTargetRef:
           apiVersion: apps/v1
-          kind: "{{ autoscaler.target.kind }}"
-          name: "{{ autoscaler.target.name }}"
+          kind: "{{ item.target.kind }}"
+          name: "{{ item.target.name }}"
         minReplicas: 1
-        maxReplicas: "{{ autoscaler.max_replicas }}"
+        maxReplicas: "{{ item.max_replicas }}"
         metrics:
           - type: Resource
             resource:
@@ -36,8 +36,7 @@
       type: AbleToScale
   loop: "{{ horizontal_pod_autoscalers }}"
   loop_control:
-    label: "{{ autoscaler.name }}"
-    loop_var: autoscaler
+    label: "{{ item.name }}"
   tags:
     - create_objects
 
@@ -48,13 +47,12 @@
       apiVersion: autoscaling/v2
       kind: HorizontalPodAutoscaler
       metadata:
-        name: "{{ autoscaler.name }}"
-        namespace: "{{ autoscaler.namespace }}"
+        name: "{{ item.name }}"
+        namespace: "{{ item.namespace }}"
     state: absent
     wait: true
   loop: "{{ horizontal_pod_autoscalers }}"
   loop_control:
-    label: "{{ autoscaler.name }}"
-    loop_var: autoscaler
+    label: "{{ item.name }}"
   tags:
     - delete_objects

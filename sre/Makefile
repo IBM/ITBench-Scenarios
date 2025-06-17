@@ -43,6 +43,14 @@ reinit_environment_tools: ## Re-initialize observability and fault tools to clus
 undeploy_environment_tools: ## Undeploys the observability and fault tools to cluster
 	ansible-playbook -i inventory.yaml manage_tools.yaml --tags "uninstall_tools"
 
+.PHONY: fault_unit_tests
+fault_unit_tests: ## Runs unit tests for faults against a cluster
+	ansible-playbook -i inventory.yaml test_manage_faults.yaml
+
+.PHONY: unit_tests
+unit_tests: fault_unit_tests ## Runs unit tests for against a cluster
+
+
 .PHONY: deploy_observability_stack
 deploy_observability_stack: ## Deploys the observability tools to cluster
 ifeq ($(USE_JAEGER_QUERY_ENDPOINT),false)

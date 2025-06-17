@@ -10,6 +10,6 @@
       - op: replace
         path: /spec/template/spec/nodeSelector
         value: "{{ {'kubernetes.io/hostname': 'invalid-node'} | to_json }}"
-  loop: "{{ fault.targets }}"
+  loop: "{{ targets }}"
   loop_control:
     label: "{{ item.kind | lower }}/{{ item.name }}"

@@ -10,6 +10,6 @@
       - op: replace
         path: /spec/template/spec/containers/0/command
         value: invalid-command
-  loop: "{{ fault.targets }}"
+  loop: "{{ targets }}"
   loop_control:
     label: "{{ item.kind | lower }}/{{ item.name }}"

@@ -1,0 +1,8 @@
+---
+- name: Import flagd removal tasks
+  ansible.builtin.import_tasks:
+    file: remove_otel_demo_flagd.yaml
+  vars:
+    flags: "{{ fault.otel_demo.flags }}"
+  when:
+    - fault.otel_demo.flags | length > 0

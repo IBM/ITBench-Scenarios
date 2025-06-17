@@ -6,8 +6,6 @@
     KUBECONFIG: "{{ faults_cluster.kubeconfig }}"
   register: rollout_undo_output
   changed_when: rollout_undo_output.rc == 0
-  loop: "{{ fault.targets }}"
+  loop: "{{ targets }}"
   loop_control:
     label: "{{ item.kind | lower }}/{{ item.name }}"
-  when:
-    - item.kind == "Deployment" or item.kind == "StatefulSet" or item.kind == "DaemonSet"

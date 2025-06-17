@@ -7,7 +7,7 @@
     name: "{{ item.name }}"
     namespace: "{{ item.namespace }}"
   register: services_info
-  loop: "{{ fault.services }}"
+  loop: "{{ targets }}"
   loop_control:
     label: service/{{ item.name }}
 
@@ -16,9 +16,9 @@
     indexes: |
       {{
         (indexes | default([])) +
-        [(item[1],  lookup('ansible.utils.index_of', item[0].resources[0].spec.ports, 'eq', item[1].targetPort, 'targetPort')]
+        [[item[1],  lookup('ansible.utils.index_of', item[0].resources[0].spec.ports, 'eq', item[1].targetPort, 'targetPort')]]
       }}
-  loop: "{{ services_info.results | zip(fault.services) | list }}"
+  loop: "{{ services_info.results | zip(targets) | list }}"
   loop_control:
     label: service/{{ item.[1]name }}
   when:

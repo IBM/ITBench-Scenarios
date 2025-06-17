@@ -9,6 +9,6 @@
     patch:
       - op: remove
         path: /spec/template/spec/nodeSelector
-  loop: "{{ fault.targets }}"
+  loop: "{{ targets }}"
   loop_control:
     label: "{{ item.kind | lower }}/{{ item.name }}"

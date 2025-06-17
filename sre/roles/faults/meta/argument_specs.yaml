@@ -1,0 +1,98 @@
+---
+argument_specs:
+  main:
+    short_description: Main entry point for faults role
+    description:
+      - This is the main entry point for the environment role.
+      - This role is responsible for modifying the environment before fault injection and after fault removal.
+    author:
+      - Gerard Vanloo
+    options:
+      faults_cluster:
+        required: true
+        type: dict
+        options:
+          kubeconfig:
+            default: ~/.kube/config
+            required: false
+            type: str
+      faults_spec:
+        required: true
+        type: dict
+        options:
+          chaos_mesh:
+            required: false
+            type: dict
+            options:
+              experiments:
+                elements: dict
+                required: true
+                type: list
+          custom:
+            required: false
+            type: dict
+            options:
+              name:
+                choices:
+                  - invalid-node-selector
+                  - misconfigured-command
+                  - misconfigured-service-port
+                  - unsupported-image
+                required: true
+                type: str
+              targets:
+                required: true
+                type: dict
+                options:
+                  services:
+                    elements: dict
+                    required: false
+                    type: list
+                    options:
+                      name:
+                        required: true
+                        type: str
+                      namespace:
+                        required: true
+                        type: str
+                      targetPort:
+                        required: true
+                        type: int
+                  workload_managers:
+                    elements: dict
+                    required: false
+                    type: list
+                    options:
+                      kind:
+                        choices:
+                          - Deployment
+                          - ReplicaSet
+                          - StatefulSet
+                        required: true
+                        type: str
+                      name:
+                        required: true
+                        type: str
+                      namespace:
+                        required: true
+                        type: str
+          otel_demo:
+            required: false
+            type: dict
+            options:
+              flags:
+                choices:
+                  - adHighCpu
+                  - adFailure
+                  - adManualGc
+                  - cartFailure
+                  - imageSlowLoad
+                  - kafkaQueueProblems
+                  - loadGeneratorFloodHomepage
+                  - paymentFailure
+                  - paymentUnreachable
+                  - productCatalogFailure
+                  - recommendationCacheFailure
+                elements: str
+                required: true
+                type: list

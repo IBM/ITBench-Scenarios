@@ -33,6 +33,6 @@
       - op: replace
         path: /spec/template/spec/containers/0/image
         value: quay.io/it-bench/hello-bench-{{ image_arch }}:1.0.0
-  loop: "{{ fault.targets }}"
+  loop: "{{ targets }}"
   loop_control:
     label: "{{ item.kind | lower }}/{{ item.name }}"

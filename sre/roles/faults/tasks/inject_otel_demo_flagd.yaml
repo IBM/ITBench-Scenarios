@@ -23,7 +23,7 @@
         (enabled_config | default({})) |
         combine({ item: { 'defaultVariant': 'on' } }, recursive=true)
       }}
-  loop: "{{ fault.flags }}"
+  loop: "{{ flags }}"
 
 - name: Replace the flagd config with the modified config (inject fault)
   kubernetes.core.k8s_json_patch:

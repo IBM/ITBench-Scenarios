@@ -2,11 +2,15 @@
 - name: Import injection tasks
   ansible.builtin.import_tasks:
     file: inject.yaml
+  vars:
+    fault: "{{ faults_spec }}"
   tags:
     - inject_faults
 
 - name: Import removal tasks
   ansible.builtin.import_tasks:
     file: remove.yaml
+  vars:
+    fault: "{{ faults_spec }}"
   tags:
     - remove_faults

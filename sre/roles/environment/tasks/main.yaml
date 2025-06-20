@@ -1,0 +1,17 @@
+---
+- name: Import management tasks
+  ansible.builtin.import_tasks:
+    file: manage.yaml
+  tags:
+    - create_objects
+    - delete_objects
+  when:
+    - environment_actions.manage is defined
+
+- name: Import modification tasks
+  ansible.builtin.import_tasks:
+    file: modify.yaml
+  tags:
+    - always
+  when:
+    - environment_actions.modify is defined

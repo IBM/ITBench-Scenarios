@@ -36,6 +36,7 @@ argument_specs:
                 choices:
                   - invalid-node-selector
                   - misconfigured-command
+                  - misconfigured-persitent-volume-claim
                   - misconfigured-service-port
                   - unsupported-image
                 required: true

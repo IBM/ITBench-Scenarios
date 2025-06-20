@@ -19,6 +19,16 @@
     - fault.custom.targets.workload_managers is defined
     - fault.custom.targets.workload_managers | length > 0
 
+- name: Remove misconfigured persistent volume claim injection tasks
+  ansible.builtin.import_tasks:
+    file: remove_custom_misconfigured_persistent_volume_claim.yaml
+  vars:
+    targets: "{{ fault.custom.targets.workload_managers }}"
+  when:
+    - fault.custom.name == 'misconfigured-persitent-volume-claim'
+    - fault.custom.targets.workload_managers is defined
+    - fault.custom.targets.workload_managers | length > 0
+
 - name: Import misconfigured service port removal tasks
   ansible.builtin.import_tasks:
     file: remove_custom_misconfigured_service_port.yaml

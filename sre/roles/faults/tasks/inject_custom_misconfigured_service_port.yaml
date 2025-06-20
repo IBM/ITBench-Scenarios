@@ -1,9 +1,9 @@
 ---
 - name: Retrieve services from cluster
   kubernetes.core.k8s_info:
-    kubeconfig: "{{ faults_cluster.kubeconfig }}"
     api_version: v1
     kind: Service
+    kubeconfig: "{{ faults_cluster.kubeconfig }}"
     name: "{{ item.name }}"
     namespace: "{{ item.namespace }}"
   register: services_info

@@ -1,0 +1,4 @@
+---
+- name: Load incident variables from file
+  ansible.builtin.set_fact:
+    incident: "{{ lookup('ansible.builtin.file', 'files/specs/incident_{{ incidents_id }}.yaml') | to_yaml }}"

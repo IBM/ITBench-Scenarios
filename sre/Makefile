@@ -24,6 +24,25 @@ endif
 help: ## Display this help.
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-24s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
+.PHONY: group_vars
+group_vars: ## Generates the group variables
+	mkdir group_vars/all
+	echo "ansible_python_interpreter: $(shell which python)" > group_vars/all/ansible.yaml
+	cp group_vars/environment/cluster.yaml.example group_vars/environment/cluster.yaml
+	cp group_vars/environment/tools.yaml.example group_vars/environment/tools.yaml
+
+.PHONY: deploy_environment_tools
+deploy_environment_tools: ## Deploys the observability and fault tools to cluster
+	ansible-playbook -i inventory.yaml manage_tools.yaml --tags "install_tools"
+
+.PHONY: reinit_environment_tools
+reinit_environment_tools: ## Re-initialize observability and fault tools to cluster
+	ansible-playbook -i inventory.yaml manage_tools.yaml --tags "reinit_tools"
+
+.PHONY: undeploy_environment_tools
+undeploy_environment_tools: ## Undeploys the observability and fault tools to cluster
+	ansible-playbook -i inventory.yaml manage_tools.yaml --tags "uninstall_tools"
+
 .PHONY: deploy_observability_stack
 deploy_observability_stack: ## Deploys the observability tools to cluster
 ifeq ($(USE_JAEGER_QUERY_ENDPOINT),false)
@@ -151,10 +170,6 @@ start_incident: deploy_scenario_tools deploy_scenario_application inject_inciden
 
 .PHONY: stop_incident
 stop_incident: remove_incident_fault undeploy_scenario_application undeploy_scenario_tools ## Stops an incident by undeploying a stack, application, and fault for an incident
-
-.PHONY: awx_setup
-awx_setup:
-	ansible-playbook -v base.yaml --tags "awx_setup"
 
 .PHONY: awx_configure_init
 awx_configure_init:

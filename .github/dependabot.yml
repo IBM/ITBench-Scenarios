@@ -20,8 +20,8 @@ updates:
 
   - package-ecosystem: "docker"
     directories:
-      - "sre/tools/kubernetes-topology-mapper/"
-      - "sre/tools/kubernetes-topology-mapper/charts/kubernetes-topology-mapper/templates/"
+      - "sre/tools/kubernetes-topology-monitor/"
+      - "sre/charts/kubernetes-topology-monitor/templates/"
     groups:
       docker-production-dependencies:
         dependency-type: "production"
@@ -42,7 +42,7 @@ updates:
       - "/"
       - "sre/"
       - "sre/remote_cluster/"
-      - "sre/tools/kubernetes-topology-mapper/"
+      - "sre/tools/kubernetes-topology-monitor/"
     groups:
       pip-production-dependencies:
         dependency-type: "production"

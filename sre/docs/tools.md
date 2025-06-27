@@ -15,6 +15,7 @@ Depending on the scenario domain (SRE or FinOps), the following tools are deploy
 | OpenTelemetry Collector | FinOps, SRE | https://github.com/open-telemetry/opentelemetry-collector |
 | OpenTelemetry Operator | FinOps, SRE | https://github.com/open-telemetry/opentelemetry-operator |
 | Prometheus | FinOps, SRE | https://github.com/prometheus/prometheus |
+| Prometheus Operator | FinOps, SRE | https://github.com/prometheus-operator/prometheus-operator |
 
 ### Installing Observability stack for SRE scenarios
 Run:

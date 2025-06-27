@@ -65,8 +65,8 @@
                 imagePullPolicy: IfNotPresent
                 ports:
                   - containerPort: 8080  # valkey change to 6379
-                    name: "{{ target_label_name1 }}" 
-                    protocol: TCP 
+                    name: "{{ target_label_name1 }}"
+                    protocol: TCP
                 env:
                   - name: OTEL_SERVICE_NAME
                     valueFrom:
@@ -89,8 +89,8 @@
                     value: otlp
                   - name: OTEL_RESOURCE_ATTRIBUTES
                     value: service.name=$(OTEL_SERVICE_NAME),service.namespace=opentelemetry-demo,service.version=2.0.1
-                resources: 
-                  limits: 
+                resources:
+                  limits:
                     memory: "{{ deployment_info.result.spec.template.spec.containers[0].resources.limits.memory }}"
                 securityContext:
                   runAsGroup: 1000
@@ -105,7 +105,7 @@
   kubernetes.core.k8s:
     kubeconfig: "{{ kubeconfig }}"
     kind: Service
-    name: "{{ target_deployment_name }}"          
+    name: "{{ target_deployment_name }}"
     namespace: "{{ otel_astronomy_app_namespace_project_name }}"
   register: svc_info
   tags: incident_22
@@ -127,9 +127,9 @@
       apiVersion: v1
       kind: Service
       metadata:
-        name: "{{ target_deployment_name }}" 
+        name: "{{ target_deployment_name }}"
         namespace: "{{ otel_astronomy_app_namespace_project_name }}"
-        labels: 
+        labels:
             app.kubernetes.io/component: "{{ target_label_name1 }}"
             app.kubernetes.io/instance: "{{ otel_astronomy_app_namespace_project_name }}"
             app.kubernetes.io/name: "{{ target_label_name1 }}"
@@ -213,6 +213,6 @@
 
 - name: Remove temporary deployment files
   ansible.builtin.shell: |
-    rm -f '/tmp/deployment_{{ kubeconfig.split('/')[2] }}.yaml' 
+    rm -f '/tmp/deployment_{{ kubeconfig.split('/')[2] }}.yaml'
   tags: incident_22
   when: is_memory_stress_chaos and is_fault_removal

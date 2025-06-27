@@ -1,7 +1,7 @@
 ---
 - name: Create HorizontalPodAutoscaler
   kubernetes.core.k8s:
-    kubeconfig: "{{ environment_cluster.kubeconfig }}"
+    kubeconfig: "{{ kubernetes_cluster.kubeconfig }}"
     resource_definition:
       apiVersion: autoscaling/v2
       kind: HorizontalPodAutoscaler
@@ -42,7 +42,7 @@
 
 - name: Delete HorizontalPodAutoscaler
   kubernetes.core.k8s:
-    kubeconfig: "{{ environment_cluster.kubeconfig }}"
+    kubeconfig: "{{ kubernetes_cluster.kubeconfig }}"
     resource_definition:
       apiVersion: autoscaling/v2
       kind: HorizontalPodAutoscaler

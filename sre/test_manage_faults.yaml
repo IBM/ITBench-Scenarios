@@ -1,9 +1,0 @@
----
-- name: Execute SRE and FinOps Fault Related Unit Tests
-  hosts:
-    - environment
-  tasks:
-    - name: Import environment role (tests)
-      ansible.builtin.import_role:
-        name: environment
-        tasks_from: test

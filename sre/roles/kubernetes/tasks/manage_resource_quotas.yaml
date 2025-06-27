@@ -1,6 +1,6 @@
 - name: Create ResourceQuota with hard memory limits
   kubernetes.core.k8s:
-    kubeconfig: "{{ environment_cluster.kubeconfig }}"
+    kubeconfig: "{{ kubernetes_cluster.kubeconfig }}"
     resource_definition:
       apiVersion: v1
       kind: ResourceQuota
@@ -19,7 +19,7 @@
 
 - name: Delete ResourceQuota
   kubernetes.core.k8s:
-    kubeconfig: "{{ environment_cluster.kubeconfig }}"
+    kubeconfig: "{{ kubernetes_cluster.kubeconfig }}"
     resource_definition:
       apiVersion: v1
       kind: ResourceQuota

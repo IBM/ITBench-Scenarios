@@ -1,9 +1,0 @@
----
-- name: Import resource quota management tasks
-  ansible.builtin.import_tasks:
-    file: manage_resource_quotas.yaml
-  vars:
-    resource_quotas: "{{ environment_actions.manage.resource_quotas }}"
-  when:
-    - environment_actions.manage.resource_quotas is defined
-    - environment_actions.manage.resource_quotas | length > 0

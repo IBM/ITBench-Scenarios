@@ -1,15 +1,15 @@
 ---
 argument_specs:
   main:
-    short_description: Main entry point for environment role
+    short_description: Main entry point for kubernetes role
     description:
-      - This is the main entry point for the environment role.
-      - This role is responsible for modifying the environment before fault injection
+      - This is the main entry point for the kubernetes role.
+      - This role is responsible for modifying the kubernetes before fault injection
         and after fault removal.
     author:
       - Gerard Vanloo
     options:
-      environment_cluster:
+      kubernetes_cluster:
         required: true
         type: dict
         options:
@@ -24,7 +24,7 @@ argument_specs:
             default: kubernetes
             required: false
             type: str
-      environment_actions:
+      kubernetes_actions:
         required: true
         type: dict
         options:

@@ -42,7 +42,7 @@ jobs:
       - name: Run ansible-lint
         uses: ansible/ansible-lint@v25.5.0
         with:
-          args: roles/environment roles/faults
+          args: roles/kubernetes roles/faults
           setup_python: "false"
           working_directory: sre
           requirements_file: requirements.yaml

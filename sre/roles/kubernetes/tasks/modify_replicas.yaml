@@ -3,7 +3,7 @@
   kubernetes.core.k8s_scale:
     api_version: "{{ omit if item.kind == 'ReplicationController' else 'apps/v1' }}"
     kind: "{{ item.kind }}"
-    kubeconfig: "{{ environment_cluster.kubeconfig }}"
+    kubeconfig: "{{ kubernetes_cluster.kubeconfig }}"
     name: "{{ item.name }}"
     namespace: "{{ item.namespace }}"
     replicas: "{{ item.replicas }}"

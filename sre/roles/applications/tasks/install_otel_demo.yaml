@@ -1,4 +1,23 @@
 ---
+# Note: The Prometheus offered by OpenShift is v2, while the one installed
+#       in the chart is v3. While otel-demo supports the `otlphttp` exporter,
+#       this is not easily exposed in OpenShift. So, IT-Bench uses the `prometheus`
+#       exporter instead to support both platforms until the functionality of
+#       Prometheus is the same on both platforms.
+
+# Note: Due to a Helm bug, the value of the `otlphttp` and `opensearch` exports cannot
+#       be set to null in order to remove the chart's values. So, the configuration of
+#       the exporters is still correctly set, but not used for forwarding the data.
+#       Requires backport: https://github.com/helm/helm/issues/30587
+
+# Note: The `latest` images from otel-demo are currently used as there has not been
+#       a new release of the image-provider. Until a new verion (>=2.0.3) is cut, latest
+#       needs to be used in order to use this application with OpenShift's restricted-v2 SCC.
+
+# TODO: Remove the image override on Kafka after the new images are cut for otel-demo
+#       (>=2.0.3). This is a temporary fix to keep kafka working without making too many
+#       additional edits that need to be reverted in the configuration.
+
 - name: Create the release namespace
   kubernetes.core.k8s:
     kubeconfig: "{{ applications_cluster.kubeconfig }}"
@@ -14,6 +33,15 @@
         labels:
           it-bench/monitoring: "true"
     state: present
+
+- name: Get Clickhouse credentials from secret
+  kubernetes.core.k8s_info:
+    kind: Secret
+    kubeconfig: "{{ applications_cluster.kubeconfig }}"
+    name: "{{ helm_releases.clickhouse.name }}-credentials"
+    namespace: "{{ helm_releases.clickhouse.namespace }}"
+    wait: true
+  register: clickhouse_secrets_info
 
 - name: Retrieve Prometheus route
   kubernetes.core.k8s_info:
@@ -42,12 +70,15 @@
   kubernetes.core.helm:
     chart_ref: opentelemetry-demo
     chart_repo_url: https://open-telemetry.github.io/opentelemetry-helm-charts
-    chart_version: 0.36.4
+    chart_version: 0.37.1
     kubeconfig: "{{ applications_cluster.kubeconfig }}"
     release_name: "{{ helm_releases.otel_demo.name }}"
     release_namespace: "{{ helm_releases.otel_demo.namespace }}"
     release_state: present
     values:
+      default:
+        image:
+          tag: latest # New version with compatible image provider not released yet
       components:
         accounting:
           podAnnotations:
@@ -145,6 +176,8 @@
               cpu: 10m
               memory: 25Mi
         kafka:
+          imageOverride:
+            tag: 2.0.2
           podAnnotations:
             openshift.io/required-scc: restricted-v2
           resources:
@@ -221,6 +254,11 @@
                 - name: namespace
                   default: "{{ helm_releases.otel_demo.namespace }}"
           exporters:
+            clickhouse:
+              username: "{{ clickhouse_secrets_info.resources[0].data.user | b64decode }}"
+              password: "{{ clickhouse_secrets_info.resources[0].data.password | b64decode }}"
+              endpoint: http://{{ helm_releases.clickhouse.name }}-clickhouse.{{ helm_releases.clickhouse.namespace }}.svc.cluster.local:8123
+              logs_table_name: otel_demo_logs
             opensearch:
               http:
                 endpoint: http://{{ helm_releases.opensearch.name }}-master.{{ helm_releases.opensearch.namespace }}.svc.cluster.local:9200
@@ -228,10 +266,31 @@
               endpoint: http://jaeger-collector.{{ helm_releases.collectors.namespace }}.svc.cluster.local:4317
             otlphttp/prometheus:
               endpoint: "{{ prometheus_url }}/api/v1/otlp"
+            prometheus:
+              endpoint: 0.0.0.0:8889
+          service:
+            pipelines:
+              logs:
+                exporters:
+                  - clickhouse
+                  - debug
+              metrics:
+                exporters:
+                  - debug
+                  - prometheus
         serviceMonitor:
           enabled: true
+          metricsEndpoints:
+            - port: demo-metrics
+            - port: metrics
         podAnnotations:
           openshift.io/required-scc: restricted-v2
+        ports:
+          demo-metrics:
+            enabled: true
+            containerPort: 8889
+            servicePort: 8889
+            protocol: TCP
         resources:
           requests:
             cpu: 100m
@@ -245,7 +304,7 @@
 - name: Create Recording Prometheus Rules
   kubernetes.core.k8s:
     kubeconfig: "{{ applications_cluster.kubeconfig }}"
-    namespace: "{{ helm_release.otel_demo.namespace }}"
+    namespace: "{{ helm_releases.otel_demo.namespace }}"
     state: present
     src: files/rules/workload.yaml
 

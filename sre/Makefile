@@ -28,6 +28,7 @@ help: ## Display this help.
 group_vars: ## Generates the group variables
 	mkdir group_vars/all
 	echo "ansible_python_interpreter: $(shell which python)" > group_vars/all/ansible.yaml
+	cp group_vars/environment/applications.yaml.example group_vars/environment/applications.yaml
 	cp group_vars/environment/cluster.yaml.example group_vars/environment/cluster.yaml
 	cp group_vars/environment/tools.yaml.example group_vars/environment/tools.yaml
 
@@ -42,6 +43,14 @@ reinit_environment_tools: ## Re-initialize observability and fault tools to clus
 .PHONY: undeploy_environment_tools
 undeploy_environment_tools: ## Undeploys the observability and fault tools to cluster
 	ansible-playbook -i inventory.yaml manage_tools.yaml --tags "uninstall_tools"
+
+.PHONY: deploy_environment_applications
+deploy_environment_applications: ## Deploys the applications to cluster
+	ansible-playbook -i inventory.yaml manage_applications.yaml --tags "install_applications"
+
+.PHONY: undeploy_environment_applications
+undeploy_environment_applications: ## Undeploys the applications to cluster
+	ansible-playbook -i inventory.yaml manage_applications.yaml --tags "uninstall_applications"
 
 .PHONY: deploy_observability_stack
 deploy_observability_stack: ## Deploys the observability tools to cluster

@@ -65,6 +65,6 @@
     - role: e2e
 
   tasks:
-    - name: Include incident role 
+    - name: Include incident role
       ansible.builtin.import_role:
         name: "incident_{{ incident_number }}"

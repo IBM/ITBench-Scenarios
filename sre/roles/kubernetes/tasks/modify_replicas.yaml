@@ -1,0 +1,13 @@
+---
+- name: Scale resources to target replicas
+  kubernetes.core.k8s_scale:
+    api_version: "{{ omit if item.kind == 'ReplicationController' else 'apps/v1' }}"
+    kind: "{{ item.kind }}"
+    kubeconfig: "{{ kubernetes_cluster.kubeconfig }}"
+    name: "{{ item.name }}"
+    namespace: "{{ item.namespace }}"
+    replicas: "{{ item.replicas }}"
+    wait: true
+  loop: "{{ resources }}"
+  loop_control:
+    label: "{{ item.kind | lower }}/{{ item.name }}"

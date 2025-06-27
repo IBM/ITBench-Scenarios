@@ -1,7 +1,7 @@
-name: Build and push SRE tool images
+name: Perform build tests SRE tool images
 
 on:
-  push:
+  pull_request:
     branches:
       - main
     paths:
@@ -32,7 +32,7 @@ jobs:
           platforms: |
             linux/amd64
             linux/arm64
-          push: true
+          push: false
           tags: |
             quay.io/it-bench/topology-monitor:0.0.4
             quay.io/it-bench/topology-monitor:latest

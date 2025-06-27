@@ -1,0 +1,131 @@
+---
+argument_specs:
+  main:
+    short_description: Main entry point for kubernetes role
+    description:
+      - This is the main entry point for the kubernetes role.
+      - This role is responsible for modifying the kubernetes before fault injection
+        and after fault removal.
+    author:
+      - Gerard Vanloo
+    options:
+      kubernetes_cluster:
+        required: true
+        type: dict
+        options:
+          kubeconfig:
+            default: ~/.kube/config
+            required: false
+            type: str
+          platform:
+            choices:
+              - kubernetes
+              - openshift
+            default: kubernetes
+            required: false
+            type: str
+      kubernetes_actions:
+        required: true
+        type: dict
+        options:
+          manage:
+            required: false
+            type: dict
+            options:
+              horizontal_pod_autoscalers:
+                required: false
+                type: list
+                elements: dict
+              resource_quotas:
+                required: false
+                type: list
+                elements: dict
+          modify:
+            required: false
+            type: dict
+            options:
+              scaling:
+                required: false
+                type: list
+                elements: dict
+  manage_horizontal_pod_autoscalers:
+    short_description: Manages the lifecycle of a HorizontalPodAutoscaler object
+    description:
+      - Creates or deletes a HorizontalPodAutoscaler object.
+    author:
+      - Gerard Vanloo
+    options:
+      horizontal_pod_autoscalers:
+        required: true
+        type: list
+        elements: dict
+        options:
+          name:
+            required: true
+            type: str
+          namespace:
+            required: true
+            type: str
+          max_replicas:
+            required: true
+            type: int
+          target:
+            required: true
+            type: dict
+            options:
+              kind:
+                choices:
+                  - Deployment
+                  - StatefulSet
+                required: true
+                type: str
+              name:
+                required: true
+                type: str
+  manage_resource_quotas:
+    short_description: Manages the lifecycle of a ResourceQuota object
+    description:
+      - Creates or deletes a ResourceQuota object.
+    author:
+      - Gerard Vanloo
+    options:
+      namespaces:
+        required: true
+        type: list
+        elements: dict
+        options:
+          namespace:
+            required: true
+            type: str
+          memory:
+            required: true
+            type: str
+  modify_replicas:
+    short_description: Sets a new replica count for a Kubernetes resource replica
+    description:
+      - This set of tasks executes a kubectl scale command.
+    author:
+      - Gerard Vanloo
+    options:
+      resources:
+        required: true
+        type: list
+        elements: dict
+        options:
+          kind:
+            choices:
+              - ReplicationController
+              - Deployment
+              - ReplicaSet
+              - StatefulSet
+            required: true
+            type: str
+          name:
+            required: true
+            type: str
+          namespace:
+            required: true
+            type: str
+          replicas:
+            required: true
+            type: int

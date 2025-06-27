@@ -1,0 +1,9 @@
+---
+- name: Import resource quota management tasks
+  ansible.builtin.import_tasks:
+    file: manage_resource_quotas.yaml
+  vars:
+    resource_quotas: "{{ kubernetes_actions.manage.resource_quotas }}"
+  when:
+    - kubernetes_actions.manage.resource_quotas is defined
+    - kubernetes_actions.manage.resource_quotas | length > 0

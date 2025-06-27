@@ -1,0 +1,9 @@
+---
+- name: Import scaling tasks
+  ansible.builtin.import_tasks:
+    file: modify_replicas.yaml
+  vars:
+    resources: "{{ kubernetes_actions.modify.scaling }}"
+  when:
+    - kubernetes_actions.modify.scaling is defined
+    - kubernetes_actions.modify.scaling | length > 0
